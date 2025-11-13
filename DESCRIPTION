@@ -1,0 +1,21 @@
+Package: tmpSashimi
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Authors@R: c(
+    person(
+        "Lachlan", "Baer",
+        email = "baerlachlan@gmail.com",
+        role = c("aut", "cre"),
+        comment = c(ORCID = "0000-0001-5213-3401")
+    )
+  )
+Description: More about what it does (maybe more than one line).
+    Continuation lines should be indented.
+License: GPL-3
+Encoding: UTF-8
+Depends:
+    R (>= 4.5),
+    ggplot2,
+Imports:
+    GenomicAlignments,
