@@ -1,7 +1,7 @@
 Package: tmpSashimi
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.0
+Version: 0.99.0
 Authors@R: c(
     person(
         "Lachlan", "Baer",
@@ -14,8 +14,10 @@ Description: More about what it does (maybe more than one line).
     Continuation lines should be indented.
 License: GPL-3
 Encoding: UTF-8
+RoxygenNote: 7.3.3
 Depends:
     R (>= 4.5),
-    ggplot2,
 Imports:
     GenomicAlignments,
+    ggplot2,
+    methods,
