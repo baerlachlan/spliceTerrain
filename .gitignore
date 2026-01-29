@@ -5,9 +5,3 @@
 .DS_Store
 .quarto
 *Rproj
-
-## For testing and development; sensitive data
-## TODO: Use public data
-inst/extdata/COG7.bam
-inst/extdata/COG7.bam.bai
-inst/scripts/COG7.md

@@ -1,0 +1,3 @@
+- loadAlignments needs to be strand specific controlled by region
+- loadAlignments also needs to habve single end mode
+- junctions need to be passed to squishIntrons, and potentially separated into two granges objects (starts and ends), to be pulled along as passengers during the function so that they also receive updated coordinates, but don't pollute the blocks that define exonic regions

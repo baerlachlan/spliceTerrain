@@ -1,0 +1,26 @@
+#' @keywords internal
+.resolveRegion <- function(
+        region
+) {
+
+    if (is.character(region)) {
+        r <- strsplit(region, ":")
+        stopifnot(length(r[[1]]) %in% c(2, 3))  ## TODO add message
+        seqnames <- vapply(r, \(x){x[1]}, character(1))
+        start <- vapply(r, \(x){strsplit(x[2], "-")[[1]][1]}, character(1))
+        end <- vapply(r, \(x){strsplit(x[2], "-")[[1]][2]}, character(1))
+        strand <- vapply(r, \(x){
+            if (length(x) == 3) x[3] else "*"
+        }, character(1))
+        GenomicRanges::GRanges(
+            seqnames = seqnames,
+            ranges = IRanges::IRanges(
+                start = as.numeric(start), end = as.numeric(end)
+            ),
+            strand = strand
+        )
+    } else {
+        region
+    }
+
+}

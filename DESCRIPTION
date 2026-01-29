@@ -1,4 +1,4 @@
-Package: tmpSashimi
+Package: spliceTerrain
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.99.0
@@ -18,6 +18,13 @@ RoxygenNote: 7.3.3
 Depends:
     R (>= 4.5),
 Imports:
+    BiocGenerics,
     GenomicAlignments,
+    GenomicRanges,
     ggplot2,
-    methods,
+    IRanges,
+    patchwork,
+    Rsamtools,
+    S4Vectors,
+    scales,
+    Seqinfo,
