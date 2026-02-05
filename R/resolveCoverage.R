@@ -2,7 +2,7 @@
 .resolveCoverage <- function(
         gal, region, min_coverage
 ) {
-# browser()
+
     cov <- lapply(gal, GenomicAlignments::coverage)
     cov <- lapply(cov, unlist)
     cov <- lapply(names(cov), \(x){
@@ -22,7 +22,13 @@
     })
     cov <- do.call(c, cov)
     ## Drop ranges outside region and trim partial overlaps
-    cov <- GenomicRanges::pintersect(cov, region, drop.nohit.ranges = TRUE)
+    # browser()
+    # hits <- IRanges::findOverlaps(cov, region)
+    # cov <- GenomicRanges::pintersect(
+    #     cov[S4Vectors::from(hits)], region[S4Vectors::to(hits)],
+    #     drop.nohit.ranges = TRUE
+    # )
+    # cov <- cov[BiocGenerics::width(cov) > 0]
     cov[cov$coverage > min_coverage]
 
 }

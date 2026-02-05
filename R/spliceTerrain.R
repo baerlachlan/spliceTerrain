@@ -20,7 +20,7 @@
 #' @aliases spliceTerrain
 #' @export
 spliceTerrain <- function(
-        bam,
+        bam, # TODO: change bam to x to allow other input types
         region,
         annotation,
         strandedness = c("unstranded", "forward", "reverse"),
@@ -29,17 +29,18 @@ spliceTerrain <- function(
         min_junction_reads = 10L,
         squish_introns = FALSE,
         squish_width = 100L,
-        groups = NULL
+        min_arrow = 101L
 ) {
-
-    strandedness <- match.arg(strandedness)
 # browser()
+    strandedness <- match.arg(strandedness)
+    if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
+
     region <- .resolveRegion(region)
     annotation <- .resolveAnnotation(annotation, region)
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
     coverage <- .resolveCoverage(gal, region, min_coverage)
     junctions <- .resolveJunctions(gal, region, min_junction_reads)
-    # browser()
+# browser()
     if (squish_introns) {
         junction_anchors <- .splitAnchors(junctions)
         region_anchors <- .splitAnchors(region)
@@ -54,11 +55,17 @@ spliceTerrain <- function(
         junctions <- .mergeAnchors(junction_anchors, junctions)
         region <- .mergeAnchors(region_anchors, region)
     }
+# browser()
+    # p_bam <- lapply(bam, \(i){ggplot2::ggplot()})
+    # p_bam <- .plotCoverage(p_bam, coverage)
+    # p_bam <- .plotJunctions(p_bam, junctions)
+    # p_ann <- .plotAnnotation(annotation)
+    # .plotTerrain(region, p_bam, p_ann)
 
-    p_bam <- lapply(seq_along(bam), \(i){ggplot2::ggplot()})
-    p_bam <- .plotCoverage(p_bam, coverage)
-    p_bam <- .plotJunctions(p_bam, junctions)
-    p_ann <- .plotAnnotation(annotation)
-    .plotTerrain(region, p_bam, p_ann)
+    plot_list <- lapply(bam, \(i){ggplot2::ggplot()})
+    plot_list <- .plotCoverage(plot_list, coverage)
+    plot_list <- .plotJunctions(plot_list, junctions)
+    plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
+    .plotTerrain(plot_list, region)
 
 }

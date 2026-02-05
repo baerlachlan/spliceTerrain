@@ -1,6 +1,6 @@
 #' @export
 squishIntrons <- function(..., squish_width = 100L) {
-
+# browser()
     objs <- list(...)
     all_ranges <- do.call(c, objs)
     blocks <- GenomicRanges::reduce(all_ranges, ignore.strand = TRUE)
@@ -15,6 +15,7 @@ squishIntrons <- function(..., squish_width = 100L) {
     ## Squished loc = squished start + difference between loc and block start
     map_pos <- function(loc, i){squish_start[i] + (loc - block_start[i])}
     lapply(objs, \(exons){
+        # browser()
         hits <- IRanges::findOverlaps(exons, blocks, select = "first")
         out <- GenomicRanges::GRanges(
             seqnames = "plot_space",

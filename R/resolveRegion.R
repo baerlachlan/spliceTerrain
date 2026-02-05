@@ -20,7 +20,10 @@
             strand = strand
         )
     } else {
-        region
+        ## Ensure only a single range (the span) is returned
+        ## So we don't load duplicate alignments
+        ## See `which` arg of scanBamParam
+        range(region)
     }
 
 }

@@ -3,14 +3,13 @@
         bam, region, strandedness, min_mapq
 ) {
 
-    if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
     strandedness <- switch(
         strandedness,
         unstranded = 0, forward = 1, reverse = 2
     )
     flag <- Rsamtools::scanBamFlag() # Placeholder for future development
     param <- Rsamtools::ScanBamParam(flag = flag, which = region)
-
+# browser()
     if (.bamIsPaired(bam[1])) {
         gal <- lapply(bam, \(x){
             x <- GenomicAlignments::readGAlignmentPairs(
