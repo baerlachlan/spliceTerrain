@@ -1,3 +1,4 @@
+#' @importFrom rlang .data
 #' @keywords internal
 .plotCoverage <- function(
         plot_list, coverage
@@ -15,7 +16,10 @@
         # )
         p <- plot_list[[i]] + ggplot2::geom_rect(
             data = coverage[[i]],
-            ggplot2::aes(xmin = start, xmax = end, ymin = 0, ymax = coverage),
+            ggplot2::aes(
+                xmin = .data$start, xmax = .data$end,
+                ymin = 0, ymax = .data$coverage
+            ),
             colour = "black", fill = "black", lineend = "square", alpha = 1
         )
         p <- p + ggplot2::scale_y_continuous(

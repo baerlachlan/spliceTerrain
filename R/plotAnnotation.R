@@ -1,3 +1,4 @@
+#' @importFrom rlang .data
 #' @keywords internal
 .plotAnnotation <- function(
         plot_list, annotation, min_arrow
@@ -39,17 +40,17 @@
     p <- p + ggplot2::geom_rect(
         data = exons,
         ## TODO: height
-        ggplot2::aes(xmin = start, xmax = end, y = group, height = 0.3),
-        colour = "black", fill = "black"
+        ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$group),
+        height = 0.3, colour = "black", fill = "black"
     )
     p <- p + ggplot2::geom_segment(
         data = introns,
-        ggplot2::aes(x = start, xend = end, y = group),
+        ggplot2::aes(x = .data$start, xend = .data$end, y = .data$group),
         linewidth = 0.4, colour = "black"
     )
     p <- p + ggplot2::geom_text(
         data = introns,
-        ggplot2::aes(x = midpoint, y = group, label = arrow),
+        ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
         vjust = 0.37, colour = "black"
     )
     p <- p + ggplot2::labs(x = "", y = "")

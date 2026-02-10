@@ -24,6 +24,7 @@ Imports:
     ggplot2,
     IRanges,
     patchwork,
+    rlang,
     Rsamtools,
     S4Vectors,
     scales,

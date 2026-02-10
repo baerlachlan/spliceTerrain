@@ -36,5 +36,6 @@ fl <- system.file("extdata", "COG7.bam", package="spliceTerrain")
 data("COG7_gene")
 data("COG7_exons")
 spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
+spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse")
 
 }

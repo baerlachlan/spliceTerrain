@@ -1,3 +1,4 @@
+#' @importFrom rlang .data
 #' @keywords internal
 .plotJunctions <- function(
         plot_list, junctions
@@ -34,12 +35,12 @@
 
         p <- plot_list[[i]] + ggplot2::geom_line(
             data = arcs,
-            ggplot2::aes(x = x, y = y, group = id),
+            ggplot2::aes(x = .data$x, y = .data$y, group = .data$id),
             colour = "black", lineend = "round"
         )
         p <- p + ggplot2::geom_label(
             data = labels,
-            ggplot2:: aes(x = x, y = y, label = label),
+            ggplot2:: aes(x = .data$x, y = .data$y, label = .data$label),
             label.padding = grid::unit(0, "lines"),
             border.colour = "white", size = 3
         )
