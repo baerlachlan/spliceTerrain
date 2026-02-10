@@ -14,7 +14,7 @@ spliceTerrain(
   min_junction_reads = 10L,
   squish_introns = FALSE,
   squish_width = 100L,
-  groups = NULL
+  min_arrow = 101L
 )
 }
 \arguments{
@@ -35,6 +35,6 @@ Additional details...
 fl <- system.file("extdata", "COG7.bam", package="spliceTerrain")
 data("COG7_gene")
 data("COG7_exons")
-spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons[[1]])
+spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
 
 }

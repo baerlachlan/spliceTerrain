@@ -5,7 +5,7 @@
 
     if (is.character(region)) {
         r <- strsplit(region, ":")
-        stopifnot(length(r[[1]]) %in% c(2, 3))  ## TODO add message
+        stopifnot(length(r[[1]]) %in% c(2, 3)) ## TODO add message
         seqnames <- vapply(r, \(x){x[1]}, character(1))
         start <- vapply(r, \(x){strsplit(x[2], "-")[[1]][1]}, character(1))
         end <- vapply(r, \(x){strsplit(x[2], "-")[[1]][2]}, character(1))

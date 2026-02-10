@@ -9,7 +9,7 @@
     )
     flag <- Rsamtools::scanBamFlag() # Placeholder for future development
     param <- Rsamtools::ScanBamParam(flag = flag, which = region)
-# browser()
+    # browser()
     if (.bamIsPaired(bam[1])) {
         gal <- lapply(bam, \(x){
             x <- GenomicAlignments::readGAlignmentPairs(

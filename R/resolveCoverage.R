@@ -25,8 +25,8 @@
     # browser()
     # hits <- IRanges::findOverlaps(cov, region)
     # cov <- GenomicRanges::pintersect(
-    #     cov[S4Vectors::from(hits)], region[S4Vectors::to(hits)],
-    #     drop.nohit.ranges = TRUE
+    # cov[S4Vectors::from(hits)], region[S4Vectors::to(hits)],
+    # drop.nohit.ranges = TRUE
     # )
     # cov <- cov[BiocGenerics::width(cov) > 0]
     cov[cov$coverage > min_coverage]
