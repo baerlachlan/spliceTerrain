@@ -1,5 +1,5 @@
 #' @keywords internal
-.splitAnchors <- function(
+.rangesToAnchors <- function(
         gr
 ) {
 

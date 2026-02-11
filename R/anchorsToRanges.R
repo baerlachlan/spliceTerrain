@@ -1,5 +1,5 @@
 #' @keywords internal
-.mergeAnchors <- function(
+.anchorsToRanges <- function(
         anchors, gr
 ) {
 

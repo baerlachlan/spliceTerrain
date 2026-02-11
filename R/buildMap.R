@@ -1,5 +1,5 @@
 #' @keywords internal
-.buildMap <- function(..., gap = 50L, scale = 1.0, pad = 0L) {
+.buildMap <- function(..., gap) {
 
     objs <- list(...)
     all_ranges <- do.call(c, objs)
@@ -14,10 +14,10 @@
     g_end <- S4Vectors::end(blocks)
     g_width <- S4Vectors::width(blocks)
 
-    ## Plot widths (scaled) for each block
-    p_width <- as.numeric(g_width) * scale
+    ## Plot widths don't get squished
+    p_width <- as.numeric(g_width)
 
-    ## Cumulative plot starts (block1 starts at 0)
+    ## Cumulative plot starts (block1 starts at 1)
     p_start <- c(1, cumsum(p_width[-length(p_width)] + gap + 1))
     p_end <- p_start + p_width - 1
 
@@ -26,7 +26,6 @@
     m$g_end <- g_end
     m$p_start <- p_start
     m$p_end <- p_end
-    m$scale <- scale
     m$gap <- gap
     m
 

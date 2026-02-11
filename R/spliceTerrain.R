@@ -29,7 +29,7 @@ spliceTerrain <- function(
         min_coverage = 10L,
         min_junction_reads = 10L,
         squish_introns = FALSE,
-        squish_width = 100L,
+        squish_to = 50L,
         min_arrow = 101L
 ) {
 
@@ -45,14 +45,13 @@ spliceTerrain <- function(
     if (squish_introns) {
         map <- .buildMap(
             annotation, coverage,
-            .splitAnchors(junctions), .splitAnchors(region)
+            .rangesToAnchors(junctions), .rangesToAnchors(region),
+            gap = squish_to
         )
         annotation <- .mapGenomeToPlot(annotation, map)
         coverage <- .mapGenomeToPlot(coverage, map)
         junctions <- .mapGenomeToPlot(junctions, map)
         region <- .mapGenomeToPlot(region, map)
-        # browser()
-        .mapPlotToGenome(c(1684, 1686, 650, 687), map)
     } else {
         map <- NULL
     }

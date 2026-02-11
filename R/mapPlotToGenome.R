@@ -7,8 +7,7 @@
     )
     qh <- S4Vectors::queryHits(hits)
     sh <- S4Vectors::subjectHits(hits)
-    mapped <- map$g_start[sh] + (pos[qh] - map$p_start[sh]) * map$scale[sh]
-    mapped
+    mapped <- map$g_start[sh] + (pos[qh] - map$p_start[sh])
 
     nohit_idx <- setdiff(seq_along(pos), qh)
 
@@ -24,7 +23,7 @@
     qh <- S4Vectors::queryHits(hits)
     sh <- S4Vectors::subjectHits(hits)
     if (length(qh)) {
-        out[qh] <- map$g_start[sh] + (pos[qh] - map$p_start[sh]) / map$scale[sh]
+        out[qh] <- map$g_start[sh] + (pos[qh] - map$p_start[sh])
     }
 
     ## Positions that fall in gaps
