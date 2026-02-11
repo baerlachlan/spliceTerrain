@@ -8,12 +8,6 @@
     coverage <- split(coverage, coverage$sample)
 
     pl <- lapply(names(plot_list), \(i){
-        # p[[i]] + ggplot2::geom_bar(
-        # data = coverage[[i]],
-        # ggplot2::aes(x = start, width = width, y = coverage),
-        # stat = "identity",
-        # colour = "black", fill = "black"
-        # )
         p <- plot_list[[i]] + ggplot2::geom_rect(
             data = coverage[[i]],
             ggplot2::aes(

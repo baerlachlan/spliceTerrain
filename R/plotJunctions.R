@@ -4,14 +4,16 @@
         plot_list, junctions
 ) {
 
-    ## Levels control height of arc to avoid overlapping
     junctions <- split(junctions, junctions$sample)
 
     pl <- lapply(names(plot_list), \(i){
         if (!length(junctions[[i]])) return(plot_list[[i]])
+        ## Levels control height of arc to avoid overlapping
         levels <- IRanges::disjointBins(junctions[[i]])
         df <- as.data.frame(junctions[[i]])
         max_cov <- max(df$coverage)
+        ## TODO: maybe allow user to control h_step with e.g. j_height arg
+        ## (default 0.5)
         h_step <- -0.5 * max_cov
         heights <- h_step + (levels - 1L) * h_step
 

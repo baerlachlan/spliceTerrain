@@ -1,40 +1,24 @@
 #' @keywords internal
 .resolveJunctions <- function(
-        gal, region, min_junction_reads
+        gal, region, min_junction_reads, strandedness
 ) {
 
     juncs <- lapply(gal, GenomicAlignments::summarizeJunctions)
     strand <- as.character(unique(BiocGenerics::strand(region)))
-    ## TODO: we need to check strandedness here
-    ## because if unstranded, but a region is specified with strand != *
-    ## it will return no junctions
     juncs <- lapply(names(juncs), \(x){
-        if (strand == "+") {
-            S4Vectors::mcols(juncs[[x]]) <- S4Vectors::DataFrame(
-                sample = x,
-                coverage = juncs[[x]]$plus_score
-            )
-        } else if (strand == "-") {
-            S4Vectors::mcols(juncs[[x]]) <- S4Vectors::DataFrame(
-                sample = x,
-                coverage = juncs[[x]]$minus_score
-            )
+        if (strand == "+" & strandedness != "unstranded") {
+            cov <- juncs[[x]]$plus_score
+        } else if (strand == "-" & strandedness != "unstranded") {
+            cov <- juncs[[x]]$minus_score
         } else {
-            S4Vectors::mcols(juncs[[x]]) <- S4Vectors::DataFrame(
-                sample = x,
-                coverage = juncs[[x]]$score
-            )
+            cov <- juncs[[x]]$score
         }
+        S4Vectors::mcols(juncs[[x]]) <- S4Vectors::DataFrame(
+            sample = x, coverage = cov
+        )
         juncs[[x]]
     })
     juncs <- do.call(c, juncs)
-    # hits <- IRanges::findOverlaps(juncs, region)
-    # juncs <- GenomicRanges::pintersect(
-    # juncs[S4Vectors::from(hits)], region[S4Vectors::to(hits)],
-    # drop.nohit.ranges = TRUE
-    # )
-    # ## If region ends at a splice junction the arc will still show, so remove
-    # juncs <- juncs[BiocGenerics::width(juncs) > 0]
     juncs[juncs$coverage > min_junction_reads]
 
 }

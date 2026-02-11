@@ -6,6 +6,7 @@
 #' Additional details...
 #'
 #' @param x The path to the BAM file to read, a \link[Rsamtools]{BamFile} object, or a \link[Rsamtools]{BamViews} object.
+#' @param annotation Must be GRangesList. Annotations will be grouped on a separate track by each element of the list.
 #' @param ... Passed to \link[GenomicAlignments]{readGAlignments}
 #'
 #' @return A \link[GenomicAlignments]{GAlignments} object.
@@ -40,7 +41,9 @@ spliceTerrain <- function(
     annotation <- .resolveAnnotation(annotation, region)
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
     coverage <- .resolveCoverage(gal, region, min_coverage)
-    junctions <- .resolveJunctions(gal, region, min_junction_reads)
+    junctions <- .resolveJunctions(
+        gal, region, min_junction_reads, strandedness
+    )
 
     if (squish_introns) {
         map <- .buildMap(
