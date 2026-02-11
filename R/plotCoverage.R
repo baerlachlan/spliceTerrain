@@ -11,7 +11,8 @@
         p <- plot_list[[i]] + ggplot2::geom_rect(
             data = coverage[[i]],
             ggplot2::aes(
-                xmin = .data$start, xmax = .data$end,
+                ## Add 1bp to either side to avoid visual glitch
+                xmin = .data$start - 1, xmax = .data$end + 1,
                 ymin = 0, ymax = .data$coverage
             ),
             colour = "black", fill = "black", lineend = "square", alpha = 1

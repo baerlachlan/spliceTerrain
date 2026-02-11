@@ -61,7 +61,8 @@ spliceTerrain <- function(
 
     plot_list <- lapply(bam, \(i){ggplot2::ggplot()})
     plot_list <- .plotCoverage(plot_list, coverage)
-    plot_list <- .plotJunctions(plot_list, junctions)
+    # browser()
+    plot_list <- .plotJunctions(plot_list, junctions, coverage)
     plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
     .plotTerrain(plot_list, region, map)
 
