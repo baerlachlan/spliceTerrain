@@ -18,7 +18,7 @@
     p_width <- as.numeric(g_width)
 
     ## Cumulative plot starts (block1 starts at 1)
-    p_start <- c(1, cumsum(p_width[-length(p_width)] + gap + 1))
+    p_start <- c(1, cumsum(p_width[-length(p_width)] + gap) + 1)
     p_end <- p_start + p_width - 1
 
     m <- blocks
@@ -26,7 +26,6 @@
     m$g_end <- g_end
     m$p_start <- p_start
     m$p_end <- p_end
-    m$gap <- gap
     m
 
 }
