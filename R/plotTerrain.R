@@ -1,9 +1,9 @@
 #' @keywords internal
 .plotTerrain <- function(
-        plot_list, region, map
+        plot_list, region, map, panel_heights
 ) {
     # browser()
-    p <- patchwork::wrap_plots(plot_list, ncol = 1)
+    p <- patchwork::wrap_plots(plot_list, ncol = 1, heights = panel_heights)
     p <- p + patchwork::plot_layout(
         axes = "collect_x"
     )
@@ -30,7 +30,7 @@
         axis.line.y = ggplot2::element_line(colour = "grey70"),
         axis.line.x = ggplot2::element_line(colour = "grey70"),
         axis.title.y = ggplot2::element_text(angle = 0, vjust = 0.5),
-        plot.margin = ggplot2::margin(5,5,5,5)
+        plot.margin = ggplot2::margin(5, 5, 5, 5)
     )
     p
 

@@ -33,7 +33,8 @@ spliceTerrain <- function(
         squish_to = 50L,
         min_arrow = squish_to + 1L,
         arc_height = 0.15,
-        lsv = NULL
+        lsv = NULL,
+        panel_heights = 1
 ) {
 
     strandedness <- match.arg(strandedness)
@@ -70,6 +71,6 @@ spliceTerrain <- function(
     plot_list <- .plotJunctions(plot_list, junctions, coverage, lsv, arc_height)
     if (!is.null(annotation))
         plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
-    .plotTerrain(plot_list, region, map)
+    .plotTerrain(plot_list, region, map, panel_heights)
 
 }
