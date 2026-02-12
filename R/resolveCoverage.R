@@ -21,6 +21,7 @@
         gr
     })
     cov <- do.call(c, cov)
+    cov <- IRanges::subsetByOverlaps(cov, region, type = "within")
     cov[cov$coverage >= min_coverage]
 
 }

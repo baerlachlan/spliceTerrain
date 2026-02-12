@@ -49,13 +49,9 @@ spliceTerrain <- function(
     )
 
     if (squish_introns) {
-        map <- .buildMap(
-            annotation, coverage,
-            .rangesToAnchors(junctions),
-            .rangesToAnchors(region),
-            # .rangesToAnchors(lsv),
-            gap = squish_to
-        )
+        anchors <- c(.rangesToAnchors(junctions), .rangesToAnchors(region))
+        if (!is.null(lsv)) anchors <- c(anchors, .rangesToAnchors(lsv))
+        map <- .buildMap(annotation, coverage, anchors, gap = squish_to)
         annotation <- .mapGenomeToPlot(annotation, map)
         coverage <- .mapGenomeToPlot(coverage, map)
         junctions <- .mapGenomeToPlot(junctions, map)

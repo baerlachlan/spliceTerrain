@@ -19,6 +19,7 @@
         juncs[[x]]
     })
     juncs <- do.call(c, juncs)
+    juncs <- IRanges::subsetByOverlaps(juncs, region, type = "within")
     juncs[juncs$coverage >= min_junction_reads]
 
 }
