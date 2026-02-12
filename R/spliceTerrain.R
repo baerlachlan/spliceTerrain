@@ -24,7 +24,7 @@
 spliceTerrain <- function(
         bam, # TODO: change bam to x to allow other input types
         region,
-        annotation,
+        annotation = NULL,
         strandedness = c("unstranded", "forward", "reverse"),
         min_mapq = 0L,
         min_coverage = 10L,
@@ -41,7 +41,8 @@ spliceTerrain <- function(
 
     region <- .resolveRegion(region)
     if (!is.null(lsv)) lsv <- .resolveRegion(lsv)
-    annotation <- .resolveAnnotation(annotation, region)
+    if (!is.null(annotation))
+        annotation <- .resolveAnnotation(annotation, region)
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
     coverage <- .resolveCoverage(gal, region, min_coverage)
     junctions <- .resolveJunctions(
@@ -49,11 +50,14 @@ spliceTerrain <- function(
     )
 
     if (squish_introns) {
+        ranges <- c(coverage)
+        if (!is.null(annotation)) ranges <- c(ranges, annotation)
         anchors <- c(.rangesToAnchors(junctions), .rangesToAnchors(region))
         if (!is.null(lsv)) anchors <- c(anchors, .rangesToAnchors(lsv))
-        map <- .buildMap(annotation, coverage, anchors, gap = squish_to)
-        annotation <- .mapGenomeToPlot(annotation, map)
+        map <- .buildMap(ranges, anchors, gap = squish_to)
         coverage <- .mapGenomeToPlot(coverage, map)
+        if (!is.null(annotation))
+            annotation <- .mapGenomeToPlot(annotation, map)
         junctions <- .mapGenomeToPlot(junctions, map)
         region <- .mapGenomeToPlot(region, map)
         if (!is.null(lsv)) lsv <- .mapGenomeToPlot(lsv, map)
@@ -64,7 +68,8 @@ spliceTerrain <- function(
     plot_list <- lapply(bam, \(i){ggplot2::ggplot()})
     plot_list <- .plotCoverage(plot_list, coverage)
     plot_list <- .plotJunctions(plot_list, junctions, coverage, lsv, arc_height)
-    plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
+    if (!is.null(annotation))
+        plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
     .plotTerrain(plot_list, region, map)
 
 }

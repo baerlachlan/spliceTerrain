@@ -13,11 +13,15 @@ spliceTerrain(
   min_coverage = 10L,
   min_junction_reads = 10L,
   squish_introns = FALSE,
-  squish_width = 100L,
-  min_arrow = 101L
+  squish_to = 50L,
+  min_arrow = squish_to + 1L,
+  arc_height = 0.15,
+  lsv = NULL
 )
 }
 \arguments{
+\item{annotation}{Must be GRangesList. Annotations will be grouped on a separate track by each element of the list.}
+
 \item{x}{The path to the BAM file to read, a \link[Rsamtools]{BamFile} object, or a \link[Rsamtools]{BamViews} object.}
 
 \item{...}{Passed to \link[GenomicAlignments]{readGAlignments}}
@@ -36,6 +40,6 @@ fl <- system.file("extdata", "COG7.bam", package="spliceTerrain")
 data("COG7_gene")
 data("COG7_exons")
 spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
-spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse")
+spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse", lsv = "16:23389087-23389087")
 
 }
