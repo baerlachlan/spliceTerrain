@@ -19,6 +19,6 @@
         juncs[[x]]
     })
     juncs <- do.call(c, juncs)
-    juncs[juncs$coverage > min_junction_reads]
+    juncs[juncs$coverage >= min_junction_reads]
 
 }

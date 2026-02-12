@@ -16,7 +16,7 @@
 #' data("COG7_gene")
 #' data("COG7_exons")
 #' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
-#' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse")
+#' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse", lsv = "16:23389087-23389087")
 #'
 #' @rdname spliceTerrain-methods
 #' @aliases spliceTerrain
@@ -31,13 +31,16 @@ spliceTerrain <- function(
         min_junction_reads = 10L,
         squish_introns = FALSE,
         squish_to = 50L,
-        min_arrow = 101L
+        min_arrow = squish_to + 1L,
+        arc_height = 0.15,
+        lsv = NULL
 ) {
 
     strandedness <- match.arg(strandedness)
     if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
 
     region <- .resolveRegion(region)
+    if (!is.null(lsv)) lsv <- .resolveRegion(lsv)
     annotation <- .resolveAnnotation(annotation, region)
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
     coverage <- .resolveCoverage(gal, region, min_coverage)
@@ -48,21 +51,23 @@ spliceTerrain <- function(
     if (squish_introns) {
         map <- .buildMap(
             annotation, coverage,
-            .rangesToAnchors(junctions), .rangesToAnchors(region),
+            .rangesToAnchors(junctions),
+            .rangesToAnchors(region),
+            # .rangesToAnchors(lsv),
             gap = squish_to
         )
         annotation <- .mapGenomeToPlot(annotation, map)
         coverage <- .mapGenomeToPlot(coverage, map)
         junctions <- .mapGenomeToPlot(junctions, map)
         region <- .mapGenomeToPlot(region, map)
+        if (!is.null(lsv)) lsv <- .mapGenomeToPlot(lsv, map)
     } else {
         map <- NULL
     }
 
     plot_list <- lapply(bam, \(i){ggplot2::ggplot()})
     plot_list <- .plotCoverage(plot_list, coverage)
-    # browser()
-    plot_list <- .plotJunctions(plot_list, junctions, coverage)
+    plot_list <- .plotJunctions(plot_list, junctions, coverage, lsv, arc_height)
     plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
     .plotTerrain(plot_list, region, map)
 

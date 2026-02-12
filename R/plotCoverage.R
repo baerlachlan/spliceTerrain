@@ -15,7 +15,7 @@
                 xmin = .data$start - 1, xmax = .data$end + 1,
                 ymin = 0, ymax = .data$coverage
             ),
-            colour = "black", fill = "black", lineend = "square", alpha = 1
+            colour = "black", fill = "black", lineend = "square"
         )
         p <- p + ggplot2::scale_y_continuous(
             labels = \(x) ifelse(x < 0, "", x),

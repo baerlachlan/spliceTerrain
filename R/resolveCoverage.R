@@ -21,6 +21,6 @@
         gr
     })
     cov <- do.call(c, cov)
-    cov[cov$coverage > min_coverage]
+    cov[cov$coverage >= min_coverage]
 
 }

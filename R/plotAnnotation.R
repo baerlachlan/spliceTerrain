@@ -20,7 +20,7 @@
                 strand = unique(x$strand),
                 group = unique(x[["group"]])
             )
-            df$width <- df$end - df$start
+            df$width <- df$end - df$start - 1
             df$midpoint <- df$start + (df$width / 2)
             df$arrow <- ifelse(
                 # df$width >= min_arrow & df$strand == "+", "\u276F",
