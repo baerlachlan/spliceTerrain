@@ -1,6 +1,6 @@
 #' @keywords internal
 .mapPlotToGenome <- function(pos, map) {
-    # browser()
+
     ## Preallocate output to keep input order
     out <- rep(NA_real_, length(pos))
 

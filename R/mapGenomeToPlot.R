@@ -1,6 +1,6 @@
 #' @keywords internal
 .mapGenomeToPlot <- function(gr, map) {
-    # browser()
+
     anchors <- .rangesToAnchors(gr)
     hits <- IRanges::findOverlaps(anchors, map)
     qh <- S4Vectors::queryHits(hits)

@@ -58,3 +58,15 @@
     )
 
 }
+
+#' @keywords internal
+.coverageAtPos <- function(coverage, pos) {
+    hits <- IRanges::findOverlaps(pos, coverage)
+    out <- numeric(length(pos))
+    if (length(hits)) {
+        qh <- S4Vectors::queryHits(hits)
+        sh <- S4Vectors::subjectHits(hits)
+        out[qh] <- coverage$coverage[sh]
+    }
+    out
+}

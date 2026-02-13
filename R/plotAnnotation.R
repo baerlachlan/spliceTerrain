@@ -1,9 +1,9 @@
 #' @importFrom rlang .data
 #' @keywords internal
 .plotAnnotation <- function(
-        plot_list, annotation, min_arrow
+        plist, annotation, min_arrow, highlight
 ) {
-    # browser()
+
     ## TODO: Let user input column to group annotations by
     df <- as.data.frame(annotation)
     exons <- data.frame(
@@ -11,7 +11,6 @@
     )
     introns <- split(exons, exons[["group"]])
     introns <- lapply(introns, \(x){
-        # browser()
         n <- nrow(x)
         if (n > 1) {
             df <- data.frame(
@@ -37,6 +36,9 @@
     introns <- do.call(rbind, introns)
 
     p <- ggplot2::ggplot()
+    if (!is.null(highlight)) {
+        p <- .plotHighlight(p, highlight)
+    }
     p <- p + ggplot2::geom_rect(
         data = exons,
         ## TODO: height
@@ -55,9 +57,8 @@
     )
     p <- p + ggplot2::labs(x = "", y = "")
     p <- p + ggplot2::theme(
-        axis.ticks.y = ggplot2::element_blank(),
-        # axis.line.x = ggplot2::element_blank()
+        axis.ticks.y = ggplot2::element_blank()
     )
-    c(plot_list, list(p))
+    c(plist, list(p))
 
 }

@@ -1,10 +1,8 @@
 #' @keywords internal
-.resolveRegion <- function(
-        region
-) {
+.resolveRegion <- function(gr) {
 
-    if (is.character(region)) {
-        r <- strsplit(region, ":")
+    if (is.character(gr)) {
+        r <- strsplit(gr, ":")
         stopifnot(length(r[[1]]) %in% c(2, 3)) ## TODO add message
         seqnames <- vapply(r, \(x){x[1]}, character(1))
         start <- vapply(r, \(x){strsplit(x[2], "-")[[1]][1]}, character(1))
@@ -23,7 +21,7 @@
         ## Ensure only a single range (the span) is returned
         ## So we don't load duplicate alignments
         ## See `which` arg of scanBamParam
-        range(region)
+        range(gr)
     }
 
 }

@@ -16,7 +16,7 @@
 #' data("COG7_gene")
 #' data("COG7_exons")
 #' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
-#' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse", lsv = "16:23389087-23389087")
+#' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons, squish_introns = TRUE, strandedness = "reverse", lsv = "16:23389087-23389087", highlight = "16:23392380-23393318")
 #'
 #' @rdname spliceTerrain-methods
 #' @aliases spliceTerrain
@@ -24,16 +24,17 @@
 spliceTerrain <- function(
         bam, # TODO: change bam to x to allow other input types
         region,
-        annotation = NULL,
         strandedness = c("unstranded", "forward", "reverse"),
-        min_mapq = 0L,
         min_coverage = 10L,
         min_junction_reads = 10L,
-        squish_introns = FALSE,
+        squish_introns = TRUE,
         squish_to = 50L,
+        annotation = NULL,
+        lsv = NULL,
+        highlight = NULL,
+        min_mapq = 0L,
         min_arrow = squish_to + 1L,
         arc_height = 0.15,
-        lsv = NULL,
         panel_heights = 1
 ) {
 
@@ -41,20 +42,23 @@ spliceTerrain <- function(
     if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
 
     region <- .resolveRegion(region)
-    if (!is.null(lsv)) lsv <- .resolveRegion(lsv)
-    if (!is.null(annotation))
-        annotation <- .resolveAnnotation(annotation, region)
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
     coverage <- .resolveCoverage(gal, region, min_coverage)
     junctions <- .resolveJunctions(
         gal, region, min_junction_reads, strandedness
     )
+    if (!is.null(annotation))
+        annotation <- .resolveAnnotation(annotation, region)
+    if (!is.null(lsv)) lsv <- .resolveRegion(lsv)
+    if (!is.null(highlight)) highlight <- .resolveRegion(highlight)
 
     if (squish_introns) {
         ranges <- c(coverage)
         if (!is.null(annotation)) ranges <- c(ranges, annotation)
         anchors <- c(.rangesToAnchors(junctions), .rangesToAnchors(region))
         if (!is.null(lsv)) anchors <- c(anchors, .rangesToAnchors(lsv))
+        if (!is.null(highlight))
+            anchors <- c(anchors, .rangesToAnchors(highlight))
         map <- .buildMap(ranges, anchors, gap = squish_to)
         coverage <- .mapGenomeToPlot(coverage, map)
         if (!is.null(annotation))
@@ -62,15 +66,17 @@ spliceTerrain <- function(
         junctions <- .mapGenomeToPlot(junctions, map)
         region <- .mapGenomeToPlot(region, map)
         if (!is.null(lsv)) lsv <- .mapGenomeToPlot(lsv, map)
+        if (!is.null(highlight)) highlight <- .mapGenomeToPlot(highlight, map)
     } else {
         map <- NULL
     }
 
-    plot_list <- lapply(bam, \(i){ggplot2::ggplot()})
-    plot_list <- .plotCoverage(plot_list, coverage)
-    plot_list <- .plotJunctions(plot_list, junctions, coverage, lsv, arc_height)
+    plist <- lapply(bam, \(i){ggplot2::ggplot()})
+    plist <- .plotSamples(
+        plist, coverage, junctions, lsv, arc_height, highlight
+    )
     if (!is.null(annotation))
-        plot_list <- .plotAnnotation(plot_list, annotation, min_arrow)
-    .plotTerrain(plot_list, region, map, panel_heights)
+        plist <- .plotAnnotation(plist, annotation, min_arrow, highlight)
+    .plotTerrain(plist, region, map, panel_heights)
 
 }

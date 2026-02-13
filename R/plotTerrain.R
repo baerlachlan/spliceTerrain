@@ -1,9 +1,9 @@
 #' @keywords internal
 .plotTerrain <- function(
-        plot_list, region, map, panel_heights
+        plist, region, map, panel_heights
 ) {
-    # browser()
-    p <- patchwork::wrap_plots(plot_list, ncol = 1, heights = panel_heights)
+
+    p <- patchwork::wrap_plots(plist, ncol = 1, heights = panel_heights)
     p <- p + patchwork::plot_layout(
         axes = "collect_x"
     )

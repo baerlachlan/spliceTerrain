@@ -1,34 +1,20 @@
 #' @keywords internal
-.plotJunctions <- function(plot_list, junctions, coverage, lsv, arc_height) {
+.plotJunctions <- function(p, junctions, coverage, lsv, arc_height) {
 
-    junctions <- split(junctions, junctions$sample)
-    coverage <- split(coverage, coverage$sample)
-
-    out_plots <- lapply(names(plot_list), function(sample_id) {
-
-        junc <- junctions[[sample_id]]
-        cov <- coverage[[sample_id]]
-
-        layout <- .junctionArcLayout(junc, cov, arc_height)
+        layout <- .junctionArcLayout(junctions, coverage, arc_height)
         arcs <- .junctionArcPoints(layout)
-        labels <- .junctionArcLabels(layout, junc, lsv)
+        labels <- .junctionArcLabels(layout, junctions, lsv)
 
-        .junctionGeoms(plot_list[[sample_id]], arcs, labels)
+        p +
+            ggplot2::geom_line(
+                data = arcs,
+                ggplot2::aes(x = .data$x, y = .data$y, group = .data$id),
+                colour = "black", lineend = "round"
+            ) +
+            ggplot2::geom_label(
+                data = labels,
+                ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+                label.padding = grid::unit(0, "pt"), size = 3, linewidth = 0
+            )
 
-    })
-
-    names(out_plots) <- names(plot_list)
-    out_plots
-}
-
-#' @keywords internal
-.coverageAtPos <- function(coverage, pos) {
-    hits <- IRanges::findOverlaps(pos, coverage)
-    out <- numeric(length(pos))
-    if (length(hits)) {
-        qh <- S4Vectors::queryHits(hits)
-        sh <- S4Vectors::subjectHits(hits)
-        out[qh] <- coverage$coverage[sh]
-    }
-    out
 }
