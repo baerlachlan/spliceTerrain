@@ -12,7 +12,8 @@
             xmin = .data$start, xmax = .data$end,
             ymin = -Inf, ymax = Inf
         ),
-        colour = scales::alpha("red", 0.2), fill = "red", lineend = "square", alpha = 0.2
+        colour = scales::alpha("red", 0.2), fill = "red",
+        lineend = "square", alpha = 0.2
     )
 
 }
