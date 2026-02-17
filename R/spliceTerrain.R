@@ -91,8 +91,8 @@
 #' in genome coordinates, including when introns are squished.
 #'
 #' @seealso
-#' \link[GenomicAlignments]{readGAlignments} and
-#' \link[GenomicRanges]{GRanges}.
+#' \link[GenomicAlignments]{readGAlignments} for reading alignments and
+#' \link[GenomicRanges]{GRanges} for representing genomic intervals.
 #'
 #' @examples
 #' fl <- system.file("extdata", "COG7.bam", package = "spliceTerrain")

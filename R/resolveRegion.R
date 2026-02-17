@@ -19,6 +19,11 @@
         )
     }
 
+    if (inherits(gr, "GRangesList"))
+        gr <- unlist(gr, use.names = FALSE)
+    if (!inherits(gr, "GRanges"))
+        stop("`region` must be a GRanges or GRangesList.")
+
     ## Ensure only a single range (the span) is returned
     ## So we don't load duplicate alignments
     ## See `which` arg of scanBamParam

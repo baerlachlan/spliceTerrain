@@ -130,6 +130,6 @@ spliceTerrain(
 
 }
 \seealso{
-\link[GenomicAlignments]{readGAlignments} and
-\link[GenomicRanges]{GRanges}.
+\link[GenomicAlignments]{readGAlignments} for reading alignments and
+\link[GenomicRanges]{GRanges} for representing genomic intervals.
 }

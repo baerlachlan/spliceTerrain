@@ -11,7 +11,7 @@
         n <- nrow(x)
         if (n > 1) {
             df <- data.frame(
-                start = vapply(1:(n-1), \(i){x$end[i] + 1L}, integer(1)),
+                start = vapply(seq_len(n-1), \(i){x$end[i] + 1L}, integer(1)),
                 end = vapply(2:n, \(i){x$start[i] - 1L}, integer(1)),
                 strand = unique(x$strand),
                 group = unique(x[["group"]])
@@ -59,7 +59,10 @@
     )
     p <- p + ggplot2::geom_text(
         data = df,
-        ggplot2::aes(x = .data$start + (.data$width / 2), y = .data$group, label = .data$exon_rank),
+        ggplot2::aes(
+            x = .data$start + (.data$width / 2),
+            y = .data$group, label = .data$exon_rank
+        ),
         vjust = 0.37, colour = "white", size = 3
     )
     p <- p + ggplot2::labs(x = "", y = "")
