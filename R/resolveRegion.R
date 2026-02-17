@@ -10,18 +10,18 @@
         strand <- vapply(r, \(x){
             if (length(x) == 3) x[3] else "*"
         }, character(1))
-        GenomicRanges::GRanges(
+        gr <- GenomicRanges::GRanges(
             seqnames = seqnames,
             ranges = IRanges::IRanges(
                 start = as.numeric(start), end = as.numeric(end)
             ),
             strand = strand
         )
-    } else {
-        ## Ensure only a single range (the span) is returned
-        ## So we don't load duplicate alignments
-        ## See `which` arg of scanBamParam
-        range(gr)
     }
+
+    ## Ensure only a single range (the span) is returned
+    ## So we don't load duplicate alignments
+    ## See `which` arg of scanBamParam
+    .spanOfRanges(gr)
 
 }
