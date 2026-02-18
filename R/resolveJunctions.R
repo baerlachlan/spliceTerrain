@@ -6,6 +6,14 @@
     juncs <- lapply(gal, GenomicAlignments::summarizeJunctions)
     strand <- as.character(unique(BiocGenerics::strand(region)))
     juncs <- lapply(names(juncs), \(x){
+        if (!length(juncs[[x]])) {
+            # gr <- region
+            # S4Vectors::mcols(gr) <- S4Vectors::DataFrame(
+            #     sample = x, coverage = 0
+            # )
+            # return(gr)
+            return(GenomicRanges::GRanges(sample = x, coverage = 0))
+        }
         if (strand == "+" & strandedness != "unstranded") {
             cov <- juncs[[x]]$plus_score
         } else if (strand == "-" & strandedness != "unstranded") {

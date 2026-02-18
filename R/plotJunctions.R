@@ -1,6 +1,8 @@
 #' @keywords internal
 .plotJunctions <- function(p, junctions, coverage, lsv, arc_height) {
 
+        if (is.null(junctions)) return(p)
+
         layout <- .junctionArcLayout(junctions, coverage, arc_height)
         arcs <- .junctionArcPoints(layout)
         labels <- .junctionArcLabels(layout, junctions, lsv)

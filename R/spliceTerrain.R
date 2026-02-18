@@ -33,7 +33,8 @@
 #'
 #' @param annotation Optional annotation track. Must be a
 #' \link[GenomicRanges]{GRangesList}. Each element is drawn as a separate
-#' grouped feature track. Annotation is restricted to the plotting region.
+#' grouped feature track. Names are used as y-axis labels. Annotation is
+#' restricted to the plotting region.
 #'
 #' @param lsv Optional LSV region used for annotating junction labels with
 #' within-LSV junction usage. Accepts the same formats as \code{region} (e.g.
@@ -130,8 +131,9 @@ spliceTerrain <- function(
         panel_heights = 1
 ) {
 
-    strandedness <- match.arg(strandedness)
     if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
+    strandedness <- match.arg(strandedness)
+    .check(bam, region, annotation, lsv, highlight)
 
     region <- .resolveRegion(region)
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
@@ -139,10 +141,9 @@ spliceTerrain <- function(
     junctions <- .resolveJunctions(
         gal, region, min_junction_reads, strandedness
     )
-    if (!is.null(annotation))
-        annotation <- .resolveAnnotation(annotation, region)
-    if (!is.null(lsv)) lsv <- .resolveRegion(lsv)
-    if (!is.null(highlight)) highlight <- .resolveRegion(highlight)
+    annotation <- .resolveAnnotation(annotation, region)
+    lsv <- .resolveRegion(lsv)
+    highlight <- .resolveRegion(highlight)
 
     if (squish_introns) {
         ranges <- list(coverage)
@@ -155,12 +156,11 @@ spliceTerrain <- function(
         anchors <- do.call(c, anchors)
         map <- .buildMap(ranges, anchors, gap = squish_to)
         coverage <- .mapGenomeToPlot(coverage, map)
-        if (!is.null(annotation))
-            annotation <- .mapGenomeToPlot(annotation, map)
+        annotation <- .mapGenomeToPlot(annotation, map)
         junctions <- .mapGenomeToPlot(junctions, map)
         region <- .mapGenomeToPlot(region, map)
-        if (!is.null(lsv)) lsv <- .mapGenomeToPlot(lsv, map)
-        if (!is.null(highlight)) highlight <- .mapGenomeToPlot(highlight, map)
+        lsv <- .mapGenomeToPlot(lsv, map)
+        highlight <- .mapGenomeToPlot(highlight, map)
     } else {
         map <- NULL
     }
@@ -169,8 +169,7 @@ spliceTerrain <- function(
     plist <- .plotSamples(
         plist, coverage, junctions, lsv, arc_height, highlight
     )
-    if (!is.null(annotation))
-        plist <- .plotAnnotation(plist, annotation, min_arrow, highlight)
+    plist <- .plotAnnotation(plist, annotation, min_arrow, highlight)
     .plotTerrain(plist, region, map, panel_heights)
 
 }

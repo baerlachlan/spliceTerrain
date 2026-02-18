@@ -4,6 +4,8 @@
         plist, annotation, min_arrow, highlight
 ) {
 
+    if (is.null(annotation) || !length(annotation)) return(plist)
+
     ## TODO: Let user input column to group annotations by
     df <- as.data.frame(annotation)
     introns <- split(df, df[["group"]])

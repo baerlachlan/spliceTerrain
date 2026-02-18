@@ -1,6 +1,8 @@
 #' @keywords internal
 .resolveRegion <- function(gr) {
 
+    if (is.null(gr)) return(gr)
+
     if (is.character(gr)) {
         r <- strsplit(gr, ":")
         stopifnot(length(r[[1]]) %in% c(2, 3)) ## TODO add message

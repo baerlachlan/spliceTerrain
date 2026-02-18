@@ -3,6 +3,8 @@
         annotation, region
 ) {
 
+    if (is.null(annotation)) return(annotation)
+
     if (!inherits(annotation, "GRangesList"))
         stop("'annotation' must be a GRangesList.")
     hits <- GenomicRanges::findOverlaps(annotation, region)

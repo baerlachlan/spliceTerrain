@@ -23,7 +23,7 @@
             expand = c(0.1, 0.1) # helps lsv labels being clipped
         )
         p <- p + ggplot2::labs(
-            x = "", y = unique(coverage[[i]]$sample)
+            x = "", y = i
         )
         p
     })

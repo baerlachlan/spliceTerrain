@@ -4,6 +4,8 @@
         p, coverage
 ) {
 
+    if (is.null(coverage)) return(p)
+
     coverage <- as.data.frame(coverage)
 
     p +
