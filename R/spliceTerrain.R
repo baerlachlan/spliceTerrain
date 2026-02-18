@@ -131,19 +131,18 @@ spliceTerrain <- function(
         panel_heights = 1
 ) {
 
-    if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
     strandedness <- match.arg(strandedness)
-    .check(bam, region, annotation, lsv, highlight)
 
+    bam <- .resolveBam(bam)
     region <- .resolveRegion(region)
+    annotation <- .resolveAnnotation(annotation, region)
+    lsv <- .resolveGr(lsv, region, "lsv")
+    highlight <- .resolveGr(highlight, region, "highlight")
     gal <- .loadAlignments(bam, region, strandedness, min_mapq)
     coverage <- .resolveCoverage(gal, region, min_coverage)
     junctions <- .resolveJunctions(
         gal, region, min_junction_reads, strandedness
     )
-    annotation <- .resolveAnnotation(annotation, region)
-    lsv <- .resolveRegion(lsv)
-    highlight <- .resolveRegion(highlight)
 
     if (squish_introns) {
         ranges <- list(coverage)

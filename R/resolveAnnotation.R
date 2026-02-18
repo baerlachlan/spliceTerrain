@@ -4,9 +4,12 @@
 ) {
 
     if (is.null(annotation)) return(annotation)
-
     if (!inherits(annotation, "GRangesList"))
         stop("'annotation' must be a GRangesList.")
+    if (!length(GenomicRanges::intersect(
+        Seqinfo::seqlevels(annotation), Seqinfo::seqlevels(region)
+    ))) stop("`annotation` does not overlap `region`")
+
     hits <- GenomicRanges::findOverlaps(annotation, region)
     annotation <- annotation[S4Vectors::from(hits)]
     annotation <- BiocGenerics::sort(annotation)
