@@ -1,12 +1,12 @@
 #' @importFrom rlang .data
 #' @keywords internal
 .plotAnnotation <- function(
-        plist, annotation, min_arrow, highlight
+        plist, annotation, min_arrow, highlight, highlight_colour,
+        ann_text_col, ann_text_size
 ) {
 
     if (is.null(annotation) || !length(annotation)) return(plist)
 
-    ## TODO: Let user input column to group annotations by
     df <- as.data.frame(annotation)
     introns <- split(df, df[["group"]])
     introns <- lapply(introns, \(x){
@@ -36,7 +36,7 @@
 
     p <- ggplot2::ggplot()
     if (!is.null(highlight)) {
-        p <- .plotHighlight(p, highlight)
+        p <- .plotHighlight(p, highlight, highlight_colour)
     }
     p <- p + ggplot2::geom_rect(
         data = df,
@@ -59,13 +59,14 @@
         ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
         vjust = 0.37, colour = "black"
     )
+    if (!is.null(ann_text_col))
     p <- p + ggplot2::geom_text(
         data = df,
         ggplot2::aes(
             x = .data$start + (.data$width / 2),
-            y = .data$group, label = .data$exon_rank
+            y = .data$group, label = .data[[ann_text_col]]
         ),
-        vjust = 0.37, colour = "white", size = 3
+        colour = "white", size = ann_text_size
     )
     p <- p + ggplot2::labs(x = "", y = "")
     p <- p + ggplot2::theme(

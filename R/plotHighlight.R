@@ -1,7 +1,7 @@
 #' @importFrom rlang .data
 #' @keywords internal
 .plotHighlight <- function(
-        p, highlight
+        p, highlight, highlight_colour
 ) {
 
     highlight <- as.data.frame(highlight)
@@ -12,8 +12,8 @@
             xmin = .data$start, xmax = .data$end,
             ymin = -Inf, ymax = Inf
         ),
-        colour = scales::alpha("red", 0.2), fill = "red",
-        lineend = "square", alpha = 0.2
+        colour = highlight_colour, fill = highlight_colour,
+        lineend = "square"
     )
 
 }

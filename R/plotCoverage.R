@@ -1,7 +1,7 @@
 #' @importFrom rlang .data
 #' @keywords internal
 .plotCoverage <- function(
-        p, coverage
+        p, coverage, colour
 ) {
 
     if (is.null(coverage)) return(p)
@@ -16,7 +16,7 @@
                 xmin = .data$start - 1, xmax = .data$end + 1,
                 ymin = 0, ymax = .data$coverage
             ),
-            colour = "black", fill = "black", lineend = "square"
+            colour = colour, fill = colour, lineend = "square"
         )
 
 }

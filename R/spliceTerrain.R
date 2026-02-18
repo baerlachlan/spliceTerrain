@@ -108,7 +108,8 @@
 #'   annotation = COG7_exons,
 #'   strandedness = "reverse",
 #'   lsv = "16:23389087-23389087",
-#'   highlight = "16:23392380-23393318"
+#'   highlight = "16:23392380-23393318",
+#'   ann_text_col = "exon_rank"
 #' )
 #'
 #' @rdname spliceTerrain-methods
@@ -128,7 +129,14 @@ spliceTerrain <- function(
         min_mapq = 0L,
         min_arrow = squish_to + 1L,
         arc_height = 0.15,
-        panel_heights = 1
+        panel_heights = 1,
+        colours = "black",
+        j_text_size = 3,
+        axis_title_size = 12,
+        axis_text_size = 9,
+        highlight_colour = scales::alpha("red", 0.2),
+        ann_text_col = NULL,
+        ann_text_size = 3
 ) {
 
     strandedness <- match.arg(strandedness)
@@ -166,9 +174,15 @@ spliceTerrain <- function(
 
     plist <- lapply(bam, \(i){ggplot2::ggplot()})
     plist <- .plotSamples(
-        plist, coverage, junctions, lsv, arc_height, highlight
+        plist, coverage, junctions, lsv, arc_height, highlight,
+        colours, j_text_size, highlight_colour
     )
-    plist <- .plotAnnotation(plist, annotation, min_arrow, highlight)
-    .plotTerrain(plist, region, map, panel_heights)
+    plist <- .plotAnnotation(
+        plist, annotation, min_arrow, highlight, highlight_colour,
+        ann_text_col, ann_text_size
+    )
+    .plotTerrain(
+        plist, region, map, panel_heights, axis_title_size, axis_text_size
+    )
 
 }
