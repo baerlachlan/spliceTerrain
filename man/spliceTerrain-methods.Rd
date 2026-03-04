@@ -18,7 +18,14 @@ spliceTerrain(
   min_mapq = 0L,
   min_arrow = squish_to + 1L,
   arc_height = 0.15,
-  panel_heights = 1
+  panel_heights = 1,
+  colours = "black",
+  j_text_size = 3,
+  axis_title_size = 12,
+  axis_text_size = 9,
+  highlight_colour = scales::alpha("red", 0.2),
+  ann_text_col = NULL,
+  ann_text_size = 3
 )
 }
 \arguments{
@@ -49,7 +56,8 @@ visual clarity while keeping exonic structure readable.}
 
 \item{annotation}{Optional annotation track. Must be a
 \link[GenomicRanges]{GRangesList}. Each element is drawn as a separate
-grouped feature track. Annotation is restricted to the plotting region.}
+grouped feature track. Names are used as y-axis labels. Annotation is
+restricted to the plotting region.}
 
 \item{lsv}{Optional LSV region used for annotating junction labels with
 within-LSV junction usage. Accepts the same formats as \code{region} (e.g.
@@ -125,7 +133,8 @@ spliceTerrain(
   annotation = COG7_exons,
   strandedness = "reverse",
   lsv = "16:23389087-23389087",
-  highlight = "16:23392380-23393318"
+  highlight = "16:23392380-23393318",
+  ann_text_col = "exon_rank"
 )
 
 }

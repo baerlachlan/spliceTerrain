@@ -8,11 +8,12 @@
     if (!(length(colours) %in% c(1, length(plist))))
         stop("`colours` must be length 1 or the number of BAMs")
     if (length(colours) == 1) colours <- rep(colours, length(plist))
+    names(colours) <- names(plist) # For subsetting below
 
     coverage <- split(coverage, coverage$sample)
     junctions <- split(junctions, junctions$sample)
 
-    out <- lapply(seq_along(plist), \(i){
+    out <- lapply(names(plist), \(i){
         p <- plist[[i]]
         p <- .plotCoverage(p, coverage[[i]], colours[[i]])
         p <- .plotJunctions(
@@ -31,7 +32,7 @@
             expand = c(0.1, 0.1) # helps lsv labels being clipped
         )
         p <- p + ggplot2::labs(
-            x = "", y = names(plist)[[i]]
+            x = "", y = i
         )
         p
     })

@@ -7,19 +7,11 @@
     cov <- lapply(names(cov), \(x){
         lens <- S4Vectors::runLength(cov[[x]])
         vals <- as.integer(S4Vectors::runValue(cov[[x]]))
+        if (!length(vals)) {
+            return(GenomicRanges::GRanges(sample = x, coverage = 0))
+        }
         ends <- cumsum(lens)
         starts <- ends - lens + 1L
-        if (!length(vals)) {
-            return(GenomicRanges::GRanges(
-                # GenomicRanges::granges(region),
-                sample = x, coverage = 0
-                ))
-            # gr <- region
-            # S4Vectors::mcols(gr) <- S4Vectors::DataFrame(
-            #     sample = x, coverage = 0
-            # )
-            # return(gr)
-        }
         gr <- GenomicRanges::GRanges(
             seqnames = unique(Seqinfo::seqnames(region)),
             ranges = IRanges::IRanges(start = starts, end = ends),
