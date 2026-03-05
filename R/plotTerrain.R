@@ -11,7 +11,7 @@
     p <- p + patchwork::plot_layout(
         axes = "collect_x"
     )
-    p <- p & ggplot2::coord_cartesian(xlim = c(st, en))
+    p <- p & ggplot2::coord_cartesian(xlim = c(st, en), clip = "off")
     n_break <- ifelse(w < 5, w, 5)
     breaks <- seq(st, en, length.out = n_break)
     if (is.null(map)) {

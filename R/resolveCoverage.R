@@ -27,7 +27,7 @@
         ## May cause a performance hit, revert to geom_area if needed
         w <- BiocGenerics::width(gr)
         idx <- rep(seq_along(gr), times = w)
-        pos <- BiocGenerics::start(gr)[idx] + seq_len(w) - 1L
+        pos <- BiocGenerics::start(gr)[idx] + sequence(w) - 1L
         GenomicRanges::GRanges(
             seqnames = Seqinfo::seqnames(gr)[idx],
             ranges = IRanges::IRanges(start = pos, width = 1L),

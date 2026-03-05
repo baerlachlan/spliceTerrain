@@ -112,6 +112,12 @@
 #'   ann_text_col = "exon_rank"
 #' )
 #'
+#' spliceTerrain(
+#'   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES,
+#'   region = "chr14:70,222,436–70,237,375",
+#'   lsv = "chr14:70234854-70234854"
+#' )
+#'
 #' @rdname spliceTerrain-methods
 #' @aliases spliceTerrain
 #' @export

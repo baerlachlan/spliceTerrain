@@ -8,7 +8,7 @@
         hits_st <- IRanges::findOverlaps(lsv, st)
         sh_st <- S4Vectors::subjectHits(hits_st)
 
-        en <- anchors[anchors$anchor == "en"]
+        en <- anchors[anchors$anchor == "end"]
         hits_en <- IRanges::findOverlaps(lsv, en)
         sh_en <- S4Vectors::subjectHits(hits_en)
 
