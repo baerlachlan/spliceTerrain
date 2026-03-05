@@ -3,19 +3,17 @@
         plist, region, map, panel_heights, axis_title_size, axis_text_size
 ) {
 
+    st <- BiocGenerics::start(region)
+    en <- BiocGenerics::end(region)
+    w <- BiocGenerics::width(region)
+
     p <- patchwork::wrap_plots(plist, ncol = 1, heights = panel_heights)
     p <- p + patchwork::plot_layout(
         axes = "collect_x"
     )
-    p <- p & ggplot2::coord_cartesian(
-        xlim = c(
-            min(BiocGenerics::start(region)),
-            max(BiocGenerics::end(region))
-        )
-    )
-    breaks <- seq(
-        BiocGenerics::start(region), BiocGenerics::end(region), length.out = 5
-    )
+    p <- p & ggplot2::coord_cartesian(xlim = c(st, en))
+    n_break <- ifelse(w < 5, w, 5)
+    breaks <- seq(st, en, length.out = n_break)
     if (is.null(map)) {
         labels <- scales::comma(breaks)
     } else {

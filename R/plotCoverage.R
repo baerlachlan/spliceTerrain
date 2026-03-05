@@ -9,14 +9,12 @@
     coverage <- as.data.frame(coverage)
 
     p +
-        ggplot2::geom_rect(
+        ggplot2::geom_bar(
             data = coverage,
             ggplot2::aes(
-                ## Add 1bp to either side to avoid visual artefact
-                xmin = .data$start - 1, xmax = .data$end + 1,
-                ymin = 0, ymax = .data$coverage
+                .data$start, .data$coverage
             ),
-            colour = colour, fill = colour, lineend = "square"
+            stat = "identity", width = 1, colour = colour, fill = colour
         )
 
 }
