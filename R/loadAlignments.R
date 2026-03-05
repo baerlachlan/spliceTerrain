@@ -26,7 +26,10 @@
         }
     })
     gal <- lapply(gal, \(aln){
-        aln <- IRanges::subsetByOverlaps(aln, region) # strand filter
+        ## Only filter for strand if library is stranded
+        if (strandedness) {
+            aln <- IRanges::subsetByOverlaps(aln, region)
+        }
         Seqinfo::seqlevels(aln) <- Seqinfo::seqlevelsInUse(aln)
         aln
     })

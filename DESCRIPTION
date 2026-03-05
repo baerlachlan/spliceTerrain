@@ -1,6 +1,6 @@
 Package: spliceTerrain
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Sashimi-Style RNA-seq Coverage and Junction Visualisation
 Version: 0.99.0
 Authors@R: c(
     person(
@@ -10,15 +10,26 @@ Authors@R: c(
         comment = c(ORCID = "0000-0001-5213-3401")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: Provides tools to visualise RNA sequencing alignments as
+    sashimi-style plots showing read coverage and splice junction usage
+    across genomic regions. Alignments from BAM files are summarised into
+    coverage tracks and junction arcs, which can be displayed alongside
+    transcript annotations. The package provides utilities for mapping
+    genomic coordinates to plot space, compressing intronic regions, and
+    visualising local splicing variation across samples.
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.3
+Config/testthat/edition: 3
 URL: https://github.com/baerlachlan/spliceTerrain
 BugReports: https://github.com/baerlachlan/spliceTerrain/issues
 BiocType: Software
-biocViews: AlternativeSplicing, Coverage, Transcriptomics, Visualization
+biocViews:
+    AlternativeSplicing,
+    Coverage,
+    RNASeq,
+    Transcriptomics,
+    Visualization,
 Depends:
     R (>= 4.5),
 Imports:
@@ -33,3 +44,7 @@ Imports:
     S4Vectors,
     scales,
     Seqinfo,
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),

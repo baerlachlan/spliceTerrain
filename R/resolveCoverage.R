@@ -2,6 +2,7 @@
 .resolveCoverage <- function(
         gal, region, min_coverage
 ) {
+
     cov <- lapply(gal, GenomicAlignments::coverage)
     cov <- lapply(cov, unlist)
     cov <- lapply(names(cov), \(x){
@@ -24,7 +25,7 @@
     })
 
     cov <- do.call(c, cov)
-    cov <- IRanges::subsetByOverlaps(cov, region, type = "within")
+    cov <- IRanges::subsetByOverlaps(cov, region)
     cov[cov$coverage >= min_coverage]
 
 }
