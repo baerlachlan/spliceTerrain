@@ -112,9 +112,10 @@
 #'   ann_text_col = "exon_rank"
 #' )
 #'
+#' library(RNAseqData.HNRNPC.bam.chr14)
 #' spliceTerrain(
 #'   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES,
-#'   region = "chr14:70,222,436–70,237,375",
+#'   region = "chr14:70222436-70237375",
 #'   lsv = "chr14:70234854-70234854"
 #' )
 #'
@@ -142,7 +143,9 @@ spliceTerrain <- function(
         axis_text_size = 9,
         highlight_colour = scales::alpha("red", 0.2),
         ann_text_col = NULL,
-        ann_text_size = 3
+        ann_text_size = 3,
+        common_y = FALSE,
+        return_data = FALSE
 ) {
 
     strandedness <- match.arg(strandedness)
@@ -157,6 +160,8 @@ spliceTerrain <- function(
     junctions <- .resolveJunctions(
         gal, region, min_junction_reads, strandedness
     )
+
+    if (return_data) return(list(coverage = coverage, junctions = junctions))
 
     if (squish_introns) {
         ranges <- list(coverage)
@@ -180,15 +185,16 @@ spliceTerrain <- function(
 
     plist <- lapply(bam, \(i){ggplot2::ggplot()})
     plist <- .plotSamples(
-        plist, coverage, junctions, lsv, arc_height, highlight,
-        colours, j_text_size, highlight_colour
+        plist, region, coverage, junctions, lsv, arc_height, highlight,
+        colours, j_text_size, highlight_colour, common_y
     )
     plist <- .plotAnnotation(
         plist, annotation, min_arrow, highlight, highlight_colour,
         ann_text_col, ann_text_size
     )
     .plotTerrain(
-        plist, region, map, panel_heights, axis_title_size, axis_text_size
+        plist, region, map, panel_heights, axis_title_size, axis_text_size,
+        default_theme
     )
 
 }

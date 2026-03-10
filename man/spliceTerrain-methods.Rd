@@ -25,7 +25,10 @@ spliceTerrain(
   axis_text_size = 9,
   highlight_colour = scales::alpha("red", 0.2),
   ann_text_col = NULL,
-  ann_text_size = 3
+  ann_text_size = 3,
+  common_y = FALSE,
+  return_data = FALSE,
+  default_theme = FALSE
 )
 }
 \arguments{
@@ -135,6 +138,13 @@ spliceTerrain(
   lsv = "16:23389087-23389087",
   highlight = "16:23392380-23393318",
   ann_text_col = "exon_rank"
+)
+
+library(RNAseqData.HNRNPC.bam.chr14)
+spliceTerrain(
+  bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES,
+  region = "chr14:70222436-70237375",
+  lsv = "chr14:70234854-70234854"
 )
 
 }

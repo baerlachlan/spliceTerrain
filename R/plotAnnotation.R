@@ -60,14 +60,14 @@
         vjust = 0.37, colour = "black"
     )
     if (!is.null(ann_text_col))
-    p <- p + ggplot2::geom_text(
-        data = df,
-        ggplot2::aes(
-            x = .data$start + (.data$width / 2),
-            y = .data$group, label = .data[[ann_text_col]]
-        ),
-        colour = "white", size = ann_text_size
-    )
+        p <- p + ggplot2::geom_text(
+            data = df,
+            ggplot2::aes(
+                x = .data$start + (.data$width / 2),
+                y = .data$group, label = .data[[ann_text_col]]
+            ),
+            colour = "white", size = ann_text_size
+        )
     p <- p + ggplot2::labs(x = "", y = "")
     p <- p + ggplot2::theme(
         axis.ticks.y = ggplot2::element_blank()

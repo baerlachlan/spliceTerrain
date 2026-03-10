@@ -1,3 +1,4 @@
+#' @keywords internal
 .spanOfRanges <- function(gr) {
 
     s <- min(S4Vectors::start(gr))
