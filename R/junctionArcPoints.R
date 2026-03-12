@@ -35,10 +35,13 @@
     ## Bind halves
     y_mat <- cbind(y_l, y_r)
 
+    id <- rep(seq_len(length(mid)), each = ncol(x_mat))
     data.frame(
         x = c(t(x_mat)),
         y = c(t(y_mat)),
-        id = rep(seq_len(length(mid)), each = ncol(x_mat))
+        id = id,
+        size_on = layout$cov_j[id],
+        size_off = 1
     )
 
 }

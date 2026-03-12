@@ -145,7 +145,8 @@ spliceTerrain <- function(
         ann_text_col = NULL,
         ann_text_size = 3,
         common_y = FALSE,
-        return_data = FALSE
+        return_data = FALSE,
+        scale_arc_size = TRUE
 ) {
 
     strandedness <- match.arg(strandedness)
@@ -186,7 +187,7 @@ spliceTerrain <- function(
     plist <- lapply(bam, \(i){ggplot2::ggplot()})
     plist <- .plotSamples(
         plist, region, coverage, junctions, lsv, arc_height, highlight,
-        colours, j_text_size, highlight_colour, common_y
+        colours, j_text_size, highlight_colour, common_y, scale_arc_size
     )
     plist <- .plotAnnotation(
         plist, annotation, min_arrow, highlight, highlight_colour,

@@ -18,11 +18,9 @@
         labels <- scales::comma(round(.mapPlotToGenome(breaks, map)))
     }
     p <- p & ggplot2::scale_x_continuous(breaks = breaks, labels = labels)
-    if (!default_theme) {
-        p <- p & .theme_spliceTerrain(
-            axis_title_size = axis_title_size, axis_text_size = axis_text_size
-        )
-    }
+    p <- p & .theme_spliceTerrain(
+        axis_title_size = axis_title_size, axis_text_size = axis_text_size
+    )
     p
 
 }

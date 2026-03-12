@@ -22,10 +22,12 @@
             df$midpoint <- df$start + (df$width / 2)
             df$arrow <- ifelse(
                 # df$width >= min_arrow & df$strand == "+", "\u276F",
-                df$width >= min_arrow & df$strand == "+", "\u2B9E",
+                # df$width >= min_arrow & df$strand == "+", "\u2B9E",
+                df$width >= min_arrow & df$strand == "+", "\u25B8",
                 ifelse(
                     # df$width >= min_arrow & df$strand == "-", "\u276E",
-                    df$width >= min_arrow & df$strand == "-", "\u2B9C",
+                    # df$width >= min_arrow & df$strand == "-", "\u2B9C",
+                    df$width >= min_arrow & df$strand == "-", "\u25C2",
                     ""
                 )
             )
@@ -52,12 +54,7 @@
     p <- p + ggplot2::geom_text(
         data = introns,
         ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
-        vjust = 0.37, colour = "black"
-    )
-    p <- p + ggplot2::geom_text(
-        data = introns,
-        ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
-        vjust = 0.37, colour = "black"
+        vjust = 0.35, colour = "black"
     )
     if (!is.null(ann_text_col))
         p <- p + ggplot2::geom_text(

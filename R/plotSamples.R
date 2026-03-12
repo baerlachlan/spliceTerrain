@@ -2,7 +2,7 @@
 #' @keywords internal
 .plotSamples <- function(
         plist, region,  coverage, junctions, lsv, arc_height, highlight,
-        colours, j_text_size, highlight_colour, common_y
+        colours, j_text_size, highlight_colour, common_y, scale_arc_size
 ) {
 
     if (!(length(colours) %in% c(1, length(plist))))
@@ -18,7 +18,7 @@
         p <- .plotCoverage(p, coverage[[i]], colours[[i]])
         p <- .plotJunctions(
             p, junctions[[i]], coverage[[i]], lsv, arc_height,
-            colours[[i]], j_text_size
+            colours[[i]], j_text_size, scale_arc_size
         )
         if (!is.null(highlight)) p <- .plotHighlight(
             p, highlight, highlight_colour
@@ -37,24 +37,23 @@
         p
     })
 
+    st <- BiocGenerics::start(region)
+    en <- BiocGenerics::end(region)
     if (common_y) {
-        st <- BiocGenerics::start(region)
-        en <- BiocGenerics::end(region)
         ## TODO: check this is the correct way to access ggplot obj data
         ys <- unlist(lapply(out, \(x){
             pdat <- ggplot2::ggplot_build(x)@data
             unlist(lapply(pdat, `[[`, "y"))
         }))
-        out <- lapply(out, \(p){
-            p + ggplot2::coord_cartesian(
-                xlim = c(st, en), ylim = c(min(ys), max(ys)), clip = "off"
-            )
-        })
+        ylim <- c(min(ys), max(ys))
     } else {
-        out <- lapply(out, \(p){
-            p + ggplot2::coord_cartesian(xlim = c(st, en), clip = "off")
-        })
+        ylim <- NULL
     }
+    out <- lapply(out, \(p){
+        p + ggplot2::coord_cartesian(
+            xlim = c(st, en), ylim = ylim, clip = "off"
+        )
+    })
 
     names(out) <- names(plist)
     out

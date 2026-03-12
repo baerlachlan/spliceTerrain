@@ -1,0 +1,10 @@
+/* Stop wrapping of longer TOC headings */
+#TOC {
+  max-width: fit-content;
+  white-space: nowrap;
+}
+/* Stop overlap of floating TOC with document */
+div:has(> #TOC) {
+  display: flex;
+  flex-direction: row-reverse;
+}

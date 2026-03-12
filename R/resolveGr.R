@@ -7,7 +7,7 @@
         gr <- unlist(gr, use.names = FALSE)
     if (!length(GenomicRanges::intersect(
         Seqinfo::seqlevels(gr), Seqinfo::seqlevels(region)
-    ))) stop(paste0("`", type, "` does not overlap `region`"))
+    ))) stop("`", type, "` does not overlap `region`")
 
     hits <- GenomicRanges::findOverlaps(gr, region)
     gr <- gr[S4Vectors::from(hits)]

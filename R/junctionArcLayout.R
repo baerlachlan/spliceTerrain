@@ -54,7 +54,8 @@
         diff_l = diff_l,
         diff_r = diff_r,
         cov_l = cov_l,
-        cov_r = cov_r
+        cov_r = cov_r,
+        cov_j = junc$coverage
     )
 
 }

@@ -1,0 +1,108 @@
+---
+title: "Creating sashimi-style plots with spliceTerrain"
+author:
+- name: Lachlan Baer
+  affiliation:
+  - Robinson Research Institute, Adelaide University, Adelaide, SA, Australia
+  - College of Health, Adelaide University, Adelaide, SA, Australia
+  email: baerlachlan@gmail.com
+package: spliceTerrain
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    css: custom.css
+# bibliography: references.bib
+vignette: >
+%\VignetteIndexEntry{Creating Sashimi-Style Plots with spliceTerrain}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r global-opts, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE, comment = "#>", message = FALSE, crop = NULL
+)
+if (!interactive())
+    # Wide chunk output will horizontal scroll instead of wrap
+    options(width = 999)
+```
+
+# Introduction
+
+## Motivation
+
+
+
+# Setup
+
+## Installation
+
+`BiocManager` is recommended for the installation of packages required in this vignette.
+`BiocManager` handles the installation of packages from Bioconductor, CRAN and GitHub repositories.
+
+```{r install, eval=FALSE}
+if (!"BiocManager" %in% rownames(installed.packages()))
+    install.packages("BiocManager")
+pkgs <- c(
+    "baerlachlan/spliceTerrain", "RNAseqData.HNRNPC.bam.chr14",
+    "AnnotationHub", "stringr"
+)
+BiocManager::install(pkgs, update = FALSE)
+```
+
+Now we can load the required packages.
+
+```{r pkgs}
+library(spliceTerrain)
+library(RNAseqData.HNRNPC.bam.chr14)
+library(AnnotationHub)
+library(stringr)
+```
+
+# Annotations
+
+```{r ensParams}
+ens_species <- "Homo sapiens"
+ens_release <- "75"
+ens_assembly <- "GRCh37"
+primary_chrs <- c(as.character(1:22), "X", "Y", "MT")
+```
+
+```{r ensDb}
+ah <- AnnotationHub() |>
+    subset(species == ens_species) |>
+    subset(rdataclass == "EnsDb")
+ahId <- ah$ah_id[str_detect(ah$title, ens_release)]
+ensDb <- ah[[ahId]]
+```
+
+```{r transcripts}
+transcripts <- transcripts(ensDb, filter = AnnotationFilterList(
+    SeqNameFilter(primary_chrs), TxBiotypeFilter("LRG_gene", condition = "!=")
+))
+mcols(transcripts) <- mcols(transcripts)[
+    c("tx_id", "tx_id_version", "tx_is_canonical", "gene_id", "gc_content")
+]
+```
+
+```{r genes}
+genes <- genes(ensDb, filter = AnnotationFilterList(
+    SeqNameFilter(primary_chrs), GeneBiotypeFilter("LRG_gene", condition = "!=")
+))
+mcols(genes) <- mcols(genes)[
+    c("gene_id", "gene_name", "gene_id_version", "gene_biotype", "description")
+]
+```
+
+```{r tx2gene}
+## Don't filter for primary chrs, so we only get a tximport warning if
+##  annotation versions don't match
+## We subset for primary chromosomes using our genes object after import
+tx2gene <- transcripts(ensDb, filter = GeneBiotypeFilter(
+    "LRG_gene", condition = "!="
+)) %>%
+    as_tibble() %>%
+    dplyr::select(tx_id, gene_id)
+```
+
