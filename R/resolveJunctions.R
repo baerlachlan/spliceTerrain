@@ -1,22 +1,14 @@
 #' @keywords internal
-.resolveJunctions <- function(
-        gal, region, min_junction_reads, strandedness
-) {
-
-    juncs <- lapply(gal, GenomicAlignments::summarizeJunctions)
-    strand <- as.character(unique(BiocGenerics::strand(region)))
+.resolveJunctions <- function(ctx) {
+    juncs <- lapply(ctx$data$gal, GenomicAlignments::summarizeJunctions)
+    strand <- as.character(unique(BiocGenerics::strand(ctx$input$region)))
     juncs <- lapply(names(juncs), \(x){
         if (!length(juncs[[x]])) {
-            # gr <- region
-            # S4Vectors::mcols(gr) <- S4Vectors::DataFrame(
-            #     sample = x, coverage = 0
-            # )
-            # return(gr)
             return(GenomicRanges::GRanges(sample = x, coverage = 0))
         }
-        if (strand == "+" & strandedness != "unstranded") {
+        if (strand == "+" & ctx$args$strandedness != "unstranded") {
             cov <- juncs[[x]]$plus_score
-        } else if (strand == "-" & strandedness != "unstranded") {
+        } else if (strand == "-" & ctx$args$strandedness != "unstranded") {
             cov <- juncs[[x]]$minus_score
         } else {
             cov <- juncs[[x]]$score
@@ -27,7 +19,8 @@
         juncs[[x]]
     })
     juncs <- do.call(c, juncs)
-    juncs <- IRanges::subsetByOverlaps(juncs, region, type = "within")
-    juncs[juncs$coverage >= min_junction_reads]
-
+    juncs <- IRanges::subsetByOverlaps(juncs, ctx$input$region, type = "within")
+    juncs <- juncs[juncs$coverage >= ctx$args$min_junction_reads]
+    ctx$data$juncs <- juncs
+    ctx
 }

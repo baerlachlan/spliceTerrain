@@ -1,10 +1,7 @@
 #' @keywords internal
-.loadAlignments <- function(
-        bam, region, strandedness, min_mapq
-) {
-
+.loadAlignments <- function(ctx) {
     strandedness <- switch(
-        strandedness,
+        ctx$args$strandedness,
         unstranded = 0, forward = 1, reverse = 2
     )
     flag <- Rsamtools::scanBamFlag(
@@ -12,29 +9,27 @@
     )
     ## `which` doesn't consider strand, so we need to filter for this later
     param <- Rsamtools::ScanBamParam(
-        flag = flag, which = region, mapqFilter = min_mapq
+        flag = flag, which = ctx$input$region, mapqFilter = ctx$args$min_mapq
     )
-    gal <- lapply(bam, \(x){
+    gal <- lapply(ctx$input$bam, \(x){
         if (.bamIsPaired(x)) {
             GenomicAlignments::readGAlignmentPairs(
                 x, param = param, strandMode = strandedness
             )
         } else {
-            GenomicAlignments::readGAlignments(
-                x, param = param
-            )
+            GenomicAlignments::readGAlignments(x, param = param)
         }
     })
     gal <- lapply(gal, \(aln){
         ## Only filter for strand if library is stranded
         if (strandedness) {
-            aln <- IRanges::subsetByOverlaps(aln, region)
+            aln <- IRanges::subsetByOverlaps(aln, ctx$input$region)
         }
         Seqinfo::seqlevels(aln) <- Seqinfo::seqlevelsInUse(aln)
         aln
     })
-    gal
-
+    ctx$data$gal <- gal
+    ctx
 }
 
 #' @keywords internal

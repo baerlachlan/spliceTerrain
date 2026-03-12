@@ -1,6 +1,6 @@
 #' @keywords internal
-.resolveRegion <- function(region) {
-
+.resolveRegion <- function(ctx) {
+    region <- ctx$input$region
     if (is.null(region)) return(region)
     if (is.character(region)) {
         region <- gsub(",", "", region)
@@ -13,11 +13,10 @@
         region <- unlist(region, use.names = FALSE)
     if (!inherits(region, "GRanges"))
         stop("`region` must be a GRanges or GRangesList.")
-
     ## Ensure only a single range (the span) is returned
     ## So we don't load duplicate alignments
     ## See `which` arg of scanBamParam
     ## TODO: add warning if reducing to single range
-    .spanOfRanges(region)
-
+    ctx$input$region <- .spanOfRanges(region)
+    ctx
 }

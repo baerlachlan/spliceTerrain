@@ -25,15 +25,13 @@
         )
         p <- p + ggplot2::scale_y_continuous(
             ## Don't show y < 0
-            breaks = \(x) {
+            breaks = \(x){
                 b <- scales::breaks_extended()(x)
                 b[b >= 0]
             },
             expand = c(0.1, 0.1) # helps lsv labels being clipped
         )
-        p <- p + ggplot2::labs(
-            x = "", y = i
-        )
+        p <- p + ggplot2::labs(x = "", y = i)
         p
     })
 

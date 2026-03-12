@@ -1,6 +1,5 @@
 #' @keywords internal
 .buildMap <- function(..., gap) {
-
     objs <- list(...)
     all_ranges <- do.call(c, objs)
     blocks <- GenomicRanges::reduce(all_ranges, ignore.strand = TRUE)
@@ -27,5 +26,4 @@
     m$p_start <- p_start
     m$p_end <- p_end
     m
-
 }

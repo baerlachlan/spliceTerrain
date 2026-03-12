@@ -123,66 +123,26 @@
 #' @aliases spliceTerrain
 #' @export
 spliceTerrain <- function(
-        bam,
-        region,
-        strandedness = c("unstranded", "forward", "reverse"),
-        min_coverage = 10L,
-        min_junction_reads = 10L,
-        squish_introns = TRUE,
-        squish_to = 50L,
-        annotation = NULL,
-        lsv = NULL,
-        highlight = NULL,
-        min_mapq = 0L,
-        min_arrow = squish_to + 1L,
-        arc_height = 0.15,
-        panel_heights = 1,
-        colours = "black",
-        j_text_size = 3,
-        axis_title_size = 12,
-        axis_text_size = 9,
-        highlight_colour = scales::alpha("red", 0.2),
-        ann_text_col = NULL,
-        ann_text_size = 3,
-        common_y = FALSE,
-        return_data = FALSE,
+        bam, region, strandedness = c("unstranded", "forward", "reverse"),
+        min_coverage = 10L, min_junction_reads = 10L, squish_introns = TRUE,
+        squish_to = 50L, annotation = NULL, lsv = NULL, highlight = NULL,
+        min_mapq = 0L, min_arrow = squish_to + 1L, arc_height = 0.15,
+        panel_heights = 1, colours = "black", j_text_size = 3,
+        axis_title_size = 12, axis_text_size = 9,
+        highlight_colour = scales::alpha("red", 0.2), ann_text_col = NULL,
+        ann_text_size = 3, common_y = FALSE, return_data = FALSE,
         scale_arc_size = TRUE
 ) {
-
-    strandedness <- match.arg(strandedness)
-
-    bam <- .resolveBam(bam)
-    region <- .resolveRegion(region)
-    annotation <- .resolveAnnotation(annotation, region)
-    lsv <- .resolveGr(lsv, region, "lsv")
-    highlight <- .resolveGr(highlight, region, "highlight")
-    gal <- .loadAlignments(bam, region, strandedness, min_mapq)
-    coverage <- .resolveCoverage(gal, region, min_coverage)
-    junctions <- .resolveJunctions(
-        gal, region, min_junction_reads, strandedness
-    )
-
-    if (return_data) return(list(coverage = coverage, junctions = junctions))
-
-    if (squish_introns) {
-        ranges <- list(coverage)
-        if (!is.null(annotation)) ranges <- c(ranges, list(annotation))
-        ranges <- do.call(c, ranges)
-        anchors <- list(.rangesToAnchors(junctions), .rangesToAnchors(region))
-        if (!is.null(lsv)) anchors <- c(anchors, list(.rangesToAnchors(lsv)))
-        if (!is.null(highlight))
-            anchors <- c(anchors, list(.rangesToAnchors(highlight)))
-        anchors <- do.call(c, anchors)
-        map <- .buildMap(ranges, anchors, gap = squish_to)
-        coverage <- .mapGenomeToPlot(coverage, map)
-        annotation <- .mapGenomeToPlot(annotation, map)
-        junctions <- .mapGenomeToPlot(junctions, map)
-        region <- .mapGenomeToPlot(region, map)
-        lsv <- .mapGenomeToPlot(lsv, map)
-        highlight <- .mapGenomeToPlot(highlight, map)
-    } else {
-        map <- NULL
-    }
+    ctx <- .initContext(as.list(environment()), formals())
+    ctx <- .resolveBam(ctx)
+    ctx <- .resolveRegion(ctx)
+    ctx <- .resolveAnnotation(ctx)
+    ctx <- .resolveGr(ctx, "lsv")
+    ctx <- .resolveGr(ctx, "highlight")
+    ctx <- .loadAlignments(ctx)
+    ctx <- .resolveCoverage(ctx)
+    ctx <- .resolveJunctions(ctx)
+    if (squish_introns) ctx <- .applyMap(ctx)
 
     plist <- lapply(bam, \(i){ggplot2::ggplot()})
     plist <- .plotSamples(

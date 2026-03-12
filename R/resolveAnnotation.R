@@ -1,9 +1,8 @@
 #' @keywords internal
-.resolveAnnotation <- function(
-        annotation, region
-) {
-
-    if (is.null(annotation)) return(annotation)
+.resolveAnnotation <- function(ctx) {
+    annotation <- ctx$input$annotation
+    region <- ctx$input$region
+    if (is.null(annotation)) return(ctx)
     if (!inherits(annotation, "GRangesList"))
         stop("'annotation' must be a GRangesList.")
     if (!length(GenomicRanges::intersect(
@@ -21,6 +20,6 @@
     } else {
         annotation$group <- rep(paste0("annotation_", seq_len(len)), lens)
     }
-    annotation
-
+    ctx$input$annotation <- annotation
+    ctx
 }

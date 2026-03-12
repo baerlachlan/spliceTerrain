@@ -28,7 +28,7 @@ spliceTerrain(
   ann_text_size = 3,
   common_y = FALSE,
   return_data = FALSE,
-  default_theme = FALSE
+  scale_arc_size = TRUE
 )
 }
 \arguments{

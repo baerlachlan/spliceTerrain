@@ -1,7 +1,8 @@
 #' @keywords internal
-.resolveGr <- function(gr, region, type) {
-
-    if (is.null(gr)) return(gr)
+.resolveGr <- function(ctx, type) {
+    gr <- ctx$input[[type]]
+    region <- ctx$input$region
+    if (is.null(gr)) return(ctx)
     if (is.character(gr)) gr <- GenomicRanges::GRanges(gr)
     if (inherits(gr, "GRangesList"))
         gr <- unlist(gr, use.names = FALSE)
@@ -12,6 +13,6 @@
     hits <- GenomicRanges::findOverlaps(gr, region)
     gr <- gr[S4Vectors::from(hits)]
     gr <- BiocGenerics::sort(gr)
-    gr
-
+    ctx$input[[type]] <- gr
+    ctx
 }

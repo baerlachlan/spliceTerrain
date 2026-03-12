@@ -1,8 +1,7 @@
 #' @keywords internal
-.rangesToAnchors <- function(
-        gr
-) {
+.rangesToAnchors <- function(gr) {
 
+    if (is.null(gr)) return(gr)
     start <- GenomicRanges::GRanges(
         seqnames = Seqinfo::seqnames(gr),
         ranges = IRanges::IRanges(BiocGenerics::start(gr), width = 1L),
