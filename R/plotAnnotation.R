@@ -23,15 +23,15 @@
         ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
         vjust = 0.35, colour = "black"
     )
-    if (!is.null(ctx$args$ann_text_col))
-        if (exists(ctx$args$annotation[[ctx$args$ann_text_col]]))
+    if (!is.null(ctx$args$anno_text_col))
+        if (exists(ctx$args$annotation[[ctx$args$anno_text_col]]))
             p <- p + ggplot2::geom_text(
                 data = df,
                 ggplot2::aes(
                     x = .data$start + (.data$width / 2),
-                    y = .data$group, label = .data[[ctx$args$ann_text_col]]
+                    y = .data$group, label = .data[[ctx$args$anno_text_col]]
                 ),
-                colour = "white", size = ctx$args$ann_text_size
+                colour = "white", size = ctx$args$anno_text_size
             )
     p <- p + ggplot2::labs(x = "", y = "")
     p <- p + ggplot2::theme(

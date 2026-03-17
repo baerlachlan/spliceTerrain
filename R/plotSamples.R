@@ -8,7 +8,7 @@
         p <- .plotCoverage(p, cov[[i]], ctx$args$colours[[i]])
         p <- .plotJunctions(
             p, juncs[[i]], cov[[i]], ctx$args$lsv, ctx$args$arc_height,
-            ctx$args$colours[[i]], ctx$args$j_text_size, ctx$args$scale_arc_size
+            ctx$args$colours[[i]], ctx$args$junc_text_size, ctx$args$scale_arcs
         )
         p <- .plotHighlight(p, ctx$args$highlight, ctx$args$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(

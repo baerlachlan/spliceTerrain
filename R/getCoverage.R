@@ -19,13 +19,12 @@
         )
         gr <- gr[vals != 0]
         gr
-
-        ## Convert to single bp ranges for better plotting with geom_bar
+        ## Convert to single bp ranges for nicer plotting with geom_bar
         ## May cause a performance hit, revert to geom_area if needed
         w <- BiocGenerics::width(gr)
         idx <- rep(seq_along(gr), times = w)
         pos <- BiocGenerics::start(gr)[idx] + sequence(w) - 1L
-        GenomicRanges::GRanges(
+        out <- GenomicRanges::GRanges(
             seqnames = Seqinfo::seqnames(gr)[idx],
             ranges = IRanges::IRanges(start = pos, width = 1L),
             strand = BiocGenerics::strand(gr)[idx],
@@ -33,10 +32,11 @@
             coverage = gr$coverage[idx],
             seqinfo = Seqinfo::seqinfo(gr)
         )
+        out <- out[out$coverage >= ctx$args$min_coverage[x]]
+        out
     })
     cov <- do.call(c, cov)
     cov <- IRanges::subsetByOverlaps(cov, ctx$args$region, type = "within")
-    cov <- cov[cov$coverage >= ctx$args$min_coverage]
     ctx$data$cov <- cov
     ctx
 }

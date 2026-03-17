@@ -1,6 +1,6 @@
 #' @keywords internal
 .applyMap <- function(ctx) {
-    if (!ctx$args$squish_introns) return(ctx)
+    if (!ctx$args$compress_introns) return(ctx)
     ctx$plot$map <- .buildMap(
         ctx$data$cov,
         .rangesToAnchors(ctx$data$juncs),
@@ -8,7 +8,7 @@
         .rangesToAnchors(ctx$args$region),
         .rangesToAnchors(ctx$args$lsv),
         .rangesToAnchors(ctx$args$highlight),
-        gap = ctx$args$squish_to
+        gap = ctx$args$intron_width
     )
     ## Because .mapGenomeToPlot may need to return NULL, we always return
     ## a list, otherwise the element will be removed

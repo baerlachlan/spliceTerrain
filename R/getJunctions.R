@@ -6,9 +6,9 @@
         if (!length(juncs[[x]])) {
             return(GenomicRanges::GRanges(sample = x, coverage = 0))
         }
-        if (strand == "+" & ctx$args$strandedness != "unstranded") {
+        if (strand == "+" & ctx$args$strandedness[x] != "unstranded") {
             cov <- juncs[[x]]$plus_score
-        } else if (strand == "-" & ctx$args$strandedness != "unstranded") {
+        } else if (strand == "-" & ctx$args$strandedness[x] != "unstranded") {
             cov <- juncs[[x]]$minus_score
         } else {
             cov <- juncs[[x]]$score
@@ -16,11 +16,11 @@
         S4Vectors::mcols(juncs[[x]]) <- S4Vectors::DataFrame(
             sample = x, coverage = cov
         )
-        juncs[[x]]
+        out <- juncs[[x]]
+        out <- out[out$coverage >= ctx$args$min_junction_reads[x]]
     })
     juncs <- do.call(c, juncs)
     juncs <- IRanges::subsetByOverlaps(juncs, ctx$args$region, type = "within")
-    juncs <- juncs[juncs$coverage >= ctx$args$min_junction_reads]
     ctx$data$juncs <- juncs
     ctx
 }
