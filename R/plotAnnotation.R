@@ -1,15 +1,50 @@
 #' @importFrom rlang .data
 #' @keywords internal
-.plotAnnotation <- function(
-        plist, annotation, min_arrow, highlight, highlight_colour,
-        ann_text_col, ann_text_size
-) {
+.plotAnnotation <- function(ctx) {
+    if (is.null(ctx$args$annotation) || !length(ctx$args$annotation))
+        return(ctx)
+    df <- as.data.frame(ctx$args$annotation)
+    exons <- split(df, df[["group"]])
+    introns <- .getIntrons(exons, ctx$args$min_arrow)
+    p <- ggplot2::ggplot()
+    p <- .plotHighlight(p, ctx$args$highlight, ctx$args$highlight_colour)
+    p <- p + ggplot2::geom_rect(
+        data = df,
+        ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$group),
+        height = 0.3, colour = "black", fill = "black"
+    )
+    p <- p + ggplot2::geom_segment(
+        data = introns,
+        ggplot2::aes(x = .data$start, xend = .data$end, y = .data$group),
+        linewidth = 0.4, colour = "black"
+    )
+    p <- p + ggplot2::geom_text(
+        data = introns,
+        ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
+        vjust = 0.35, colour = "black"
+    )
+    if (!is.null(ctx$args$ann_text_col))
+        if (exists(ctx$args$annotation[[ctx$args$ann_text_col]]))
+            p <- p + ggplot2::geom_text(
+                data = df,
+                ggplot2::aes(
+                    x = .data$start + (.data$width / 2),
+                    y = .data$group, label = .data[[ctx$args$ann_text_col]]
+                ),
+                colour = "white", size = ctx$args$ann_text_size
+            )
+    p <- p + ggplot2::labs(x = "", y = "")
+    p <- p + ggplot2::theme(
+        axis.ticks.y = ggplot2::element_blank()
+    )
+    ctx$plot$plist <- c(ctx$plot$plist, list(p))
+    ctx
+}
 
-    if (is.null(annotation) || !length(annotation)) return(plist)
 
-    df <- as.data.frame(annotation)
-    introns <- split(df, df[["group"]])
-    introns <- lapply(introns, \(x){
+#' @keywords internal
+.getIntrons <- function(exons, min_arrow) {
+    introns <- lapply(exons, \(x){
         n <- nrow(x)
         if (n > 1) {
             df <- data.frame(
@@ -34,41 +69,5 @@
             df
         }
     })
-    introns <- do.call(rbind, introns)
-
-    p <- ggplot2::ggplot()
-    if (!is.null(highlight)) {
-        p <- .plotHighlight(p, highlight, highlight_colour)
-    }
-    p <- p + ggplot2::geom_rect(
-        data = df,
-        ## TODO: height
-        ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$group),
-        height = 0.3, colour = "black", fill = "black"
-    )
-    p <- p + ggplot2::geom_segment(
-        data = introns,
-        ggplot2::aes(x = .data$start, xend = .data$end, y = .data$group),
-        linewidth = 0.4, colour = "black"
-    )
-    p <- p + ggplot2::geom_text(
-        data = introns,
-        ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
-        vjust = 0.35, colour = "black"
-    )
-    if (!is.null(ann_text_col))
-        p <- p + ggplot2::geom_text(
-            data = df,
-            ggplot2::aes(
-                x = .data$start + (.data$width / 2),
-                y = .data$group, label = .data[[ann_text_col]]
-            ),
-            colour = "white", size = ann_text_size
-        )
-    p <- p + ggplot2::labs(x = "", y = "")
-    p <- p + ggplot2::theme(
-        axis.ticks.y = ggplot2::element_blank()
-    )
-    c(plist, list(p))
-
+    do.call(rbind, introns)
 }

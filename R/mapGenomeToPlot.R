@@ -1,8 +1,7 @@
 #' @keywords internal
 .mapGenomeToPlot <- function(gr, map) {
-
-    if (is.null(gr)) return(gr)
-
+    ## Always returns a list as gr may be NULL (see comment in .applyMap())
+    if (is.null(gr)) return(list(gr))
     anchors <- .rangesToAnchors(gr)
     hits <- IRanges::findOverlaps(anchors, map)
     qh <- S4Vectors::queryHits(hits)
@@ -11,6 +10,5 @@
     mapped <- map$p_start[sh] + (pos[qh] - map$g_start[sh])
     out <- anchors
     IRanges::ranges(out) <- IRanges::IRanges(start = mapped, end = mapped)
-    .anchorsToRanges(out, gr)
-
+    list(.anchorsToRanges(out, gr))
 }

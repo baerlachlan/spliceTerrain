@@ -14,9 +14,9 @@ output:
     css: custom.css
 # bibliography: references.bib
 vignette: >
-%\VignetteIndexEntry{Creating Sashimi-Style Plots with spliceTerrain}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+    %\VignetteIndexEntry{Creating Sashimi-Style Plots with spliceTerrain}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
 ---
 
 ```{r global-opts, include = FALSE}
@@ -38,8 +38,10 @@ if (!interactive())
 
 ## Installation
 
-`BiocManager` is recommended for the installation of packages required in this vignette.
-`BiocManager` handles the installation of packages from Bioconductor, CRAN and GitHub repositories.
+`BiocManager` is recommended for the installation of packages required in this
+vignette.
+`BiocManager` handles the installation of packages from Bioconductor, CRAN and
+GitHub repositories.
 
 ```{r install, eval=FALSE}
 if (!"BiocManager" %in% rownames(installed.packages()))
@@ -56,16 +58,18 @@ Now we can load the required packages.
 ```{r pkgs}
 library(spliceTerrain)
 library(RNAseqData.HNRNPC.bam.chr14)
+library(ensembldb)
 library(AnnotationHub)
 library(stringr)
+library(tibble)
 ```
 
 # Annotations
 
 ```{r ensParams}
 ens_species <- "Homo sapiens"
-ens_release <- "75"
-ens_assembly <- "GRCh37"
+ens_release <- "113"
+ens_assembly <- "GRCh38"
 primary_chrs <- c(as.character(1:22), "X", "Y", "MT")
 ```
 
@@ -106,3 +110,8 @@ tx2gene <- transcripts(ensDb, filter = GeneBiotypeFilter(
     dplyr::select(tx_id, gene_id)
 ```
 
+# Session Information
+
+```{r session_info}
+sessionInfo()
+```

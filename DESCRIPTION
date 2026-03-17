@@ -30,6 +30,7 @@ biocViews:
     RNASeq,
     Transcriptomics,
     Visualization,
+VignetteBuilder: knitr
 Depends:
     R (>= 4.5),
 Imports:
@@ -45,6 +46,13 @@ Imports:
     scales,
     Seqinfo,
 Suggests:
+    AnnotationHub,
+    BiocStyle,
+    dplyr,
+    ensembldb,
     knitr,
     rmarkdown,
+    RNAseqData.HNRNPC.bam.chr14,
+    stringr,
     testthat (>= 3.0.0),
+    tibble,

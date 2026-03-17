@@ -1,7 +1,7 @@
 #' @keywords internal
-.resolveJunctions <- function(ctx) {
+.getJunctions <- function(ctx) {
     juncs <- lapply(ctx$data$gal, GenomicAlignments::summarizeJunctions)
-    strand <- as.character(unique(BiocGenerics::strand(ctx$input$region)))
+    strand <- as.character(unique(BiocGenerics::strand(ctx$args$region)))
     juncs <- lapply(names(juncs), \(x){
         if (!length(juncs[[x]])) {
             return(GenomicRanges::GRanges(sample = x, coverage = 0))
@@ -19,7 +19,7 @@
         juncs[[x]]
     })
     juncs <- do.call(c, juncs)
-    juncs <- IRanges::subsetByOverlaps(juncs, ctx$input$region, type = "within")
+    juncs <- IRanges::subsetByOverlaps(juncs, ctx$args$region, type = "within")
     juncs <- juncs[juncs$coverage >= ctx$args$min_junction_reads]
     ctx$data$juncs <- juncs
     ctx

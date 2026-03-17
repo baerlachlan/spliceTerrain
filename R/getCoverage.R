@@ -1,5 +1,5 @@
 #' @keywords internal
-.resolveCoverage <- function(ctx) {
+.getCoverage <- function(ctx) {
     cov <- lapply(ctx$data$gal, GenomicAlignments::coverage)
     cov <- lapply(cov, unlist)
     cov <- lapply(names(cov), \(x){
@@ -11,9 +11,9 @@
         ends <- cumsum(lens)
         starts <- ends - lens + 1L
         gr <- GenomicRanges::GRanges(
-            seqnames = unique(Seqinfo::seqnames(ctx$input$region)),
+            seqnames = unique(Seqinfo::seqnames(ctx$args$region)),
             ranges = IRanges::IRanges(start = starts, end = ends),
-            strand = unique(BiocGenerics::strand(ctx$input$region)),
+            strand = unique(BiocGenerics::strand(ctx$args$region)),
             sample = x,
             coverage = vals
         )
@@ -35,7 +35,7 @@
         )
     })
     cov <- do.call(c, cov)
-    cov <- IRanges::subsetByOverlaps(cov, ctx$input$region, type = "within")
+    cov <- IRanges::subsetByOverlaps(cov, ctx$args$region, type = "within")
     cov <- cov[cov$coverage >= ctx$args$min_coverage]
     ctx$data$cov <- cov
     ctx

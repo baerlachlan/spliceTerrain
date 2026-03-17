@@ -28,7 +28,7 @@ spliceTerrain(
   ann_text_size = 3,
   common_y = FALSE,
   return_data = FALSE,
-  scale_arc_size = TRUE
+  scale_arc_size = FALSE
 )
 }
 \arguments{
@@ -124,22 +124,6 @@ When \code{squish_introns = TRUE}, x-axis tick labels are reported in genome
 coordinates (tick positions are in plot coordinates).
 }
 \examples{
-fl <- system.file("extdata", "COG7.bam", package = "spliceTerrain")
-data("COG7_gene")
-data("COG7_exons")
-
-spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
-
-spliceTerrain(
-  bam = fl,
-  region = COG7_gene,
-  annotation = COG7_exons,
-  strandedness = "reverse",
-  lsv = "16:23389087-23389087",
-  highlight = "16:23392380-23393318",
-  ann_text_col = "exon_rank"
-)
-
 library(RNAseqData.HNRNPC.bam.chr14)
 spliceTerrain(
   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES,

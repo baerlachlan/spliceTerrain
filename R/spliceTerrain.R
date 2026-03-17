@@ -96,22 +96,6 @@
 #' \link[GenomicRanges]{GRanges} for representing genomic intervals.
 #'
 #' @examples
-#' fl <- system.file("extdata", "COG7.bam", package = "spliceTerrain")
-#' data("COG7_gene")
-#' data("COG7_exons")
-#'
-#' spliceTerrain(bam = fl, region = COG7_gene, annotation = COG7_exons)
-#'
-#' spliceTerrain(
-#'   bam = fl,
-#'   region = COG7_gene,
-#'   annotation = COG7_exons,
-#'   strandedness = "reverse",
-#'   lsv = "16:23389087-23389087",
-#'   highlight = "16:23392380-23393318",
-#'   ann_text_col = "exon_rank"
-#' )
-#'
 #' library(RNAseqData.HNRNPC.bam.chr14)
 #' spliceTerrain(
 #'   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES,
@@ -131,31 +115,18 @@ spliceTerrain <- function(
         axis_title_size = 12, axis_text_size = 9,
         highlight_colour = scales::alpha("red", 0.2), ann_text_col = NULL,
         ann_text_size = 3, common_y = FALSE, return_data = FALSE,
-        scale_arc_size = TRUE
+        scale_arc_size = FALSE
 ) {
     ctx <- .initContext(as.list(environment()), formals())
-    ctx <- .resolveBam(ctx)
     ctx <- .resolveRegion(ctx)
     ctx <- .resolveAnnotation(ctx)
     ctx <- .resolveGr(ctx, "lsv")
     ctx <- .resolveGr(ctx, "highlight")
     ctx <- .loadAlignments(ctx)
-    ctx <- .resolveCoverage(ctx)
-    ctx <- .resolveJunctions(ctx)
-    if (squish_introns) ctx <- .applyMap(ctx)
-
-    plist <- lapply(bam, \(i){ggplot2::ggplot()})
-    plist <- .plotSamples(
-        plist, region, coverage, junctions, lsv, arc_height, highlight,
-        colours, j_text_size, highlight_colour, common_y, scale_arc_size
-    )
-    plist <- .plotAnnotation(
-        plist, annotation, min_arrow, highlight, highlight_colour,
-        ann_text_col, ann_text_size
-    )
-    .plotTerrain(
-        plist, region, map, panel_heights, axis_title_size, axis_text_size,
-        default_theme
-    )
-
+    ctx <- .getCoverage(ctx)
+    ctx <- .getJunctions(ctx)
+    ctx <- .applyMap(ctx)
+    ctx <- .plotSamples(ctx)
+    ctx <- .plotAnnotation(ctx)
+    .plotTerrain(ctx)
 }

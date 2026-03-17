@@ -9,9 +9,9 @@
     )
     ## `which` doesn't consider strand, so we need to filter for this later
     param <- Rsamtools::ScanBamParam(
-        flag = flag, which = ctx$input$region, mapqFilter = ctx$args$min_mapq
+        flag = flag, which = ctx$args$region, mapqFilter = ctx$args$min_mapq
     )
-    gal <- lapply(ctx$input$bam, \(x){
+    gal <- lapply(ctx$args$bam, \(x){
         if (.bamIsPaired(x)) {
             GenomicAlignments::readGAlignmentPairs(
                 x, param = param, strandMode = strandedness
@@ -23,7 +23,7 @@
     gal <- lapply(gal, \(aln){
         ## Only filter for strand if library is stranded
         if (strandedness) {
-            aln <- IRanges::subsetByOverlaps(aln, ctx$input$region)
+            aln <- IRanges::subsetByOverlaps(aln, ctx$args$region)
         }
         Seqinfo::seqlevels(aln) <- Seqinfo::seqlevelsInUse(aln)
         aln
