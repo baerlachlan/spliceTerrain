@@ -162,7 +162,7 @@
 #' @examples
 #' library(RNAseqData.HNRNPC.bam.chr14)
 #' spliceTerrain(
-#'   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES,
+#'   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7,1)],
 #'   region = "chr14:70222436-70237375",
 #'   lsv = "chr14:70234854-70234854"
 #' )

@@ -12,11 +12,11 @@
         data = arcs,
         ggplot2::aes(
             x = .data$x, y = .data$y, group = .data$id,
-            size = .data[[size_col]]
+            linewidth = .data[[size_col]]
         ),
         colour = colour, lineend = "round", show.legend = FALSE
     ) +
-        ggplot2::scale_size(range = c(0.2, 0.8)) +
+        ggplot2::scale_linewidth(range = c(0.2, 0.8)) +
         ggplot2::geom_label(
             data = labels,
             ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),

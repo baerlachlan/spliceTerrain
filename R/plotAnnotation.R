@@ -23,6 +23,12 @@
         ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
         vjust = 0.35, colour = "black"
     )
+    p <- p + ggplot2::coord_cartesian(
+        xlim = c(
+            BiocGenerics::start(ctx$args$region),
+            BiocGenerics::end(ctx$args$region)
+        )
+    )
     if (!is.null(ctx$args$anno_text_col))
         if (exists(ctx$args$annotation[[ctx$args$anno_text_col]]))
             p <- p + ggplot2::geom_text(
@@ -37,7 +43,7 @@
     p <- p + ggplot2::theme(
         axis.ticks.y = ggplot2::element_blank()
     )
-    ctx$plot$plist <- c(ctx$plot$plist, list(p))
+    ctx$plot$plist <- c(ctx$plot$plist, list(annotation = p))
     ctx
 }
 
