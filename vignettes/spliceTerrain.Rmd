@@ -1,5 +1,5 @@
 ---
-title: "Creating sashimi-style plots with spliceTerrain"
+title: "Creating Sashimi-Style Plots with spliceTerrain"
 author:
 - name: Lachlan Baer
   affiliation:
@@ -28,15 +28,7 @@ if (!interactive())
     options(width = 999)
 ```
 
-# Introduction
-
-## Motivation
-
-
-
 # Setup
-
-## Installation
 
 `BiocManager` is recommended for the installation of packages required in this
 vignette.
@@ -47,8 +39,8 @@ GitHub repositories.
 if (!"BiocManager" %in% rownames(installed.packages()))
     install.packages("BiocManager")
 pkgs <- c(
-    "baerlachlan/spliceTerrain", "RNAseqData.HNRNPC.bam.chr14",
-    "AnnotationHub", "stringr"
+    "spliceTerrain", "RNAseqData.HNRNPC.bam.chr14", "EnsDb.Hsapiens.v75",
+    "ensembldb", "stringr", "tibble", "pander"
 )
 BiocManager::install(pkgs, update = FALSE)
 ```
@@ -58,60 +50,111 @@ Now we can load the required packages.
 ```{r pkgs}
 library(spliceTerrain)
 library(RNAseqData.HNRNPC.bam.chr14)
+library(EnsDb.Hsapiens.v75)
 library(ensembldb)
-library(AnnotationHub)
 library(stringr)
 library(tibble)
+library(pander)
 ```
 
-# Annotations
+# Quick-start
 
-```{r ensParams}
-ens_species <- "Homo sapiens"
-ens_release <- "113"
-ens_assembly <- "GRCh38"
-primary_chrs <- c(as.character(1:22), "X", "Y", "MT")
+At a minimum, we require BAM file paths and a genomic interval to plot.
+
+Here we use BAM files from the `RNAseqData.HNRNPC.bam.chr14` package as example data, subsetting two of these files to showcase `spliceTerrain`.
+In the most simple case, a genomic interval can be specified as a character vector of length 1.
+That's all we need to build a simple sashimi plot!
+
+```{r quickstart-2, fig.wide=TRUE, fig.height=6}
+bams <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7,1)]
+region <- "chr14:70,233,810-70,238,690"
+spliceTerrain(bam = bams, region = region)
 ```
 
-```{r ensDb}
-ah <- AnnotationHub() |>
-    subset(species == ens_species) |>
-    subset(rdataclass == "EnsDb")
-ahId <- ah$ah_id[str_detect(ah$title, ens_release)]
-ensDb <- ah[[ahId]]
+# Introduction
+
+Sashimi plots are a visualisation tool for RNA-seq data that display summarised read coverage across a genomic interval and how splice junctions bridge exons.
+By displaying both per-base coverage and junction-spanning reads, sashimi plots provide an intuitive view of transcript structure and enable assessment of exon usage, alternative splicing events, and isoform differences between samples or conditions.
+
+## Motivation
+
+`spliceTerrain` was designed to integrate seamlessly with the Bioconductor ecosystem, utilising core Bioconductor classes and methods at the centre of its workflow.
+During RNA-seq analysis, genomic intervals, annotations, and features of interest are often represented as `GRanges` objects.
+`spliceTerrain` leverages this to enable straightforward visualisation that integrates seamlessly into `Rmarkdown`/`Quarto` documents, while promoting reproducibility through a user-friendly single-function R interface for generating sashimi-style plots within script-based analyses.
+`spliceTerrain` enables publication-quality figures while retaining flexibility.
+Users can optionally access the underlying plot data and individual plot panels via the `return_data` argument, allowing further customisation or arrangement of panels.
+
+## Previous works
+
+Several established and wonderful tools also exist for plotting sashimi-style visualisations, such as `MISO`, `ggsashimi` and `IGV`.
+`spliceTerrain` complements these by offering a Bioconductor-native, highly configurable approach tailored to bioinformaticians that adopt an `R`-based workflow.
+
+# Complete guide
+
+## Loading required data
+
+
+
+## Annotations
+
+```{r}
+ensDb <- EnsDb.Hsapiens.v75
 ```
 
-```{r transcripts}
-transcripts <- transcripts(ensDb, filter = AnnotationFilterList(
-    SeqNameFilter(primary_chrs), TxBiotypeFilter("LRG_gene", condition = "!=")
-))
-mcols(transcripts) <- mcols(transcripts)[
-    c("tx_id", "tx_id_version", "tx_is_canonical", "gene_id", "gc_content")
-]
+```{r}
+region <- transcripts(ensDb, filter = TxIdFilter("ENST00000394366"))
+seqlevelsStyle(region) <- "ucsc"
 ```
 
-```{r genes}
-genes <- genes(ensDb, filter = AnnotationFilterList(
-    SeqNameFilter(primary_chrs), GeneBiotypeFilter("LRG_gene", condition = "!=")
-))
-mcols(genes) <- mcols(genes)[
-    c("gene_id", "gene_name", "gene_id_version", "gene_biotype", "description")
-]
+```{r}
+annotation <- exonsBy(ensDb, by = "tx", filter = GeneNameFilter("SRSF5"))
+seqlevelsStyle(annotation) <- "ucsc"
 ```
 
-```{r tx2gene}
-## Don't filter for primary chrs, so we only get a tximport warning if
-##  annotation versions don't match
-## We subset for primary chromosomes using our genes object after import
-tx2gene <- transcripts(ensDb, filter = GeneBiotypeFilter(
-    "LRG_gene", condition = "!="
-)) %>%
-    as_tibble() %>%
-    dplyr::select(tx_id, gene_id)
+```{r, fig.wide=TRUE, fig.height=9}
+spliceTerrain(bam = bams, region = region, annotation = annotation)
 ```
+
+```{r, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation, panel_heights = c(
+        1,1,2
+    )
+)
+```
+
+## Panel heights
+
+## Annotation labels
+
+## Colours
+
+## Compressing introns
+
+intron_width
+
+## Calculating PSI
+
+## Highlighting regions
+
+highlight_colour
+
+## Strandedness
+
+## Minimum coverage
+
+## Customizing arcs
+
+arc_height
+scale_arcs
+
+## Returning plot data
+
+This way you can arrange the plots as you like for publications, investigate junction level data to find the LSV that you want to calculate PSI values for, troubleshoot, etc.
 
 # Session Information
 
 ```{r session_info}
-sessionInfo()
+sessionInfo() |>
+    pander()
 ```
