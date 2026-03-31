@@ -1,6 +1,5 @@
 #' @keywords internal
 .rangesToAnchors <- function(gr) {
-
     if (is.null(gr)) return(gr)
     start <- GenomicRanges::GRanges(
         seqnames = Seqinfo::seqnames(gr),
@@ -15,5 +14,4 @@
         anchor = "end"
     )
     c(start, end)
-
 }

@@ -1,7 +1,6 @@
 #' @importFrom ggplot2 %+replace%
 #' @keywords internal
 .theme_spliceTerrain <- function(axis_title_size, axis_text_size, ...) {
-
     ggplot2::theme_bw(...) %+replace%
         ggplot2::theme(
             panel.background = ggplot2::element_blank(),
@@ -18,5 +17,4 @@
             axis.text = ggplot2::element_text(size = axis_text_size),
             plot.margin = ggplot2::margin(5, 5, 5, 5)
         )
-
 }
