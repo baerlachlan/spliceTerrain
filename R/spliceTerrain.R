@@ -100,7 +100,7 @@
 #' @param axis_text_size Numeric scalar giving the axis tick-label text size
 #' used in the final plot theme.
 #'
-#' @param return_data Logical. Intended to control whether processed plotting
+#' @param return_ctx Logical. Intended to control whether processed plotting
 #' data are returned instead of the plot.
 #'
 #' @details
@@ -146,10 +146,10 @@
 #' when present.
 #'
 #' @return
-#' If \code{return_data = FALSE}, a \pkg{patchwork} object containing one plot
+#' If \code{return_ctx = FALSE}, a \pkg{patchwork} object containing one plot
 #' per BAM plus an optional annotation track.
 #'
-#' If \code{return_data = TRUE}, a list containing the processed plotting data
+#' If \code{return_ctx = TRUE}, a list containing the processed plotting data
 #' and the assembled plot.
 #'
 #' The x-axis is shared across panels. Tick labels are shown in genome
@@ -194,22 +194,22 @@ spliceTerrain <- function(
         panel_heights = 1,
         axis_title_size = 12,
         axis_text_size = 9,
-        return_data = FALSE,
-        plot_data = NULL
+        return_ctx = FALSE,
+        ctx = NULL
 ) {
-    if (!is.null(plot_data)) return(.plotTerrain(plot_data))
-    ctx <- .initContext(as.list(environment()))
-    ctx <- .resolveRegion(ctx)
-    ctx <- .resolveAnnotation(ctx)
-    ctx <- .resolveGr(ctx, "lsv")
-    ctx <- .resolveGr(ctx, "highlight")
-    ctx <- .loadAlignments(ctx)
-    ctx <- .getCoverage(ctx)
-    ctx <- .getJunctions(ctx)
-    ctx <- .applyMap(ctx)
+    if (is.null(ctx)) {
+        ctx <- .initContext(as.list(environment()))
+        ctx <- .resolveRegion(ctx)
+        ctx <- .resolveAnnotation(ctx)
+        ctx <- .resolveGr(ctx, "lsv")
+        ctx <- .resolveGr(ctx, "highlight")
+        ctx <- .loadAlignments(ctx)
+        ctx <- .getCoverage(ctx)
+        ctx <- .getJunctions(ctx)
+        ctx <- .applyMap(ctx)
+        if (ctx$input$return_ctx) return(ctx)
+    }
     ctx <- .plotSamples(ctx)
     ctx <- .plotAnnotation(ctx)
-    ctx <- .prepareTerrain(ctx)
-    if (ctx$input$return_data) return(ctx)
     .plotTerrain(ctx)
 }

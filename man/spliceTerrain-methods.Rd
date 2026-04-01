@@ -28,8 +28,9 @@ spliceTerrain(
   panel_heights = 1,
   axis_title_size = 12,
   axis_text_size = 9,
-  return_data = FALSE,
-  plot_data = NULL
+  return_plots = FALSE,
+  return_ctx = FALSE,
+  ctx = NULL
 )
 }
 \arguments{
@@ -126,14 +127,14 @@ in the final plot theme.}
 \item{axis_text_size}{Numeric scalar giving the axis tick-label text size
 used in the final plot theme.}
 
-\item{return_data}{Logical. Intended to control whether processed plotting
+\item{return_ctx}{Logical. Intended to control whether processed plotting
 data are returned instead of the plot.}
 }
 \value{
-If \code{return_data = FALSE}, a \pkg{patchwork} object containing one plot
+If \code{return_ctx = FALSE}, a \pkg{patchwork} object containing one plot
 per BAM plus an optional annotation track.
 
-If \code{return_data = TRUE}, a list containing the processed plotting data
+If \code{return_ctx = TRUE}, a list containing the processed plotting data
 and the assembled plot.
 
 The x-axis is shared across panels. Tick labels are shown in genome
