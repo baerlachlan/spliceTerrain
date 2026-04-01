@@ -194,8 +194,10 @@ spliceTerrain <- function(
         panel_heights = 1,
         axis_title_size = 12,
         axis_text_size = 9,
-        return_data = FALSE
+        return_data = FALSE,
+        plot_data = NULL
 ) {
+    if (!is.null(plot_data)) return(.plotTerrain(plot_data))
     ctx <- .initContext(as.list(environment()))
     ctx <- .resolveRegion(ctx)
     ctx <- .resolveAnnotation(ctx)
@@ -207,5 +209,7 @@ spliceTerrain <- function(
     ctx <- .applyMap(ctx)
     ctx <- .plotSamples(ctx)
     ctx <- .plotAnnotation(ctx)
+    ctx <- .prepareTerrain(ctx)
+    if (ctx$input$return_data) return(ctx)
     .plotTerrain(ctx)
 }

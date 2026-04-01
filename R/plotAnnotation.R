@@ -1,13 +1,13 @@
 #' @importFrom rlang .data
 #' @keywords internal
 .plotAnnotation <- function(ctx) {
-    if (is.null(ctx$args$annotation) || !length(ctx$args$annotation))
+    if (is.null(ctx$plot$annotation) || !length(ctx$plot$annotation))
         return(ctx)
-    df <- as.data.frame(ctx$args$annotation)
+    df <- as.data.frame(ctx$plot$annotation)
     exons <- split(df, df[["group"]])
-    introns <- .getIntrons(exons, ctx$args$min_arrow)
+    introns <- .getIntrons(exons, ctx$input$min_arrow)
     p <- ggplot2::ggplot()
-    p <- .plotHighlight(p, ctx$args$highlight, ctx$args$highlight_colour)
+    p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
     p <- p + ggplot2::geom_rect(
         data = df,
         ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$group),
@@ -25,19 +25,19 @@
     )
     p <- p + ggplot2::coord_cartesian(
         xlim = c(
-            BiocGenerics::start(ctx$args$region),
-            BiocGenerics::end(ctx$args$region)
+            BiocGenerics::start(ctx$plot$region),
+            BiocGenerics::end(ctx$plot$region)
         )
     )
-    if (!is.null(ctx$args$anno_text_col))
-        if (exists(ctx$args$annotation[[ctx$args$anno_text_col]]))
+    if (!is.null(ctx$input$anno_text_col))
+        if (exists(ctx$plot$annotation[[ctx$input$anno_text_col]]))
             p <- p + ggplot2::geom_text(
                 data = df,
                 ggplot2::aes(
                     x = .data$start + (.data$width / 2),
-                    y = .data$group, label = .data[[ctx$args$anno_text_col]]
+                    y = .data$group, label = .data[[ctx$input$anno_text_col]]
                 ),
-                colour = "white", size = ctx$args$anno_text_size
+                colour = "white", size = ctx$input$anno_text_size
             )
     p <- p + ggplot2::labs(x = "", y = "")
     p <- p + ggplot2::theme(

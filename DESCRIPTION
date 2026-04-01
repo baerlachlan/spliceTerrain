@@ -27,7 +27,9 @@ BiocType: Software
 biocViews:
     AlternativeSplicing,
     Coverage,
+    GenomicVariation,
     RNASeq,
+    Sequencing,
     Transcriptomics,
     Visualization,
 VignetteBuilder: knitr

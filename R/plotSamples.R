@@ -1,16 +1,17 @@
 #' @keywords internal
 .plotSamples <- function(ctx) {
-    cov <- split(ctx$data$cov, ctx$data$cov$sample)
-    juncs <- split(ctx$data$juncs, ctx$data$juncs$sample)
-    ctx$plot$plist <- lapply(ctx$args$bam, \(i){ggplot2::ggplot()})
+    cov <- split(ctx$plot$cov, ctx$plot$cov$sample)
+    juncs <- split(ctx$plot$juncs, ctx$plot$juncs$sample)
+    ctx$plot$plist <- lapply(ctx$input$bam, \(i){ggplot2::ggplot()})
     out <- lapply(names(ctx$plot$plist), \(i){
         p <- ctx$plot$plist[[i]]
-        p <- .plotCoverage(p, cov[[i]], ctx$args$colours[[i]])
+        p <- .plotCoverage(p, cov[[i]], ctx$input$colours[[i]])
         p <- .plotJunctions(
-            p, juncs[[i]], cov[[i]], ctx$args$lsv, ctx$args$arc_height,
-            ctx$args$colours[[i]], ctx$args$junc_text_size, ctx$args$scale_arcs
+            p, juncs[[i]], cov[[i]], ctx$plot$lsv, ctx$input$arc_height,
+            ctx$input$colours[[i]], ctx$input$junc_text_size,
+            ctx$input$scale_arcs
         )
-        p <- .plotHighlight(p, ctx$args$highlight, ctx$args$highlight_colour)
+        p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(
             breaks = \(x) { # Don't show y < 0
                 b <- scales::breaks_extended()(x)
@@ -20,10 +21,10 @@
         )
         p + ggplot2::labs(x = "", y = i)
     })
-    st <- BiocGenerics::start(ctx$args$region)
-    en <- BiocGenerics::end(ctx$args$region)
+    st <- BiocGenerics::start(ctx$plot$region)
+    en <- BiocGenerics::end(ctx$plot$region)
     ylim <- NULL
-    if (ctx$args$common_y) {
+    if (ctx$input$common_y) {
         ## TODO: check this is the best way to access ggplot obj data
         ys <- unlist(lapply(out, \(x){
             pdat <- ggplot2::ggplot_build(x)@data

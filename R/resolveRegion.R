@@ -1,6 +1,6 @@
 #' @keywords internal
 .resolveRegion <- function(ctx) {
-    region <- ctx$args$region
+    region <- ctx$input$region
     if (is.null(region)) return(region)
     if (is.character(region)) {
         region <- gsub(",", "", region)
@@ -17,6 +17,8 @@
     ## So we don't load duplicate alignments
     ## See `which` arg of scanBamParam
     ## TODO: add warning if reducing to single range
-    ctx$args$region <- .spanOfRanges(region)
+    span <- .spanOfRanges(region)
+    ctx$input$region <- span
+    ctx$plot$region <- span
     ctx
 }

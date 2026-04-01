@@ -5,12 +5,12 @@
     )
     ## `which` doesn't consider strand, so we need to filter for this later
     param <- Rsamtools::ScanBamParam(
-        flag = flag, which = ctx$args$region, mapqFilter = ctx$args$min_mapq
+        flag = flag, which = ctx$input$region, mapqFilter = ctx$input$min_mapq
     )
-    gal <- lapply(names(ctx$args$bam), \(x){
-        bam <- ctx$args$bam[x]
+    gal <- lapply(names(ctx$input$bam), \(x){
+        bam <- ctx$input$bam[x]
         strandedness <- switch(
-            ctx$args$strandedness[x],
+            ctx$input$strandedness[x],
             unstranded = 0, forward = 1, reverse = 2
         )
         if (.bamIsPaired(bam)) {
@@ -22,13 +22,13 @@
         }
         ## Only filter for strand if library is stranded
         if (strandedness) {
-            aln <- IRanges::subsetByOverlaps(aln, ctx$args$region)
+            aln <- IRanges::subsetByOverlaps(aln, ctx$input$region)
         }
         Seqinfo::seqlevels(aln) <- Seqinfo::seqlevelsInUse(aln)
         aln
     })
-    names(gal) <- names(ctx$args$bam)
-    ctx$data$gal <- gal
+    names(gal) <- names(ctx$input$bam)
+    ctx$input$gal <- gal
     ctx
 }
 

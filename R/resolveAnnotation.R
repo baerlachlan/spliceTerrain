@@ -1,7 +1,7 @@
 #' @keywords internal
 .resolveAnnotation <- function(ctx) {
-    annotation <- ctx$args$annotation
-    region <- ctx$args$region
+    annotation <- ctx$input$annotation
+    region <- ctx$input$region
     if (is.null(annotation)) return(ctx)
     if (!inherits(annotation, "GRangesList"))
         stop("'annotation' must be a GRangesList.")
@@ -19,6 +19,7 @@
     } else {
         annotation$group <- rep(paste0("annotation_", seq_len(len)), lens)
     }
-    ctx$args$annotation <- annotation
+    ctx$input$annotation <- annotation
+    ctx$plot$annotation <- annotation
     ctx
 }

@@ -28,7 +28,8 @@ spliceTerrain(
   panel_heights = 1,
   axis_title_size = 12,
   axis_text_size = 9,
-  return_data = FALSE
+  return_data = FALSE,
+  plot_data = NULL
 )
 }
 \arguments{
