@@ -24,10 +24,10 @@
 #' default group labels are generated internally. Annotation is restricted to
 #' the plotting region.
 #'
-#' @param lsv Optional LSV region used for annotating junction labels with
-#' within-LSV junction usage. Accepts the same formats as \code{region} (e.g.
+#' @param psi Optional psi region used for annotating junction labels with
+#' within-psi junction usage. Accepts the same formats as \code{region} (e.g.
 #' \code{"chr:start-end"} or a \code{GRanges}), but must resolve to exactly one
-#' genomic range. Only junctions within the supplied LSV are labelled with LSV
+#' genomic range. Only junctions within the supplied psi are labelled with psi
 #' percentages.
 #'
 #' @param highlight Optional interval(s) to highlight. Accepts the same formats
@@ -114,21 +114,21 @@
 #'   \item If \code{compress_introns = TRUE}, a piecewise mapping is constructed
 #'   that compresses intronic gaps to a fixed width (\code{intron_width}) while
 #'   preserving relative exon geometry. Coverage, junctions, and optional
-#'   features (\code{annotation}, \code{lsv}, \code{highlight}) are mapped into
+#'   features (\code{annotation}, \code{psi}, \code{highlight}) are mapped into
 #'   the plot coordinate system.
 #' }
 #'
-#' \code{region}, \code{lsv}, and \code{highlight} may be supplied as genomic
+#' \code{region}, \code{psi}, and \code{highlight} may be supplied as genomic
 #' ranges or as strings coercible to \code{GRanges}. If multiple ranges are
 #' supplied for \code{region}, their span is used as the plotting window.
 #' Optional genomic overlays are restricted to the plotting region before
 #' plotting.
 #'
-#' \code{lsv} and \code{highlight} are optional overlays:
+#' \code{psi} and \code{highlight} are optional overlays:
 #' \itemize{
-#'   \item \code{lsv} defines a local splicing variation (LSV) region. Junctions
+#'   \item \code{psi} defines a local splicing variation (psi) region. Junctions
 #'   within this region are additionally labelled with the fraction of junction
-#'   reads out of the total junction reads in the LSV, expressed as a percent.
+#'   reads out of the total junction reads in the psi, expressed as a percent.
 #'   \item \code{highlight} marks one or more genomic intervals to draw
 #'   attention to a subregion (e.g. an exon or event).
 #' }
@@ -164,7 +164,7 @@
 #' spliceTerrain(
 #'   bam = RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7,1)],
 #'   region = "chr14:70222436-70237375",
-#'   lsv = "chr14:70234854-70234854"
+#'   psi = "chr14:70234854-70234854"
 #' )
 #'
 #' @rdname spliceTerrain-methods
@@ -174,7 +174,7 @@ spliceTerrain <- function(
         bam,
         region,
         annotation = NULL,
-        lsv = NULL,
+        psi = NULL,
         highlight = NULL,
         strandedness = "unstranded",
         min_mapq = 0L,
@@ -201,7 +201,7 @@ spliceTerrain <- function(
         ctx <- .initContext(as.list(environment()))
         ctx <- .resolveRegion(ctx)
         ctx <- .resolveAnnotation(ctx)
-        ctx <- .resolveGr(ctx, "lsv")
+        ctx <- .resolveGr(ctx, "psi")
         ctx <- .resolveGr(ctx, "highlight")
         ctx <- .loadAlignments(ctx)
         ctx <- .getCoverage(ctx)

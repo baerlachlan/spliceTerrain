@@ -6,7 +6,7 @@
         .rangesToAnchors(ctx$input$juncs),
         ctx$input$annotation,
         .rangesToAnchors(ctx$input$region),
-        .rangesToAnchors(ctx$input$lsv),
+        .rangesToAnchors(ctx$input$psi),
         .rangesToAnchors(ctx$input$highlight),
         gap = ctx$input$intron_width
     )
@@ -19,7 +19,7 @@
         ctx$input$annotation, ctx$plot$map
     )
     ctx$plot["region"] <- .mapGenomeToPlot(ctx$input$region, ctx$plot$map)
-    ctx$plot["lsv"] <- .mapGenomeToPlot(ctx$input$lsv, ctx$plot$map)
+    ctx$plot["psi"] <- .mapGenomeToPlot(ctx$input$psi, ctx$plot$map)
     ctx$plot["highlight"] <- .mapGenomeToPlot(ctx$input$highlight, ctx$plot$map)
     ctx
 }

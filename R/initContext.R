@@ -5,7 +5,7 @@
         input = c(args, list(gal = NULL, cov = NULL, juncs = NULL)),
         plot = list(
             cov = NULL, juncs = NULL, map = NULL, annotation = NULL,
-            region = NULL, lsv = NULL, highlight = NULL, plist = NULL
+            region = NULL, psi = NULL, highlight = NULL, plist = NULL
         )
     )
     ctx <- .checkBam(ctx)

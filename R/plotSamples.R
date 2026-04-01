@@ -7,7 +7,7 @@
         p <- ctx$plot$plist[[i]]
         p <- .plotCoverage(p, cov[[i]], ctx$input$colours[[i]])
         p <- .plotJunctions(
-            p, juncs[[i]], cov[[i]], ctx$plot$lsv, ctx$input$arc_height,
+            p, juncs[[i]], cov[[i]], ctx$plot$psi, ctx$input$arc_height,
             ctx$input$colours[[i]], ctx$input$junc_text_size,
             ctx$input$scale_arcs
         )

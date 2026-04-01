@@ -1,12 +1,12 @@
-.junctionArcLabels <- function(layout, juncs, lsv) {
+.junctionArcLabels <- function(layout, juncs, psi) {
     labels <- juncs$coverage
-    if (!is.null(lsv)) {
+    if (!is.null(psi)) {
         anchors <- .rangesToAnchors(juncs)
         st <- anchors[anchors$anchor == "start"]
-        hits_st <- IRanges::findOverlaps(lsv, st)
+        hits_st <- IRanges::findOverlaps(psi, st)
         sh_st <- S4Vectors::subjectHits(hits_st)
         en <- anchors[anchors$anchor == "end"]
-        hits_en <- IRanges::findOverlaps(lsv, en)
+        hits_en <- IRanges::findOverlaps(psi, en)
         sh_en <- S4Vectors::subjectHits(hits_en)
         sh <- unique(c(sh_st, sh_en))
         labels[sh] <- paste0(
