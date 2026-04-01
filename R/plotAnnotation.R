@@ -30,7 +30,7 @@
         )
     )
     if (!is.null(ctx$input$anno_text_col))
-        if (exists(ctx$plot$annotation[[ctx$input$anno_text_col]]))
+        if (!is.null(df[[ctx$input$anno_text_col]]))
             p <- p + ggplot2::geom_text(
                 data = df,
                 ggplot2::aes(
