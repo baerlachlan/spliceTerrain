@@ -2,7 +2,7 @@
 
 `spliceTerrain` is an R package for visualising RNA-seq splice patterns as sashimi plots.
 It combines coverage, splice junction arcs, and optional annotation tracks to show how transcripts are assembled across a genomic region.
-`spliceTerrain` was designed to integreate seamlessly within the Bioconductor ecosystem, keeping the workflow entirely within R to support reproducible, customisable splicing visualisation for exploratory analysis, reporting, and publication-quality figures.
+`spliceTerrain` was designed to integrate seamlessly within the Bioconductor ecosystem, keeping the workflow entirely within R to support reproducible, customisable splicing visualisation for exploratory analysis, reporting, and publication-quality figures.
 
 ## Installation
 

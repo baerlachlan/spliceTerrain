@@ -3,13 +3,15 @@
     cov <- split(ctx$plot$cov, ctx$plot$cov$sample)
     juncs <- split(ctx$plot$juncs, ctx$plot$juncs$sample)
     ctx$plot$plist <- lapply(ctx$input$bam, \(i){ggplot2::ggplot()})
+    ## Provide global maximum for scaling arc height if common_y
+    max_cov <- if (ctx$input$common_y) max(ctx$input$cov$coverage) else NULL
     out <- lapply(names(ctx$plot$plist), \(i){
         p <- ctx$plot$plist[[i]]
         p <- .plotCoverage(p, cov[[i]], ctx$input$colours[[i]])
         p <- .plotJunctions(
             p, juncs[[i]], cov[[i]], ctx$plot$psi, ctx$input$arc_height,
             ctx$input$colours[[i]], ctx$input$junc_text_size,
-            ctx$input$scale_arcs
+            ctx$input$scale_arcs, max_cov
         )
         p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(

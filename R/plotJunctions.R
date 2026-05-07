@@ -1,10 +1,10 @@
 #' @keywords internal
 .plotJunctions <- function(
-        p, juncs, cov, psi, arc_height, colour, junc_text_size, scale_arcs
+        p, juncs, cov, psi, arc_height, colour, junc_text_size, scale_arcs,
+        max_cov
 ) {
     if (is.null(juncs)) return(p)
-    if (is.null(cov)) return(p)
-    layout <- .junctionArcLayout(juncs, cov, arc_height)
+    layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov)
     arcs <- .junctionArcPoints(layout)
     labels <- .junctionArcLabels(layout, juncs, psi)
     size_col <- ifelse(scale_arcs, "size_on", "size_off")

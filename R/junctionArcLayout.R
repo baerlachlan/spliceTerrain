@@ -1,5 +1,5 @@
 #' @keywords internal
-.junctionArcLayout <- function(junc, cov, arc_height) {
+.junctionArcLayout <- function(junc, cov, arc_height, max_cov) {
     ## Arc stacking
     levels <- IRanges::disjointBins(sort(junc))
     ## Alternating above/below pattern for arcs
@@ -25,7 +25,10 @@
     }, numeric(1))
     cluster_max_cov_per_junc <- cluster_max_cov[cluster_id]
     ## Determine incremental heights from max coverage
-    max_cov <- max(cov$coverage)
+    ## 1 to allow arcs if coverage is filtered
+    if (is.null(max_cov)) {
+        max_cov <- if (is.null(cov$coverage)) 1 else max(cov$coverage)
+    }
     y_step <- arc_height * max_cov
     heights <- (y_step + levels * y_step) * sign
     ## “above” arcs start at anchor coverage and peak at coverage + height
@@ -46,8 +49,9 @@
 
 #' @keywords internal
 .coverageAtPos <- function(coverage, pos) {
-    hits <- IRanges::findOverlaps(pos, coverage)
     out <- numeric(length(pos))
+    if (is.null(coverage)) return(out)  ## cov may be filtered so avoid error
+    hits <- IRanges::findOverlaps(pos, coverage)
     if (length(hits)) {
         qh <- S4Vectors::queryHits(hits)
         sh <- S4Vectors::subjectHits(hits)

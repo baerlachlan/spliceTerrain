@@ -1,6 +1,6 @@
 #' @keywords internal
 .initContext <- function(args) {
-    ## This def is also useful as dev docs for the context (ctx) structure
+    ## This also serves as dev documentation for the context (ctx) structure
     ctx <- list(
         input = c(args, list(gal = NULL, cov = NULL, juncs = NULL)),
         plot = list(

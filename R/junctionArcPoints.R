@@ -11,8 +11,8 @@
     t <- seq(0, 1, length.out = 50L)
     tt <- c(-rev(t), t) # Both halves combined
     ## The exponent controls how round or square the arcs become
-    bump_l <- 1 - rev(t)^16 # left half
-    bump_r <- 1 - t^16 # right half
+    bump_l <- 1 - rev(t)^32 # left half
+    bump_r <- 1 - t^32 # right half
     ## Matrix of dims: number of juncs x 100
     x_mat <- mid + hw * rep(tt, each = length(mid))
     dim(x_mat) <- c(length(mid), length(tt))

@@ -5,7 +5,7 @@ author:
   affiliation:
   - Robinson Research Institute, Adelaide University, Adelaide, SA, Australia
   - College of Health, Adelaide University, Adelaide, SA, Australia
-  email: baerlachlan@gmail.com
+  email: bioc@lwwb.dev
 package: spliceTerrain
 output:
   BiocStyle::html_document:
@@ -57,15 +57,15 @@ library(tibble)
 library(pander)
 ```
 
-# Quick-start
+# Quick start
 
 At a minimum, we require BAM file paths and a genomic interval to plot.
 
-Here we use BAM files from the `RNAseqData.HNRNPC.bam.chr14` package as example data, subsetting two of these files to showcase `spliceTerrain`.
+Here we use BAM files from the `RNAseqData.HNRNPC.bam.chr14` package as example data, selecting two of these files to showcase `spliceTerrain`.
 In the most simple case, a genomic interval can be specified as a character vector of length 1.
 That's all we need to build a simple sashimi plot!
 
-```{r quickstart-2, fig.wide=TRUE, fig.height=6}
+```{r quickstart, fig.wide=TRUE, fig.height=6}
 bams <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7,1)]
 region <- "chr14:70,233,810-70,238,690"
 spliceTerrain(bam = bams, region = region)
@@ -74,83 +74,192 @@ spliceTerrain(bam = bams, region = region)
 # Introduction
 
 Sashimi plots are a visualisation tool for RNA-seq data that display summarised read coverage across a genomic interval and how splice junctions bridge exons.
-By displaying both per-base coverage and junction-spanning reads, sashimi plots provide an intuitive view of transcript structure and enable assessment of exon usage, alternative splicing events, and isoform differences between samples or conditions.
+By displaying both per-base coverage and junction-spanning reads, sashimi plots provide an intuitive view of transcript structure and enable assessment of exon usage, alternative splicing events, and isoform differences between samples.
 
 ## Motivation
 
 `spliceTerrain` was designed to integrate seamlessly with the Bioconductor ecosystem, utilising core Bioconductor classes and methods at the centre of its workflow.
 During RNA-seq analysis, genomic intervals, annotations, and features of interest are often represented as `GRanges` objects.
-`spliceTerrain` leverages this to enable straightforward visualisation that integrates seamlessly into `Rmarkdown`/`Quarto` documents, while promoting reproducibility through a user-friendly single-function R interface for generating sashimi-style plots within script-based analyses.
+`spliceTerrain` leverages this to enable straightforward visualisation that integrates seamlessly into `Rmarkdown`/`Quarto` documents, while promoting reproducibility through a user-friendly R interface for generating sashimi plots within script-based analyses.
 `spliceTerrain` enables publication-quality figures while retaining flexibility.
-Users can optionally access the underlying plot data and individual plot panels via the `return_data` argument, allowing further customisation or arrangement of panels.
+Users can optionally access the underlying plot data and individual plot panels, allowing further customisation or arrangement of panels.
 
 ## Previous works
 
-Several established and wonderful tools also exist for plotting sashimi-style visualisations, such as `MISO`, `ggsashimi` and `IGV`.
-`spliceTerrain` complements these by offering a Bioconductor-native, highly configurable approach tailored to bioinformaticians that adopt an `R`-based workflow.
+Several established and powerful tools also exist for plotting sashimi-style visualisations, such as `MISO`, `ggsashimi` and `IGV`.
+`spliceTerrain` complements these by offering the choice of a Bioconductor-native, highly configurable approach tailored to scientists that adopt an `R`-based workflow.
 
 # Complete guide
 
-## Loading required data
+## Required arguments
 
+First, we load the minimal required objects needed to create a sashimi plot with `spliceTerrain`. The BAM file paths were defined above in the [Quick start](#quick-start) section, but are defined again below.
 
+```{r bams}
+bams <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7,1)]
+```
 
-## Annotations
+Because these files were aligned to GRCh37, we will use an Ensembl annotation database based on the same genome build.
 
-```{r}
+```{r ensDb}
 ensDb <- EnsDb.Hsapiens.v75
 ```
 
-```{r}
+We then use a transcript ID (ENST00000394366) to retrieve a single-range `GRanges` object, which will define the plotting region.
+The `region` argument can also accept a `GRanges` object with multiple ranges, or even a `GRangesList.`
+However, `spliceTerrain` will internally reduce this input to a single range spanning all supplied intervals.
+
+The selected BAM files use UCSC-style sequence names, so the annotation must also be converted to the same naming convention before being supplied to `spliceTerrain`.
+
+```{r region}
 region <- transcripts(ensDb, filter = TxIdFilter("ENST00000394366"))
 seqlevelsStyle(region) <- "ucsc"
 ```
 
-```{r}
-annotation <- exonsBy(ensDb, by = "tx", filter = GeneNameFilter("SRSF5"))
+## Adding transcript models
+
+Transcript models can be displayed by supplying the `annotation` argument as a `GRangesList`, where each list element represents a single transcript.
+Transcript labels plotted on the y-axis are taken from the names of the `GRangesList` elements, otherwise a placeholder will be used.
+For this vignette, the plotting region covers the *SRSF5* gene, so we use its Ensembl gene ID to retrieve exon ranges for each transcript.
+To keep the example compact and readable, we subset the result to the first seven transcripts.
+
+```{r annotation}
+annotation <- exonsBy(
+    ensDb, by = "tx", filter = GeneIdFilter("ENSG00000100650")
+)
+annotation <- annotation[1:7]
 seqlevelsStyle(annotation) <- "ucsc"
 ```
 
-```{r, fig.wide=TRUE, fig.height=9}
+```{r annotation_plot, fig.wide=TRUE, fig.height=9}
 spliceTerrain(bam = bams, region = region, annotation = annotation)
 ```
 
-```{r, fig.wide=TRUE, fig.height=9}
-spliceTerrain(
-    bam = bams, region = region, annotation = annotation, panel_heights = c(
-        1,1,2
-    )
-)
-```
+When an annotation track is included, the plot contains one additional panel.
+In other words, the total number of panels becomes the number of BAM files plus one annotation panel.
+This becomes important when using the `panel_heights` argument described below.
 
 ## Panel heights
 
+The relative height of each plot panel can be controlled with the `panel_heights` argument.
+When an annotation track is present, its height is always specified by the final value in the vector.
+For example, to make the annotation track four times taller than each sample sashimi panel we can write:
+
+```{r panel_heights, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    panel_heights = c(1, 1, 4)
+)
+```
+
 ## Annotation labels
 
-## Colours
+Labels can be added to exons in the annotation track by referring to a metadata column in the annotation object.
+For example, this object already contains exon rank information for each exon.
 
-## Compressing introns
+```{r}
+annotation[1]
+```
 
-intron_width
+To display these values on the annotation track, simply provide the name of the desired metadata column.
 
-## Calculating PSI
+```{r anno_text_col, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    anno_text_col = "exon_rank"
+)
+```
 
 ## Highlighting regions
 
-highlight_colour
+To highlight a genomic region, we specify the interval to the `highlight` argument.
+The `highlight_colour` argument can be used to specify the colour of the highlight.
+Similar to the `region` argument, `highlight` accepts a `character` or `GRanges` object.
+This can be used to specify a single base pair site, that may, for example, be used to highlight a splice site mutation.
 
-## Strandedness
+```{r highlight, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    highlight = "chr14:70234854-70234854", highlight_colour = "red"
+)
+```
 
-## Minimum coverage
+Alternatively, we can highlight a wider range, which may be used to draw our attention to an alternatively used exon.
+
+```{r highlight2, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    highlight = "chr14:70234056-70234097",
+    highlight_colour = scales::alpha("red", 0.2)
+)
+```
+
+## Calculating PSI
+
+Sashimi plots can be informative for visualising the usage of alternative splicing options.
+Sometimes it is 
+
+```{r psi, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    psi = "chr14:70234854-70234854"
+)
+```
 
 ## Customizing arcs
 
-arc_height
-scale_arcs
+```{r arcs, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    psi = "chr14:70234854-70234854", arc_height = 0.4, scale_arcs = TRUE
+)
+```
+
+## Colours
+
+```{r colours, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    colours = c("darkblue", "darkred")
+)
+```
+
+## Compressing introns
+
+```{r compress_introns, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    compress_introns = TRUE, intron_width = 500
+)
+```
+
+## Strandedness
+
+```{r strandedness, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    strandedness = "r"
+)
+```
+
+## Minimum coverage
+
+```{r min_coverage, fig.wide=TRUE, fig.height=9}
+spliceTerrain(
+    bam = bams, region = region, annotation = annotation,
+    strandedness = "r", min_coverage = 5, min_junction_reads = 5
+)
+```
 
 ## Returning plot data
 
-This way you can arrange the plots as you like for publications, investigate junction level data to find the LSV that you want to calculate PSI values for, troubleshoot, etc.
+This way you can arrange the plots as you like for publications, investigate junction level data to find the psi that you want to calculate PSI values for, troubleshoot, etc.
+
+# Advanced use cases
+
+- Isolating a specific splice event
+    * return_ctx, subsetByOverlaps, provide ctx arg
+- Rearrangement of plots with patchwork, accessing individual plots
 
 # Session Information
 
