@@ -1,3 +1,3 @@
-# spliceTerrain 1.0.0
+# spliceTerrain 0.99.0
 
 - Submitted to Bioconductor
