@@ -51,9 +51,22 @@
     if (length(ctx$input$strandedness) == 1) ctx$input$strandedness <- rep(
         ctx$input$strandedness, length(ctx$input$bam)
     )
+    choices <- c("unstranded", "forward", "reverse")
     ctx$input$strandedness <- vapply(
-        ctx$input$strandedness, match.arg,
-        c("unstranded", "forward", "reverse"), FUN.VALUE = character(1)
+        ctx$input$strandedness,
+        function(x) {
+            tryCatch(
+                match.arg(x, choices),
+                error = function(e) {
+                    stop(
+                        "`strandedness` must be one of: ",
+                        paste(choices, collapse = ", "),
+                        call. = FALSE
+                    )
+                }
+            )
+        },
+        FUN.VALUE = character(1)
     )
     names(ctx$input$strandedness) <- names(ctx$input$bam)
     ctx

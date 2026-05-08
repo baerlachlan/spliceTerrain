@@ -18,8 +18,8 @@
 #' character string coercible to \code{GRanges}, such as
 #' \code{"chr:start-end"} or \code{"chr:start-end:strand"}. Commas, spaces, and
 #' en/em dashes in character regions are normalised before coercion. If multiple
-#' ranges are supplied, they are reduced to a single span used as the BAM query
-#' and plotting window.
+#' ranges are supplied, they must all be on the same seqname and are reduced to
+#' a single span used as the BAM query and plotting window.
 #'
 #' @param annotation Optional annotation track. Must be a
 #' \link[GenomicRanges]{GRangesList}, with each list element representing one
@@ -141,9 +141,9 @@
 #'
 #' \code{region}, \code{psi}, and \code{highlight} may be supplied as genomic
 #' ranges or as character strings coercible to \code{GRanges}. If multiple
-#' ranges are supplied for \code{region}, their span is used as the BAM query
-#' and plotting window. Optional genomic overlays are restricted to the plotting
-#' region before plotting.
+#' ranges are supplied for \code{region}, they must all be on the same seqname;
+#' their span is used as the BAM query and plotting window. Optional genomic
+#' overlays are restricted to the plotting region before plotting.
 #'
 #' \code{psi} and \code{highlight} are optional overlays:
 #' \itemize{

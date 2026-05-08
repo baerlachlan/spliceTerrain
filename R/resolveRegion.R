@@ -13,6 +13,8 @@
         region <- unlist(region, use.names = FALSE)
     if (!inherits(region, "GRanges"))
         stop("`region` must be a GRanges or GRangesList.")
+    if (length(unique(as.character(Seqinfo::seqnames(region)))) != 1L)
+        stop("`region` must resolve to ranges on exactly one seqname.")
     ## Ensure only a single range (the span) is returned
     ## So we don't load duplicate alignments
     ## See `which` arg of scanBamParam
