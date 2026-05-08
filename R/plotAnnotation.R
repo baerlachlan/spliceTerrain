@@ -8,21 +8,28 @@
     introns <- .getIntrons(exons, ctx$input$min_arrow)
     p <- ggplot2::ggplot()
     p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
-    p <- p + ggplot2::geom_rect(
+    p <- p + ggplot2::geom_tile(
         data = df,
-        ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$group),
+        ggplot2::aes(
+            x = .data$start + (.data$width / 2), y = .data$group,
+            width = .data$width
+        ),
         height = 0.3, colour = "black", fill = "black"
     )
-    p <- p + ggplot2::geom_segment(
-        data = introns,
-        ggplot2::aes(x = .data$start, xend = .data$end, y = .data$group),
-        linewidth = 0.4, colour = "black"
-    )
-    p <- p + ggplot2::geom_text(
-        data = introns,
-        ggplot2::aes(x = .data$midpoint, y = .data$group, label = .data$arrow),
-        vjust = 0.35, colour = "black"
-    )
+    if (!is.null(introns) && nrow(introns)) {
+        p <- p + ggplot2::geom_segment(
+            data = introns,
+            ggplot2::aes(x = .data$start, xend = .data$end, y = .data$group),
+            linewidth = 0.4, colour = "black"
+        )
+        p <- p + ggplot2::geom_text(
+            data = introns,
+            ggplot2::aes(
+                x = .data$midpoint, y = .data$group, label = .data$arrow
+            ),
+            vjust = 0.35, colour = "black"
+        )
+    }
     p <- p + ggplot2::coord_cartesian(
         xlim = c(
             BiocGenerics::start(ctx$plot$region),

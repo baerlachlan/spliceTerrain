@@ -9,6 +9,7 @@
         Seqinfo::seqlevels(annotation), Seqinfo::seqlevels(region)
     ))) stop("`annotation` does not overlap `region`")
     hits <- GenomicRanges::findOverlaps(annotation, region)
+    if (!length(hits)) stop("`annotation` does not overlap `region`")
     annotation <- annotation[S4Vectors::from(hits)]
     annotation <- BiocGenerics::sort(annotation)
     len <- length(annotation)

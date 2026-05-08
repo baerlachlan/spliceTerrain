@@ -19,7 +19,7 @@ test_that("spliceTerrain returns processed context for HNRNPC BAMs", {
     expect_gt(length(ctx$input$juncs), 0L)
 })
 
-test_that("spliceTerrain builds plots from BAMs and returned context", {
+test_that("spliceTerrain builds plots from returned contexts", {
     bams <- .hnrnpc_bams()
     ctx <- spliceTerrain(
         bam = bams[7],
@@ -29,16 +29,7 @@ test_that("spliceTerrain builds plots from BAMs and returned context", {
         return_ctx = TRUE
     )
 
-    expect_s3_class(spliceTerrain(ctx = ctx), "patchwork")
-    expect_s3_class(
-        spliceTerrain(
-            bam = bams[c(7, 1)],
-            region = .hnrnpc_region(),
-            min_coverage = 1,
-            min_junction_reads = 1
-        ),
-        "patchwork"
-    )
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
 test_that("spliceTerrain validates high-risk user inputs before plotting", {

@@ -10,6 +10,7 @@
         Seqinfo::seqlevels(gr), Seqinfo::seqlevels(region)
     ))) stop("`", type, "` does not overlap `region`")
     hits <- GenomicRanges::findOverlaps(gr, region)
+    if (!length(hits)) stop("`", type, "` does not overlap `region`")
     gr <- gr[S4Vectors::from(hits)]
     gr <- BiocGenerics::sort(gr)
     ctx$input[[type]] <- gr

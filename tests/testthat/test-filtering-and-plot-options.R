@@ -33,7 +33,22 @@ test_that("junction-only plots work when coverage is removed", {
 
     expect_length(ctx$input$cov, 0L)
     expect_gt(length(ctx$input$juncs), 0L)
-    expect_s3_class(spliceTerrain(ctx = ctx), "patchwork")
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+})
+
+test_that("regions with no alignments return an empty plot", {
+    bams <- .hnrnpc_bams()
+    ctx <- spliceTerrain(
+        bam = bams[7],
+        region = "chr14:1-1000",
+        return_ctx = TRUE
+    )
+
+    expect_s4_class(ctx$input$cov, "GRanges")
+    expect_s4_class(ctx$input$juncs, "GRanges")
+    expect_length(ctx$input$cov, 0L)
+    expect_length(ctx$input$juncs, 0L)
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
 test_that("compress_introns controls whether plot-space map is created", {
@@ -85,7 +100,7 @@ test_that("highlight and psi overlays are resolved and mapped", {
 
 test_that("plot assembly options work with multiple samples", {
     bams <- .hnrnpc_bams()
-    expect_s3_class(
+    .expect_patchwork_renders(
         spliceTerrain(
             bam = bams[c(7, 1)],
             region = .hnrnpc_region(),
@@ -95,7 +110,6 @@ test_that("plot assembly options work with multiple samples", {
             scale_arcs = TRUE,
             colours = c("black", "red"),
             panel_heights = c(1, 2)
-        ),
-        "patchwork"
+        )
     )
 })

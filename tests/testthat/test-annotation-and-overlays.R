@@ -37,12 +37,12 @@ test_that("annotation panel and annotation labels can be plotted", {
     expect_true("annotation" %in% names(plotted$plot$plist))
     expect_s3_class(plotted$plot$plist$annotation, "ggplot")
     expect_gte(length(plotted$plot$plist$annotation$layers), 4L)
-    expect_s3_class(spliceTerrain(ctx = ctx), "patchwork")
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
 test_that("absent annotation label columns are ignored", {
     bams <- .hnrnpc_bams()
-    expect_s3_class(
+    .expect_patchwork_renders(
         spliceTerrain(
             bam = bams[7],
             region = .hnrnpc_region(),
@@ -50,9 +50,51 @@ test_that("absent annotation label columns are ignored", {
             anno_text_col = "missing_column",
             min_coverage = 1,
             min_junction_reads = 1
-        ),
-        "patchwork"
+        )
     )
+})
+
+test_that("unnamed annotation groups get default labels", {
+    bams <- .hnrnpc_bams()
+    annotation <- .hnrnpc_annotation()
+    names(annotation) <- NULL
+
+    ctx <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        annotation = annotation,
+        min_coverage = 1,
+        min_junction_reads = 1,
+        return_ctx = TRUE
+    )
+
+    expect_identical(
+        unique(ctx$input$annotation$group),
+        c("annotation_1", "annotation_2")
+    )
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+})
+
+test_that("single-exon annotation groups can be plotted", {
+    bams <- .hnrnpc_bams()
+    annotation <- .hnrnpc_annotation()[1]
+    annotation[[1]] <- annotation[[1]][1]
+
+    ctx <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        annotation = annotation,
+        min_coverage = 1,
+        min_junction_reads = 1,
+        return_ctx = TRUE
+    )
+
+    expect_length(ctx$input$annotation, 1L)
+    expect_identical(ctx$input$annotation$group, names(annotation))
+    plotted <- spliceTerrain:::.plotSamples(ctx)
+    plotted <- spliceTerrain:::.plotAnnotation(plotted)
+    .expect_ggplot_renders(plotted$plot$plist$annotation)
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
 test_that("annotation input must be a GRangesList overlapping region", {
@@ -64,6 +106,12 @@ test_that("annotation input must be a GRangesList overlapping region", {
     off_region_annotation <- GenomicRanges::GRangesList(
         tx = GenomicRanges::GRanges(
             seqnames = "chr1",
+            ranges = IRanges::IRanges(1L, 100L)
+        )
+    )
+    same_seq_off_region_annotation <- GenomicRanges::GRangesList(
+        tx = GenomicRanges::GRanges(
+            seqnames = "chr14",
             ranges = IRanges::IRanges(1L, 100L)
         )
     )
@@ -82,6 +130,15 @@ test_that("annotation input must be a GRangesList overlapping region", {
             bam = bams[7],
             region = .hnrnpc_region(),
             annotation = off_region_annotation
+        ),
+        "`annotation` does not overlap `region`",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7],
+            region = .hnrnpc_region(),
+            annotation = same_seq_off_region_annotation
         ),
         "`annotation` does not overlap `region`",
         fixed = TRUE
@@ -146,4 +203,20 @@ test_that("highlight intervals are plotted with sample and annotation panels", {
             inherits(layer$geom, "GeomRect")
         }, logical(1)))
     }, logical(1))))
+})
+
+test_that("annotation and overlays render without intron compression", {
+    bams <- .hnrnpc_bams()
+    p <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        annotation = .hnrnpc_annotation(),
+        psi = .hnrnpc_psi(),
+        highlight = .hnrnpc_highlight(),
+        min_coverage = 1,
+        min_junction_reads = 1,
+        compress_introns = FALSE
+    )
+
+    .expect_patchwork_renders(p)
 })

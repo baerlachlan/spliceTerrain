@@ -238,7 +238,7 @@ spliceTerrain(
 ```{r strandedness, fig.wide=TRUE, fig.height=9}
 spliceTerrain(
     bam = bams, region = region, annotation = annotation,
-    strandedness = "r"
+    strandedness = "reverse"
 )
 ```
 
@@ -247,7 +247,7 @@ spliceTerrain(
 ```{r min_coverage, fig.wide=TRUE, fig.height=9}
 spliceTerrain(
     bam = bams, region = region, annotation = annotation,
-    strandedness = "r", min_coverage = 5, min_junction_reads = 5
+    strandedness = "reverse", min_coverage = 5, min_junction_reads = 5
 )
 ```
 

@@ -72,7 +72,25 @@ test_that("psi and highlight must overlap the resolved region", {
         spliceTerrain(
             bam = bams[7],
             region = .hnrnpc_region(),
+            psi = "chr14:1-100"
+        ),
+        "`psi` does not overlap `region`",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7],
+            region = .hnrnpc_region(),
             highlight = "chr1:1-100"
+        ),
+        "`highlight` does not overlap `region`",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7],
+            region = .hnrnpc_region(),
+            highlight = "chr14:1-100"
         ),
         "`highlight` does not overlap `region`",
         fixed = TRUE
