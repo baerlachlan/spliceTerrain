@@ -216,7 +216,7 @@ spliceTerrain <- function(
         highlight = NULL,
         strandedness = "unstranded",
         min_mapq = 0L,
-        min_coverage = 10,
+        min_coverage = 0,
         min_junction_reads = 10,
         compress_introns = TRUE,
         intron_width = 50,

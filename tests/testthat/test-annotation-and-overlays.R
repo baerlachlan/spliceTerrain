@@ -36,7 +36,11 @@ test_that("annotation panel and annotation labels can be plotted", {
 
     expect_true("annotation" %in% names(plotted$plot$plist))
     expect_s3_class(plotted$plot$plist$annotation, "ggplot")
-    expect_gte(length(plotted$plot$plist$annotation$layers), 4L)
+    expect_true(any(vapply(
+        plotted$plot$plist$annotation$layers,
+        function(layer) inherits(layer$geom, "GeomPolygon"),
+        logical(1)
+    )))
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 

@@ -12,7 +12,7 @@
             axis.line.y = ggplot2::element_line(colour = "grey70"),
             axis.line.x = ggplot2::element_line(colour = "grey70"),
             axis.title.y = ggplot2::element_text(
-                angle = 0, vjust = 0.5, size = axis_title_size
+                angle = 90, size = axis_title_size
             ),
             axis.text = ggplot2::element_text(size = axis_text_size),
             plot.margin = ggplot2::margin(5, 5, 5, 5)

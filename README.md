@@ -26,7 +26,7 @@ That's all we need to build a simple sashimi plot!
 ```r
 library(spliceTerrain)
 library(RNAseqData.HNRNPC.bam.chr14)
-bams <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7,1)]
+bams <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7, 1)]
 region <- "chr14:70,233,810-70,238,690"
 spliceTerrain(bam = bams, region = region)
 ```

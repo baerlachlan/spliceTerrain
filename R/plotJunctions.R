@@ -21,7 +21,8 @@
             data = labels,
             ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
             label.padding = grid::unit(0, "pt"),
-            label.r = grid::unit(junc_text_size, "pt"), linewidth = 0,
-            size = junc_text_size, text.colour = colour
+            label.r = grid::unit(1.5, "pt"), linewidth = 0,
+            size = junc_text_size, text.colour = colour, fill = "white",
+            lineheight = 0.9
         )
 }
