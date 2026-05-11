@@ -7,7 +7,7 @@
 }
 
 test_that("buildMap creates expected compacted plot coordinates", {
-    map <- spliceTerrain:::.buildMap(.example_ranges(), gap = 10L)
+    map <- spliceTerrain:::.buildMap(.example_ranges(), gap = 10)
 
     expect_s4_class(map, "GRanges")
     expect_identical(map$g_start, c(100L, 200L))
@@ -19,7 +19,7 @@ test_that("buildMap creates expected compacted plot coordinates", {
 test_that("genome-to-plot mapping preserves ranges and metadata", {
     gr <- .example_ranges()
     gr$id <- c("a", "b")
-    map <- spliceTerrain:::.buildMap(gr, gap = 10L)
+    map <- spliceTerrain:::.buildMap(gr, gap = 10)
     mapped <- spliceTerrain:::.mapGenomeToPlot(gr, map)[[1]]
 
     expect_s4_class(mapped, "GRanges")
@@ -29,7 +29,7 @@ test_that("genome-to-plot mapping preserves ranges and metadata", {
 })
 
 test_that("plot-to-genome mapping handles blocks and compacted gaps", {
-    map <- spliceTerrain:::.buildMap(.example_ranges(), gap = 10L)
+    map <- spliceTerrain:::.buildMap(.example_ranges(), gap = 10)
 
     expect_equal(spliceTerrain:::.mapPlotToGenome(c(1, 10, 21, 30), map),
         c(100, 109, 200, 209)

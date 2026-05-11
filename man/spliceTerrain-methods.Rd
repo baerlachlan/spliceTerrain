@@ -55,9 +55,10 @@ default group labels are generated. Annotation is restricted to the plotting
 region.}
 
 \item{psi}{Optional genomic interval used to annotate junction labels with
-local junction usage. Accepts the same formats as \code{region}. Junctions
-with a start or end anchor overlapping \code{psi} are labelled with their
-fraction of total junction reads among the selected junctions.}
+local junction usage (percent spliced in, PSI). Accepts the same formats as
+\code{region}. Junctions with a start or end anchor overlapping \code{psi}
+are labelled with their fraction of total junction reads among the selected
+junctions.}
 
 \item{highlight}{Optional interval(s) to highlight. Accepts the same formats
 as \code{region}. Multiple ranges may be supplied. Highlighted intervals are
@@ -93,12 +94,11 @@ containing coverage, junctions, annotations, or supplied overlays. If
 compacted gaps when \code{compress_introns = TRUE}.}
 
 \item{min_arrow}{Integer scalar. Minimum annotation intron width required
-before drawing directional arrows. This is most relevant when introns are
-compacted.}
+before drawing directional arrows.}
 
 \item{common_y}{Logical scalar. If \code{TRUE}, use a common y-axis range
 across all sample panels. If \code{FALSE}, each sample panel is scaled
-independently. This affects sample panels only, not the annotation panel.}
+independently.}
 
 \item{arc_height}{Numeric scalar controlling junction arc height relative to
 the coverage scale. Larger values produce taller arcs and greater separation
@@ -166,7 +166,7 @@ shown in genome coordinates, including when introns are compressed.
 \description{
 \code{spliceTerrain()} draws sashimi-style plots for one or more BAM files
 over a genomic region. Plots combine per-base coverage, splice junction arcs,
-optional transcript-style annotation, and optional highlighted regions.
+optional transcript annotation, and optional highlighted regions.
 Intronic or otherwise uninformative gaps can be compacted so the plotting
 area is focused on observed or annotated features.
 }

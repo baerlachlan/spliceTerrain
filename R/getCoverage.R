@@ -9,7 +9,7 @@
             return(GenomicRanges::GRanges(sample = x, coverage = 0))
         }
         ends <- cumsum(lens)
-        starts <- ends - lens + 1L
+        starts <- ends - lens + 1
         gr <- GenomicRanges::GRanges(
             seqnames = unique(Seqinfo::seqnames(ctx$input$region)),
             ranges = IRanges::IRanges(start = starts, end = ends),
@@ -23,10 +23,10 @@
         ## May cause a performance hit, revert to geom_area if needed
         w <- BiocGenerics::width(gr)
         idx <- rep(seq_along(gr), times = w)
-        pos <- BiocGenerics::start(gr)[idx] + sequence(w) - 1L
+        pos <- BiocGenerics::start(gr)[idx] + sequence(w) - 1
         out <- GenomicRanges::GRanges(
             seqnames = Seqinfo::seqnames(gr)[idx],
-            ranges = IRanges::IRanges(start = pos, width = 1L),
+            ranges = IRanges::IRanges(start = pos, width = 1),
             strand = BiocGenerics::strand(gr)[idx],
             sample = gr$sample[idx],
             coverage = gr$coverage[idx],

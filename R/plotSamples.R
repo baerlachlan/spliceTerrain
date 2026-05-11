@@ -1,3 +1,4 @@
+#' @importFrom rlang .data
 #' @keywords internal
 .plotSamples <- function(ctx) {
     cov <- split(ctx$plot$cov, ctx$plot$cov$sample)
@@ -43,4 +44,15 @@
     names(out) <- names(ctx$plot$plist)
     ctx$plot$plist <- out
     ctx
+}
+
+#' @keywords internal
+.plotCoverage <- function(p, cov, colour) {
+    if (is.null(cov)) return(p)
+    cov <- as.data.frame(cov)
+    p + ggplot2::geom_bar(
+        data = cov,
+        ggplot2::aes(.data$start, .data$coverage),
+        stat = "identity", width = 1, colour = colour, fill = colour
+    )
 }

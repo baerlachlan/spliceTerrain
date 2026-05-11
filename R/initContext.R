@@ -20,7 +20,7 @@
 .checkBam <- function(ctx) {
     bam <- ctx$input$bam
     missing_bam <- bam[!file.exists(bam)]
-    if (length(missing_bam) > 0L)
+    if (length(missing_bam) > 0)
         stop(
             "The following BAM file(s) do not exist:\n",
             paste0("- ", missing_bam, collapse = "\n")

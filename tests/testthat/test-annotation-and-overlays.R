@@ -93,7 +93,7 @@ test_that("single-exon annotation groups can be plotted", {
         return_ctx = TRUE
     )
 
-    expect_length(ctx$input$annotation, 1L)
+    expect_length(ctx$input$annotation, 1)
     expect_identical(ctx$input$annotation$group, names(annotation))
     plotted <- spliceTerrain:::.plotSamples(ctx)
     plotted <- spliceTerrain:::.plotAnnotation(plotted)

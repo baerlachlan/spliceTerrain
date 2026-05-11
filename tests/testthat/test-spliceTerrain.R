@@ -15,8 +15,8 @@ test_that("spliceTerrain returns processed context for HNRNPC BAMs", {
     expect_s4_class(ctx$input$juncs, "GRanges")
     expect_s4_class(ctx$plot$cov, "GRanges")
     expect_s4_class(ctx$plot$juncs, "GRanges")
-    expect_gt(length(ctx$input$cov), 0L)
-    expect_gt(length(ctx$input$juncs), 0L)
+    expect_gt(length(ctx$input$cov), 0)
+    expect_gt(length(ctx$input$juncs), 0)
 })
 
 test_that("spliceTerrain builds plots from returned contexts", {

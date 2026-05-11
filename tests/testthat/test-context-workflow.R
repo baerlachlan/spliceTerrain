@@ -10,6 +10,6 @@ test_that("returned contexts can be replotted after removing junctions", {
 
     ctx$plot$juncs <- ctx$plot$juncs[FALSE]
 
-    expect_length(ctx$plot$juncs, 0L)
+    expect_length(ctx$plot$juncs, 0)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })

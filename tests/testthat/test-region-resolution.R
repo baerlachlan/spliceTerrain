@@ -27,7 +27,7 @@ test_that("multiple region ranges resolve to one span", {
     )
     region <- .resolve_region(gr)
 
-    expect_length(region, 1L)
+    expect_length(region, 1)
     expect_identical(as.character(Seqinfo::seqnames(region)), "chr14")
     expect_identical(BiocGenerics::start(region), 100L)
     expect_identical(BiocGenerics::end(region), 350L)
@@ -44,7 +44,7 @@ test_that("GRangesList regions are unlisted before span calculation", {
     )
     region <- .resolve_region(grl)
 
-    expect_length(region, 1L)
+    expect_length(region, 1)
     expect_identical(BiocGenerics::start(region), 100L)
     expect_identical(BiocGenerics::end(region), 220L)
     expect_identical(as.character(BiocGenerics::strand(region)), "-")

@@ -17,8 +17,8 @@ test_that("coverage and junction thresholds filter processed data", {
 
     expect_gt(length(low$input$cov), length(high$input$cov))
     expect_gt(length(low$input$juncs), length(high$input$juncs))
-    expect_true(all(low$input$cov$coverage >= 1L))
-    expect_true(all(low$input$juncs$coverage >= 1L))
+    expect_true(all(low$input$cov$coverage >= 1))
+    expect_true(all(low$input$juncs$coverage >= 1))
 })
 
 test_that("junction-only plots work when coverage is removed", {
@@ -31,8 +31,8 @@ test_that("junction-only plots work when coverage is removed", {
         return_ctx = TRUE
     )
 
-    expect_length(ctx$input$cov, 0L)
-    expect_gt(length(ctx$input$juncs), 0L)
+    expect_length(ctx$input$cov, 0)
+    expect_gt(length(ctx$input$juncs), 0)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
@@ -46,8 +46,8 @@ test_that("regions with no alignments return an empty plot", {
 
     expect_s4_class(ctx$input$cov, "GRanges")
     expect_s4_class(ctx$input$juncs, "GRanges")
-    expect_length(ctx$input$cov, 0L)
-    expect_length(ctx$input$juncs, 0L)
+    expect_length(ctx$input$cov, 0)
+    expect_length(ctx$input$juncs, 0)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
@@ -94,8 +94,8 @@ test_that("highlight and psi overlays are resolved and mapped", {
     expect_s4_class(ctx$input$highlight, "GRanges")
     expect_s4_class(ctx$plot$psi, "GRanges")
     expect_s4_class(ctx$plot$highlight, "GRanges")
-    expect_length(ctx$plot$psi, 1L)
-    expect_length(ctx$plot$highlight, 1L)
+    expect_length(ctx$plot$psi, 1)
+    expect_length(ctx$plot$highlight, 1)
 })
 
 test_that("plot assembly options work with multiple samples", {

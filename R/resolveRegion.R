@@ -13,7 +13,7 @@
         region <- unlist(region, use.names = FALSE)
     if (!inherits(region, "GRanges"))
         stop("`region` must be a GRanges or GRangesList.")
-    if (length(unique(as.character(Seqinfo::seqnames(region)))) != 1L)
+    if (length(unique(as.character(Seqinfo::seqnames(region)))) != 1)
         stop("`region` must resolve to ranges on exactly one seqname.")
     ## Ensure only a single range (the span) is returned
     ## So we don't load duplicate alignments
@@ -23,4 +23,15 @@
     ctx$input$region <- span
     ctx$plot$region <- span
     ctx
+}
+
+#' @keywords internal
+.spanOfRanges <- function(gr) {
+    s <- min(S4Vectors::start(gr))
+    e <- max(S4Vectors::end(gr))
+    GenomicRanges::GRanges(
+        seqnames = GenomicRanges::seqnames(gr)[1],
+        ranges   = IRanges::IRanges(start = s, end = e),
+        strand   = GenomicRanges::strand(gr)[1]
+    )
 }

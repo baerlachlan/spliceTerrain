@@ -34,7 +34,7 @@
 
 #' @keywords internal
 .bamIsPaired <- function(bam) {
-    bf <- Rsamtools::BamFile(bam, yieldSize = 1000L)
+    bf <- Rsamtools::BamFile(bam, yieldSize = 1000)
     flag <- Rsamtools::scanBamFlag(isPaired = TRUE)
     param <- Rsamtools::ScanBamParam(flag = flag, what = "flag")
     any(Rsamtools::scanBam(bf, param = param)[[1]]$flag)
