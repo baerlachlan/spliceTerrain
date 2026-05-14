@@ -196,13 +196,53 @@
 #' \link[GenomicRanges]{GRanges} for representing genomic intervals.
 #'
 #' @examples
-#' if (requireNamespace("RNAseqData.HNRNPC.bam.chr14", quietly = TRUE)) {
+#' if (
+#'   requireNamespace("RNAseqData.HNRNPC.bam.chr14", quietly = TRUE) &&
+#'   requireNamespace("EnsDb.Hsapiens.v75", quietly = TRUE) &&
+#'   requireNamespace("AnnotationFilter", quietly = TRUE) &&
+#'   requireNamespace("ensembldb", quietly = TRUE)
+#' ) {
 #'   bams <- RNAseqData.HNRNPC.bam.chr14::RNAseqData.HNRNPC.bam.chr14_BAMFILES
-#'   spliceTerrain(
-#'     bam = bams[c(7, 1)],
-#'     region = "chr14:70222436-70237375",
-#'     psi = "chr14:70234854-70234854"
+#'   bams <- bams[c(7, 1)]
+#'   names(bams) <- c("HNRNPC knockdown", "Control")
+#'   region <- "chr14:70,233,810-70,238,690"
+#'
+#'   annotation <- ensembldb::exonsBy(
+#'     EnsDb.Hsapiens.v75::EnsDb.Hsapiens.v75,
+#'     by = "tx",
+#'     filter = AnnotationFilter::GeneIdFilter("ENSG00000100650")
 #'   )
+#'   annotation <- annotation[1:3]
+#'   ensembldb::seqlevelsStyle(annotation) <- "ucsc"
+#'
+#'   spliceTerrain(bam = bams, region = region)
+#'
+#'   spliceTerrain(
+#'     bam = bams,
+#'     region = region,
+#'     annotation = annotation,
+#'     anno_text_col = "exon_rank",
+#'     psi = "chr14:70234854-70234854",
+#'     highlight = "chr14:70233810-70234097",
+#'     arc_height = 0.25,
+#'     scale_arcs = TRUE,
+#'     common_y = TRUE,
+#'     colours = c("darkblue", "darkred"),
+#'     highlight_colour = scales::alpha("gold", 0.25),
+#'     anno_text_size = 2,
+#'     panel_heights = c(2, 2, 1)
+#'   )
+#'
+#'   ctx <- spliceTerrain(
+#'     bam = bams,
+#'     region = region,
+#'     annotation = annotation,
+#'     min_junction_reads = 1,
+#'     panel_heights = c(2, 2, 1),
+#'     return_ctx = TRUE
+#'   )
+#'   ctx$plot$juncs <- ctx$plot$juncs[ctx$plot$juncs$coverage >= 20]
+#'   spliceTerrain(ctx = ctx)
 #' }
 #'
 #' @rdname spliceTerrain-methods

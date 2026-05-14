@@ -8,7 +8,7 @@
     df$y <- unname(group_y[df$group])
     exons <- split(df, df[["group"]])
     introns <- .getIntrons(exons, ctx$input$min_arrow)
-    arrowheads <- .annotationArrowheads(introns)
+    arrowheads <- .annotationArrowheads(introns, ctx$plot$region)
     p <- ggplot2::ggplot()
     p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
     p <- .plotAnnotationExons(p, df)
@@ -102,12 +102,12 @@
 }
 
 #' @keywords internal
-.annotationArrowheads <- function(introns) {
+.annotationArrowheads <- function(introns, region) {
     if (is.null(introns) || !nrow(introns)) return(NULL)
     introns <- introns[introns$draw_arrow, ]
     if (!nrow(introns)) return(NULL)
 
-    arrow_width <- min(introns$width * 0.15, 150)
+    arrow_width <- as.numeric(BiocGenerics::width(region)) * 0.012
     ## Centre on geometric centroid
     tip_x <- ifelse(
         introns$strand == "+",
