@@ -1,6 +1,5 @@
 #' @keywords internal
 .initContext <- function(args) {
-    ## This also serves as dev documentation for the context (ctx) structure
     ctx <- list(
         input = c(args, list(gal = NULL, cov = NULL, juncs = NULL)),
         plot = list(
@@ -13,6 +12,7 @@
     ctx <- .checkStrandedness(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
+    ctx <- .checkNormalisation(ctx)
     ctx
 }
 
@@ -94,5 +94,54 @@
             ctx$input$min_junction_reads, length(ctx$input$bam)
         )
     names(ctx$input$min_junction_reads) <- names(ctx$input$bam)
+    ctx
+}
+
+#' @keywords internal
+.checkNormalisation <- function(ctx) {
+    n_bam <- length(ctx$input$bam)
+    lib_size <- ctx$input$lib_size
+    norm_factors <- ctx$input$norm_factors
+    normalise_to <- ctx$input$normalise_to
+
+    if (is.null(lib_size)) {
+        if (!is.null(norm_factors))
+            stop("`norm_factors` requires `lib_size`.")
+        if (!is.null(normalise_to))
+            stop("`normalise_to` requires `lib_size`.")
+        ctx$input$effective_lib_size <- NULL
+        return(ctx)
+    }
+
+    if (length(lib_size) != n_bam)
+        stop("`lib_size` must be NULL or the number of BAMs.")
+    if (!is.numeric(lib_size) || any(!is.finite(lib_size)) ||
+            any(lib_size <= 0))
+        stop("`lib_size` values must be positive finite numbers.")
+
+    if (is.null(norm_factors)) {
+        norm_factors <- rep(1, n_bam)
+    } else {
+        if (length(norm_factors) != n_bam)
+            stop("`norm_factors` must be NULL or the number of BAMs.")
+        if (!is.numeric(norm_factors) || any(!is.finite(norm_factors)) ||
+                any(norm_factors <= 0))
+            stop("`norm_factors` values must be positive finite numbers.")
+    }
+
+    effective_lib_size <- lib_size * norm_factors
+    if (is.null(normalise_to)) {
+        normalise_to <- stats::median(effective_lib_size)
+    } else if (length(normalise_to) != 1 || !is.numeric(normalise_to) ||
+            !is.finite(normalise_to) || normalise_to <= 0) {
+        stop("`normalise_to` must be a positive finite number.")
+    }
+
+    names(lib_size) <- names(ctx$input$bam)
+    names(norm_factors) <- names(ctx$input$bam)
+    names(effective_lib_size) <- names(ctx$input$bam)
+    ctx$input$norm_factors <- norm_factors
+    ctx$input$effective_lib_size <- effective_lib_size
+    ctx$input$normalise_to <- normalise_to
     ctx
 }

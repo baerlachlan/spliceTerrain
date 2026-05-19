@@ -130,8 +130,12 @@
 }
 
 .junctionArcLabels <- function(layout, juncs, psi) {
-    labels <- juncs$coverage
+    label_values <- juncs$coverage
+    labels <- .formatJunctionLabels(label_values)
     if (!is.null(psi)) {
+        ## Normalisation uses one scale factor per sample, so PSI percentages
+        ## are unchanged within a sample. Using `coverage` keeps labels
+        ## consistent with plotted arc values.
         anchors <- .rangesToAnchors(juncs)
         st <- anchors[anchors$anchor == "start"]
         hits_st <- IRanges::findOverlaps(psi, st)
@@ -142,7 +146,11 @@
         sh <- unique(c(sh_st, sh_en))
         labels[sh] <- paste0(
             labels[sh], "\n",
-            "(", scales::percent(round(labels[sh] / sum(labels[sh]), 3)), ")"
+            "(",
+            scales::percent(
+                round(label_values[sh] / sum(label_values[sh]), 3)
+            ),
+            ")"
         )
     }
     data.frame(
@@ -150,4 +158,10 @@
         y = layout$heights,
         label = labels
     )
+}
+
+#' @keywords internal
+.formatJunctionLabels <- function(x) {
+    if (all(x == round(x), na.rm = TRUE)) return(as.character(round(x)))
+    format(round(x, 1), trim = TRUE)
 }

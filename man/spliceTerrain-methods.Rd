@@ -14,6 +14,9 @@ spliceTerrain(
   min_mapq = 0,
   min_coverage = 0,
   min_junction_reads = 10,
+  lib_size = NULL,
+  norm_factors = NULL,
+  normalise_to = NULL,
   compress_introns = TRUE,
   intron_width = 50,
   min_arrow = intron_width + 1,
@@ -83,7 +86,21 @@ either as a single value applied to all BAMs or as one value per BAM.}
 
 \item{min_junction_reads}{Integer scalar or integer vector. Minimum number of
 split reads supporting a junction for it to be retained for plotting. May be
-supplied either as a single value applied to all BAMs or as one value per BAM.}
+supplied either as a single value applied to all BAMs or as one value per
+BAM.}
+
+\item{lib_size}{Optional numeric vector giving RNA-seq library sizes, one per
+BAM file. When supplied, coverage and junction counts are normalised by
+effective library size before plotting.}
+
+\item{norm_factors}{Optional numeric vector of normalisation factors, one per
+BAM file, such as edgeR TMM normalisation factors. Requires
+\code{lib_size}. Effective library sizes are calculated as
+\code{lib_size * norm_factors}.}
+
+\item{normalise_to}{Optional numeric scalar giving the target library size
+used for normalisation. If \code{NULL}, counts are normalised to the median
+effective library size.}
 
 \item{compress_introns}{Logical scalar. If \code{TRUE}, compact gaps between
 observed or annotated genomic blocks so plotting space is focused on regions
@@ -205,6 +222,14 @@ The arguments \code{strandedness}, \code{min_coverage},
 length 1, in which case the value is recycled across all BAMs, or as one
 value per BAM.
 
+When \code{lib_size} is supplied, coverage and junction counts are normalised
+to a common effective library size before plotting. Effective library sizes
+are calculated as \code{lib_size * norm_factors}, with
+\code{norm_factors = 1} when not supplied. If \code{normalise_to = NULL},
+counts are normalised to the median effective library size. Filtering
+thresholds \code{min_coverage} and \code{min_junction_reads} are always
+applied to raw counts before normalisation.
+
 Strand filtering is applied after BAM import. Unstranded libraries retain
 alignments from both strands. For stranded libraries, reads are interpreted
 according to \code{strandedness}; when the resolved \code{region} has a
@@ -244,6 +269,14 @@ if (
   ensembldb::seqlevelsStyle(annotation) <- "ucsc"
 
   spliceTerrain(bam = bams, region = region)
+
+  spliceTerrain(
+    bam = bams,
+    region = region,
+    lib_size = c(40e6, 55e6),
+    norm_factors = c(0.95, 1.08),
+    common_y = TRUE
+  )
 
   spliceTerrain(
     bam = bams,

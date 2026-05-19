@@ -21,6 +21,57 @@ test_that("coverage and junction thresholds filter processed data", {
     expect_true(all(low$input$juncs$coverage >= 1))
 })
 
+test_that("coverage and junctions can be normalised by library size", {
+    bams <- stats::setNames(.hnrnpc_bams()[c(7, 1)], c("s1", "s2"))
+    raw <- spliceTerrain(
+        bam = bams,
+        region = .hnrnpc_region(),
+        min_coverage = 1,
+        min_junction_reads = 1,
+        return_ctx = TRUE
+    )
+    norm <- spliceTerrain(
+        bam = bams,
+        region = .hnrnpc_region(),
+        min_coverage = 1,
+        min_junction_reads = 1,
+        lib_size = c(1e6, 2e6),
+        normalise_to = 1e6,
+        return_ctx = TRUE
+    )
+
+    expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$input$cov)))
+    expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$input$juncs)))
+    expect_identical(length(norm$input$cov), length(raw$input$cov))
+    expect_identical(length(norm$input$juncs), length(raw$input$juncs))
+
+    cov_1 <- norm$input$cov[norm$input$cov$sample == "s1"]
+    cov_2 <- norm$input$cov[norm$input$cov$sample == "s2"]
+    junc_2 <- norm$input$juncs[norm$input$juncs$sample == "s2"]
+    expect_equal(cov_1$coverage, cov_1$coverage_raw)
+    expect_equal(cov_2$coverage, cov_2$coverage_raw / 2)
+    expect_equal(junc_2$coverage, junc_2$coverage_raw / 2)
+})
+
+test_that("normalisation factors adjust effective library sizes", {
+    bams <- stats::setNames(.hnrnpc_bams()[c(7, 1)], c("s1", "s2"))
+    norm <- spliceTerrain(
+        bam = bams,
+        region = .hnrnpc_region(),
+        min_coverage = 1,
+        min_junction_reads = 1,
+        lib_size = c(1e6, 1e6),
+        norm_factors = c(1, 2),
+        normalise_to = 1e6,
+        return_ctx = TRUE
+    )
+
+    cov_2 <- norm$input$cov[norm$input$cov$sample == "s2"]
+    junc_2 <- norm$input$juncs[norm$input$juncs$sample == "s2"]
+    expect_equal(cov_2$coverage, cov_2$coverage_raw / 2)
+    expect_equal(junc_2$coverage, junc_2$coverage_raw / 2)
+})
+
 test_that("junction-only plots work when coverage is removed", {
     bams <- .hnrnpc_bams()
     ctx <- spliceTerrain(

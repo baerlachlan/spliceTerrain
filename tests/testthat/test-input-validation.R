@@ -42,6 +42,58 @@ test_that("per-BAM numeric arguments must be scalar or one value per BAM", {
     )
 })
 
+test_that("normalisation inputs must match BAMs", {
+    bams <- .hnrnpc_bams()
+
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            lib_size = 1e6
+        ),
+        "`lib_size` must be NULL or the number of BAMs",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            norm_factors = c(1, 1)
+        ),
+        "`norm_factors` requires `lib_size`.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            lib_size = c(1e6, -1)
+        ),
+        "`lib_size` values must be positive finite numbers.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            lib_size = c(1e6, 1e6),
+            norm_factors = c(1, NA)
+        ),
+        "`norm_factors` values must be positive finite numbers.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            lib_size = c(1e6, 1e6),
+            normalise_to = 0
+        ),
+        "`normalise_to` must be a positive finite number.",
+        fixed = TRUE
+    )
+})
+
 test_that("strandedness values must be supported", {
     bams <- .hnrnpc_bams()
 

@@ -6,7 +6,9 @@
         lens <- S4Vectors::runLength(cov[[x]])
         vals <- as.integer(S4Vectors::runValue(cov[[x]]))
         if (!length(vals)) {
-            return(GenomicRanges::GRanges(sample = x, coverage = 0))
+            return(GenomicRanges::GRanges(
+                sample = x, coverage_raw = 0, coverage = 0
+            ))
         }
         ends <- cumsum(lens)
         starts <- ends - lens + 1
@@ -15,7 +17,8 @@
             ranges = IRanges::IRanges(start = starts, end = ends),
             strand = unique(BiocGenerics::strand(ctx$input$region)),
             sample = x,
-            coverage = vals
+            coverage_raw = vals,
+            coverage = .normaliseCounts(vals, x, ctx)
         )
         gr <- gr[vals != 0]
         gr
@@ -29,10 +32,11 @@
             ranges = IRanges::IRanges(start = pos, width = 1),
             strand = BiocGenerics::strand(gr)[idx],
             sample = gr$sample[idx],
+            coverage_raw = gr$coverage_raw[idx],
             coverage = gr$coverage[idx],
             seqinfo = Seqinfo::seqinfo(gr)
         )
-        out <- out[out$coverage >= ctx$input$min_coverage[x]]
+        out <- out[out$coverage_raw >= ctx$input$min_coverage[x]]
         out
     })
     cov <- do.call(c, cov)
