@@ -13,6 +13,7 @@
     ctx <- .checkArcSide(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
+    ctx <- .checkPanelHeights(ctx)
     ctx <- .checkNormalisation(ctx)
     ctx
 }
@@ -23,8 +24,8 @@
     missing_bam <- bam[!file.exists(bam)]
     if (length(missing_bam) > 0)
         stop(
-            "The following BAM file(s) do not exist:\n",
-            paste0("- ", missing_bam, collapse = "\n")
+            "The following BAM file(s) do not exist: ",
+            toString(missing_bam)
         )
     if (any(!nzchar(names(bam))) || anyNA(names(bam)))
         stop("`bam` names must not be NA or empty.")
@@ -42,7 +43,7 @@
         error = function(e) {
             stop(
                 "`arc_side` must be one of: ",
-                paste(choices, collapse = ", "),
+                toString(choices),
                 call. = FALSE
             )
         }
@@ -77,7 +78,7 @@
                 error = function(e) {
                     stop(
                         "`strandedness` must be one of: ",
-                        paste(choices, collapse = ", "),
+                        toString(choices),
                         call. = FALSE
                     )
                 }
@@ -111,6 +112,29 @@
             ctx$input$min_junction_reads, length(ctx$input$bam)
         )
     names(ctx$input$min_junction_reads) <- names(ctx$input$bam)
+    ctx
+}
+
+#' @keywords internal
+.checkPanelHeights <- function(ctx) {
+    panel_heights <- ctx$input$panel_heights
+    if (!is.numeric(panel_heights) || any(!is.finite(panel_heights)) ||
+            any(panel_heights <= 0))
+        stop("`panel_heights` values must be positive finite numbers.")
+
+    n_bam <- length(ctx$input$bam)
+    n_annotation <- as.integer(!is.null(ctx$input$annotation))
+    n_panel <- n_bam + n_annotation
+    if (!(length(panel_heights) %in% c(1, n_panel))) {
+        msg <- "`panel_heights` must be length 1 or the number of plot panels "
+        msg <- sprintf(
+            "%s(%d: %d BAM panel(s)", msg, n_panel, n_bam
+        )
+        if (n_annotation) msg <- sprintf(
+            "%s plus 1 annotation panel", msg
+        )
+        stop(sprintf("%s).", msg))
+    }
     ctx
 }
 

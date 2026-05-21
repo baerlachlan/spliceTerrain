@@ -33,12 +33,7 @@
 ) {
     ## Arc stacking
     levels <- IRanges::disjointBins(sort(junc))
-    sign <- switch(
-        arc_side,
-        both = rep(c(1, -1), length.out = length(junc)),
-        above = rep(1, length(junc)),
-        below = rep(-1, length(junc))
-    )
+    sign <- .junctionArcSigns(length(junc), arc_side)
     ## Junction midpoints and half-widths
     start_j <- BiocGenerics::start(junc)
     end_j <- BiocGenerics::end(junc)
@@ -79,6 +74,16 @@
         mid = mid, hw = hw, heights = heights, above = above,
         diff_l = diff_l, diff_r = diff_r,
         cov_l = cov_l, cov_r = cov_r, cov_j = junc$coverage
+    )
+}
+
+#' @keywords internal
+.junctionArcSigns <- function(n, arc_side) {
+    switch(
+        arc_side,
+        both = rep(c(1, -1), length.out = n),
+        above = rep(1, n),
+        below = rep(-1, n)
     )
 }
 

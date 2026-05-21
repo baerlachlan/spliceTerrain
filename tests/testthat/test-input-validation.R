@@ -94,6 +94,62 @@ test_that("normalisation inputs must match BAMs", {
     )
 })
 
+test_that("panel_heights must match plot panels", {
+    bams <- .hnrnpc_bams()
+    bam_msg <- paste0(
+        "`panel_heights` must be length 1 or the number of plot panels ",
+        "(2: 2 BAM panel(s))."
+    )
+    anno_msg <- paste0(
+        "`panel_heights` must be length 1 or the number of plot panels ",
+        "(2: 1 BAM panel(s) plus 1 annotation panel)."
+    )
+    annotation <- GenomicRanges::GRangesList(
+        tx = GenomicRanges::GRanges(
+            seqnames = "chr14",
+            ranges = IRanges::IRanges(70222436L, 70222446L)
+        )
+    )
+
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            panel_heights = c(1, 1, 1)
+        ),
+        bam_msg,
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7],
+            region = .hnrnpc_region(),
+            annotation = annotation,
+            panel_heights = c(1, 1, 1)
+        ),
+        anno_msg,
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            panel_heights = c(1, NA)
+        ),
+        "`panel_heights` values must be positive finite numbers.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[c(7, 1)],
+            region = .hnrnpc_region(),
+            panel_heights = c(1, 0)
+        ),
+        "`panel_heights` values must be positive finite numbers.",
+        fixed = TRUE
+    )
+})
+
 test_that("strandedness values must be supported", {
     bams <- .hnrnpc_bams()
 

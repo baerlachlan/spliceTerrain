@@ -151,9 +151,9 @@ labels drawn from \code{anno_text_col}.}
 labels. Passed to \code{ggplot2::geom_label()} for junction annotations.}
 
 \item{panel_heights}{Numeric vector controlling relative heights of the plot
-panels. Values are passed to \code{patchwork::wrap_plots()}. The intended
-length is the number of BAM sample panels plus one additional value if an
-annotation panel is shown; shorter vectors are recycled by patchwork.}
+panels. Must be length 1 or the number of BAM sample panels plus one
+additional value if an annotation panel is shown. When an annotation panel is
+shown, its height is specified by the final value.}
 
 \item{axis_title_size}{Numeric scalar giving the axis title text size used
 in the final plot theme.}
