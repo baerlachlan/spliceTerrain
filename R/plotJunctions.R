@@ -1,10 +1,10 @@
 #' @keywords internal
 .plotJunctions <- function(
-        p, juncs, cov, psi, arc_height, colour, junc_text_size, scale_arcs,
-        max_cov
+        p, juncs, cov, psi, arc_height, arc_side, colour, junc_text_size,
+        scale_arcs, max_cov
 ) {
     if (is.null(juncs)) return(p)
-    layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov)
+    layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov, arc_side)
     arcs <- .junctionArcPoints(layout)
     labels <- .junctionArcLabels(layout, juncs, psi)
     size_col <- ifelse(scale_arcs, "size_on", "size_off")
@@ -28,11 +28,17 @@
 }
 
 #' @keywords internal
-.junctionArcLayout <- function(junc, cov, arc_height, max_cov) {
+.junctionArcLayout <- function(
+        junc, cov, arc_height, max_cov, arc_side = "both"
+) {
     ## Arc stacking
     levels <- IRanges::disjointBins(sort(junc))
-    ## Alternating above/below pattern for arcs
-    sign <- rep(c(1, -1), length.out = length(junc))
+    sign <- switch(
+        arc_side,
+        both = rep(c(1, -1), length.out = length(junc)),
+        above = rep(1, length(junc)),
+        below = rep(-1, length(junc))
+    )
     ## Junction midpoints and half-widths
     start_j <- BiocGenerics::start(junc)
     end_j <- BiocGenerics::end(junc)

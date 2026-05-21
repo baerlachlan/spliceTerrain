@@ -182,3 +182,25 @@ test_that("arc_height scales the default junction arc height", {
 
     expect_equal(doubled$heights, default$heights * 2)
 })
+
+test_that("arc_side controls junction arc placement", {
+    cov <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(1L, 60L),
+        coverage = 10
+    )
+    junc <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(c(10L, 25L, 40L), c(20L, 35L, 50L)),
+        coverage = 1
+    )
+
+    both <- spliceTerrain:::.junctionArcLayout(junc, cov, 1, NULL, "both")
+    above <- spliceTerrain:::.junctionArcLayout(junc, cov, 1, NULL, "above")
+    below <- spliceTerrain:::.junctionArcLayout(junc, cov, 1, NULL, "below")
+
+    expect_true(any(both$above))
+    expect_true(any(!both$above))
+    expect_true(all(above$above))
+    expect_false(any(below$above))
+})

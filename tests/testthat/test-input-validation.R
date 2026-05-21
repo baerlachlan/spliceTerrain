@@ -108,6 +108,23 @@ test_that("strandedness values must be supported", {
     )
 })
 
+test_that("arc_side values must be supported", {
+    bams <- .hnrnpc_bams()
+
+    ctx <- spliceTerrain:::.checkArcSide(list(input = list(arc_side = "abo")))
+    expect_identical(ctx$input$arc_side, "above")
+
+    expect_error(
+        spliceTerrain(
+            bam = bams[7],
+            region = .hnrnpc_region(),
+            arc_side = "top"
+        ),
+        "`arc_side` must be one of: both, above, below",
+        fixed = TRUE
+    )
+})
+
 test_that("psi and highlight must overlap the resolved region", {
     bams <- .hnrnpc_bams()
 

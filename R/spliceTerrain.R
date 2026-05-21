@@ -93,6 +93,10 @@
 #' scale; larger values produce taller arcs and greater separation between
 #' stacked arcs.
 #'
+#' @param arc_side Character scalar controlling where junction arcs are drawn.
+#' Must be one of \code{"both"}, \code{"above"}, or \code{"below"}. The default
+#' \code{"both"} alternates arcs above and below the coverage track.
+#'
 #' @param scale_arcs Logical scalar. If \code{TRUE}, scale junction arc line
 #' width by junction read count after filtering. If \code{FALSE}, use a constant
 #' line width for all junction arcs.
@@ -256,6 +260,7 @@
 #'     psi = "chr14:70234854-70234854",
 #'     highlight = "chr14:70233810-70234097",
 #'     arc_height = 2,
+#'     arc_side = "above",
 #'     scale_arcs = TRUE,
 #'     common_y = TRUE,
 #'     colours = c("darkblue", "darkred"),
@@ -297,6 +302,7 @@ spliceTerrain <- function(
         min_arrow = intron_width + 1,
         common_y = FALSE,
         arc_height = 1,
+        arc_side = c("both", "above", "below"),
         scale_arcs = FALSE,
         colours = "black",
         highlight_colour = scales::alpha("red", 0.2),

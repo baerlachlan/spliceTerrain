@@ -211,7 +211,8 @@ spliceTerrain(
 ```{r arcs, fig.wide=TRUE, fig.height=9}
 spliceTerrain(
     bam = bams, region = region, annotation = annotation,
-    psi = "chr14:70234854-70234854", arc_height = 2, scale_arcs = TRUE
+    psi = "chr14:70234854-70234854", arc_height = 2, arc_side = "above",
+    scale_arcs = TRUE
 )
 ```
 

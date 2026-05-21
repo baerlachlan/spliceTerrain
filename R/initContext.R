@@ -10,6 +10,7 @@
     ctx <- .checkBam(ctx)
     ctx <- .checkColours(ctx)
     ctx <- .checkStrandedness(ctx)
+    ctx <- .checkArcSide(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
     ctx <- .checkNormalisation(ctx)
@@ -30,6 +31,22 @@
     if (is.null(names(bam))) names(bam) <- sub("\\.bam$", "", basename(bam))
     if (anyDuplicated(names(bam))) stop("`bam` sample names must be unique.")
     ctx$input$bam <- bam
+    ctx
+}
+
+#' @keywords internal
+.checkArcSide <- function(ctx) {
+    choices <- c("both", "above", "below")
+    ctx$input$arc_side <- tryCatch(
+        match.arg(ctx$input$arc_side, choices),
+        error = function(e) {
+            stop(
+                "`arc_side` must be one of: ",
+                paste(choices, collapse = ", "),
+                call. = FALSE
+            )
+        }
+    )
     ctx
 }
 
