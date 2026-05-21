@@ -21,7 +21,7 @@ spliceTerrain(
   intron_width = 50,
   min_arrow = intron_width + 1,
   common_y = FALSE,
-  arc_height = 0.15,
+  arc_height = 1,
   scale_arcs = FALSE,
   colours = "black",
   highlight_colour = scales::alpha("red", 0.2),
@@ -117,9 +117,10 @@ before drawing directional arrows.}
 across all sample panels. If \code{FALSE}, each sample panel is scaled
 independently.}
 
-\item{arc_height}{Numeric scalar controlling junction arc height relative to
-the coverage scale. Larger values produce taller arcs and greater separation
-between stacked arcs.}
+\item{arc_height}{Numeric scalar multiplying the default junction arc height.
+\code{arc_height = 1} uses the default height of 0.15 times the coverage
+scale; larger values produce taller arcs and greater separation between
+stacked arcs.}
 
 \item{scale_arcs}{Logical scalar. If \code{TRUE}, scale junction arc line
 width by junction read count after filtering. If \code{FALSE}, use a constant
@@ -285,7 +286,7 @@ if (
     anno_text_col = "exon_rank",
     psi = "chr14:70234854-70234854",
     highlight = "chr14:70233810-70234097",
-    arc_height = 0.25,
+    arc_height = 2,
     scale_arcs = TRUE,
     common_y = TRUE,
     colours = c("darkblue", "darkred"),

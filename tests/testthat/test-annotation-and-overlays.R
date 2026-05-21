@@ -169,14 +169,14 @@ test_that("psi adds percentage labels to selected junctions", {
 
     labels_with_psi <- spliceTerrain:::.junctionArcLabels(
         spliceTerrain:::.junctionArcLayout(
-            with_psi$plot$juncs, with_psi$plot$cov, 0.15, NULL
+            with_psi$plot$juncs, with_psi$plot$cov, 1, NULL
         ),
         with_psi$plot$juncs,
         with_psi$plot$psi
     )
     labels_without_psi <- spliceTerrain:::.junctionArcLabels(
         spliceTerrain:::.junctionArcLayout(
-            without_psi$plot$juncs, without_psi$plot$cov, 0.15, NULL
+            without_psi$plot$juncs, without_psi$plot$cov, 1, NULL
         ),
         without_psi$plot$juncs,
         without_psi$plot$psi

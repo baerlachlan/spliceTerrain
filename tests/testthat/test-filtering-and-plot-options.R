@@ -164,3 +164,21 @@ test_that("plot assembly options work with multiple samples", {
         )
     )
 })
+
+test_that("arc_height scales the default junction arc height", {
+    cov <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(1L, 5L),
+        coverage = 10
+    )
+    junc <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(10L, 20L),
+        coverage = 1
+    )
+
+    default <- spliceTerrain:::.junctionArcLayout(junc, cov, 1, NULL)
+    doubled <- spliceTerrain:::.junctionArcLayout(junc, cov, 2, NULL)
+
+    expect_equal(doubled$heights, default$heights * 2)
+})

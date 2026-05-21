@@ -2,4 +2,5 @@
 ^\.Rproj\.user$
 ^\.positai$
 ^\.claude$
+^AGENTS\.md$
 ^TODO\.md$

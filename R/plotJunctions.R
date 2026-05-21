@@ -58,7 +58,7 @@
     if (is.null(max_cov)) {
         max_cov <- if (is.null(cov$coverage)) 1 else max(cov$coverage)
     }
-    y_step <- arc_height * max_cov
+    y_step <- 0.15 * arc_height * max_cov
     heights <- (y_step + levels * y_step) * sign
     ## “above” arcs start at anchor coverage and peak at coverage + height
     above <- sign == 1
