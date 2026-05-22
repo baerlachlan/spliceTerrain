@@ -5,7 +5,7 @@ test_that("EnsDb annotation is resolved into grouped plotting ranges", {
         bam = bams[7],
         region = .hnrnpc_region(),
         annotation = annotation,
-        anno_text_col = "exon_rank",
+        anno_label_by = "exon_rank",
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
@@ -25,7 +25,8 @@ test_that("annotation panel and annotation labels can be plotted", {
         bam = bams[7],
         region = .hnrnpc_region(),
         annotation = .hnrnpc_annotation(),
-        anno_text_col = "exon_rank",
+        anno_label_by = "exon_rank",
+        anno_label_colour = "black",
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
@@ -41,20 +42,98 @@ test_that("annotation panel and annotation labels can be plotted", {
         function(layer) inherits(layer$geom, "GeomPolygon"),
         logical(1)
     )))
+    text_layers <- vapply(
+        plotted$plot$plist$annotation$layers,
+        function(layer) inherits(layer$geom, "GeomText"),
+        logical(1)
+    )
+    expect_true(any(text_layers))
+    text_layer <- plotted$plot$plist$annotation$layers[[which(text_layers)[1]]]
+    expect_identical(
+        text_layer$aes_params$colour,
+        "black"
+    )
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
-test_that("absent annotation label columns are ignored", {
+test_that("annotation fill can use transcript groups or exon metadata", {
     bams <- .hnrnpc_bams()
-    .expect_patchwork_renders(
+    annotation <- .hnrnpc_annotation()
+    fill_colours <- stats::setNames(c("#1b9e77", "#d95f02"), names(annotation))
+    rank_colours <- c("1" = "#1b9e77", "2" = "#d95f02")
+    by_group <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        annotation = annotation,
+        anno_fill_by = "group",
+        anno_fill_colours = fill_colours,
+        min_coverage = 1,
+        min_junction_reads = 1,
+        return_ctx = TRUE
+    )
+    by_exon <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        annotation = annotation,
+        anno_fill_by = "exon_rank",
+        anno_fill_colours = rank_colours,
+        min_coverage = 1,
+        min_junction_reads = 1,
+        return_ctx = TRUE
+    )
+
+    plotted_group <- spliceTerrain:::.plotAnnotation(
+        spliceTerrain:::.plotSamples(by_group)
+    )
+    plotted_exon <- spliceTerrain:::.plotAnnotation(
+        spliceTerrain:::.plotSamples(by_exon)
+    )
+    expect_equal(
+        unname(
+            plotted_group$plot$plist$annotation$scales$get_scales("fill")$
+                palette(2)
+        ),
+        unname(fill_colours)
+    )
+    expect_equal(
+        unname(
+            plotted_exon$plot$plist$annotation$scales$get_scales("fill")$
+                palette(2)
+        ),
+        unname(rank_colours)
+    )
+    tile_layers <- vapply(
+        plotted_group$plot$plist$annotation$layers,
+        function(layer) inherits(layer$geom, "GeomTile"),
+        logical(1)
+    )
+    expect_false(
+        plotted_group$plot$plist$annotation$layers[[which(tile_layers)[1]]]$
+            show.legend
+    )
+    .expect_patchwork_renders(spliceTerrain(ctx = by_group))
+    .expect_patchwork_renders(spliceTerrain(ctx = by_exon))
+})
+
+test_that("annotation styling columns must exist", {
+    bams <- .hnrnpc_bams()
+    annotation <- .hnrnpc_annotation()
+
+    expect_error(
         spliceTerrain(
-            bam = bams[7],
-            region = .hnrnpc_region(),
-            annotation = .hnrnpc_annotation(),
-            anno_text_col = "missing_column",
-            min_coverage = 1,
-            min_junction_reads = 1
-        )
+            bam = bams[7], region = .hnrnpc_region(), annotation = annotation,
+            anno_fill_by = "missing_column"
+        ),
+        "`anno_fill_by` must name a metadata column in `annotation`.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7], region = .hnrnpc_region(), annotation = annotation,
+            anno_label_by = "missing_column"
+        ),
+        "`anno_label_by` must name a metadata column in `annotation`.",
+        fixed = TRUE
     )
 })
 

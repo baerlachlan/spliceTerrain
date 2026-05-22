@@ -11,10 +11,13 @@
     arrowheads <- .annotationArrowheads(introns, ctx$plot$region)
     p <- ggplot2::ggplot()
     p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
-    p <- .plotAnnotationExons(p, df)
     p <- .plotAnnotationIntrons(p, introns, arrowheads)
+    p <- .plotAnnotationExons(
+        p, df, ctx$input$anno_fill_by, ctx$input$anno_fill_colours
+    )
     p <- .plotAnnotationLabels(
-        p, df, ctx$input$anno_text_col, ctx$input$anno_text_size
+        p, df, ctx$input$anno_label_by, ctx$input$anno_label_colour,
+        ctx$input$anno_label_size
     )
     p <- p + ggplot2::coord_cartesian(
         xlim = c(
@@ -34,15 +37,33 @@
 }
 
 #' @keywords internal
-.plotAnnotationExons <- function(p, df) {
-    p + ggplot2::geom_tile(
+.plotAnnotationExons <- function(p, df, fill_by, fill_colours) {
+    if (is.null(fill_by)) {
+        return(
+            p + ggplot2::geom_tile(
+                data = df,
+                ggplot2::aes(
+                    x = .data$start + (.data$width / 2), y = .data$y,
+                    width = .data$width
+                ),
+                height = 0.3, colour = "black", fill = "black"
+            )
+        )
+    }
+    ## Ensure column acts as discrete
+    df[[fill_by]] <- as.character(df[[fill_by]])
+    p <- p + ggplot2::geom_tile(
         data = df,
         ggplot2::aes(
             x = .data$start + (.data$width / 2), y = .data$y,
-            width = .data$width
+            width = .data$width, fill = .data[[fill_by]]
         ),
-        height = 0.3, colour = "black", fill = "black"
+        height = 0.3, colour = "black", show.legend = FALSE
     )
+    if (!is.null(fill_by) && !is.null(fill_colours)) {
+        p <- p + ggplot2::scale_fill_manual(values = fill_colours)
+    }
+    p
 }
 
 #' @keywords internal
@@ -67,15 +88,17 @@
 }
 
 #' @keywords internal
-.plotAnnotationLabels <- function(p, df, text_col, text_size) {
-    if (is.null(text_col) || is.null(df[[text_col]])) return(p)
+.plotAnnotationLabels <- function(
+        p, df, label_by, label_colour, label_size
+) {
+    if (is.null(label_by)) return(p)
     p + ggplot2::geom_text(
         data = df,
         ggplot2::aes(
             x = .data$start + (.data$width / 2),
-            y = .data$y, label = .data[[text_col]]
+            y = .data$y, label = .data[[label_by]]
         ),
-        colour = "white", size = text_size
+        colour = label_colour, size = label_size
     )
 }
 

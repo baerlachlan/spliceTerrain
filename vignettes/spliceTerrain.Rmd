@@ -162,11 +162,13 @@ annotation[1]
 ```
 
 To display these values on the annotation track, simply provide the name of the desired metadata column.
+To set specific annotation fill colours, provide them with `anno_fill_colours`.
+Colour names or hex codes stored directly in annotation metadata are treated as group labels, not literal colours.
 
-```{r anno_text_col, fig.wide=TRUE, fig.height=9}
+```{r anno_label_by, fig.wide=TRUE, fig.height=9}
 spliceTerrain(
     bam = bams, region = region, annotation = annotation,
-    anno_text_col = "exon_rank"
+    anno_fill_by = "group", anno_label_by = "exon_rank"
 )
 ```
 

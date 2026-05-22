@@ -110,12 +110,24 @@
 #' The default is a semi-transparent red produced with
 #' \code{scales::alpha("red", 0.2)}.
 #'
-#' @param anno_text_col Optional character scalar naming a metadata column in
-#' \code{annotation} to display as text within annotation features. Ignored if
-#' \code{annotation = NULL} or if the named column is absent.
+#' @param anno_fill_by Optional character scalar naming a metadata column in
+#' \code{annotation} used to group annotation features for fill colouring. Use
+#' \code{"group"} to colour by transcript/group. Values in this column are
+#' treated as discrete groups, not as continuous values or literal colour names
+#' or hex codes.
 #'
-#' @param anno_text_size Numeric scalar giving the text size used for annotation
-#' labels drawn from \code{anno_text_col}.
+#' @param anno_fill_colours Optional vector of colours used when
+#' \code{anno_fill_by} is supplied. Use this argument to set annotation fill
+#' colours. If named, names should match values in the selected fill column.
+#'
+#' @param anno_label_by Optional character scalar naming a metadata column in
+#' \code{annotation} to display as text within annotation features.
+#'
+#' @param anno_label_colour Character scalar giving the colour used for
+#' annotation labels.
+#'
+#' @param anno_label_size Numeric scalar giving the text size used for
+#' annotation labels.
 #'
 #' @param junc_text_size Numeric scalar giving the size of junction count
 #' labels. Passed to \code{ggplot2::geom_label()} for junction annotations.
@@ -256,7 +268,14 @@
 #'     bam = bams,
 #'     region = region,
 #'     annotation = annotation,
-#'     anno_text_col = "exon_rank",
+#'     anno_fill_by = "group",
+#'     anno_fill_colours = c(
+#'         ENST00000553369 = "#66C2A5",
+#'         ENST00000394366 = "#8DA0CB",
+#'         ENST00000451983 = "#FC8D62"
+#'     ),
+#'     anno_label_by = "exon_rank",
+#'     anno_label_colour = "black",
 #'     psi = "chr14:70234854-70234854",
 #'     highlight = "chr14:70233810-70234097",
 #'     arc_height = 2,
@@ -265,7 +284,7 @@
 #'     common_y = TRUE,
 #'     colours = c("darkblue", "darkred"),
 #'     highlight_colour = scales::alpha("gold", 0.25),
-#'     anno_text_size = 2,
+#'     anno_label_size = 2,
 #'     panel_heights = c(2, 2, 1)
 #'   )
 #'
@@ -306,8 +325,11 @@ spliceTerrain <- function(
         scale_arcs = FALSE,
         colours = "black",
         highlight_colour = scales::alpha("red", 0.2),
-        anno_text_col = NULL,
-        anno_text_size = 3,
+        anno_fill_by = NULL,
+        anno_fill_colours = NULL,
+        anno_label_by = NULL,
+        anno_label_colour = "white",
+        anno_label_size = 3,
         junc_text_size = 3,
         panel_heights = 1,
         axis_title_size = 12,

@@ -21,6 +21,20 @@
         annotation$group <- rep(paste0("annotation_", seq_len(len)), lens)
     }
     ctx$input$annotation <- annotation
+    ctx <- .checkAnnotationColumn(ctx, "anno_fill_by")
+    ctx <- .checkAnnotationColumn(ctx, "anno_label_by")
     ctx$plot$annotation <- annotation
+    ctx
+}
+
+#' @keywords internal
+.checkAnnotationColumn <- function(ctx, field) {
+    column <- ctx$input[[field]]
+    if (is.null(column)) return(ctx)
+    if (!is.character(column) || length(column) != 1 || is.na(column) ||
+            !nzchar(column))
+        stop("`", field, "` must be a non-empty character scalar.")
+    if (!column %in% names(S4Vectors::mcols(ctx$input$annotation)))
+        stop("`", field, "` must name a metadata column in `annotation`.")
     ctx
 }
