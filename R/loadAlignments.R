@@ -34,8 +34,11 @@
 
 #' @keywords internal
 .bamIsPaired <- function(bam) {
-    bf <- Rsamtools::BamFile(bam, yieldSize = 1000)
-    flag <- Rsamtools::scanBamFlag(isPaired = TRUE)
-    param <- Rsamtools::ScanBamParam(flag = flag, what = "flag")
-    any(Rsamtools::scanBam(bf, param = param)[[1]]$flag)
+    bf <- Rsamtools::BamFile(bam, yieldSize = 1)
+    param <- Rsamtools::ScanBamParam(
+        flag = Rsamtools::scanBamFlag(isUnmappedQuery = FALSE),
+        what = "flag"
+    )
+    flag <- Rsamtools::scanBam(bf, param = param)[[1]]$flag
+    length(flag) > 0 && bitwAnd(flag, 1) == 1
 }

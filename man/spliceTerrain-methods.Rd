@@ -300,27 +300,27 @@ if (
   )
 
   spliceTerrain(
-      bam = bams,
-      region = region,
-      annotation = annotation,
-      anno_fill_by = "group",
-      anno_fill_colours = c(
-          ENST00000553369 = "#66C2A5",
-          ENST00000394366 = "#8DA0CB",
-          ENST00000451983 = "#FC8D62"
-      ),
-      anno_label_by = "exon_rank",
-      anno_label_colour = "black",
-      psi = "chr14:70234854-70234854",
-      highlight = "chr14:70233810-70234097",
-      arc_height = 2,
-      arc_side = "above",
-      scale_arcs = TRUE,
-      common_y = TRUE,
-      colours = c("darkblue", "darkred"),
-      highlight_colour = scales::alpha("gold", 0.25),
-      anno_label_size = 2,
-      panel_heights = c(2, 2, 1)
+    bam = bams,
+    region = region,
+    annotation = annotation,
+    anno_fill_by = "group",
+    anno_fill_colours = c(
+        ENST00000553369 = "#66C2A5",
+        ENST00000394366 = "#8DA0CB",
+        ENST00000451983 = "#FC8D62"
+    ),
+    anno_label_by = "exon_rank",
+    anno_label_colour = "black",
+    psi = "chr14:70234854-70234854",
+    highlight = "chr14:70233810-70234097",
+    arc_height = 2,
+    arc_side = "above",
+    scale_arcs = TRUE,
+    common_y = TRUE,
+    colours = c("darkblue", "darkred"),
+    highlight_colour = scales::alpha("gold", 0.25),
+    anno_label_size = 2,
+    panel_heights = c(2, 2, 1)
   )
 
   ctx <- spliceTerrain(
