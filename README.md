@@ -1,5 +1,9 @@
 # spliceTerrain
 
+[![Codecov test coverage](https://codecov.io/gh/baerlachlan/spliceTerrain/branch/gh-actions/graph/badge.svg)](https://app.codecov.io/gh/baerlachlan/spliceTerrain/tree/gh-actions)
+[![R CMD check](https://github.com/baerlachlan/spliceTerrain/actions/workflows/R-CMD-check.yaml/badge.svg?branch=gh-actions)](https://github.com/baerlachlan/spliceTerrain/actions/workflows/R-CMD-check.yaml)
+[![BiocCheck](https://github.com/baerlachlan/spliceTerrain/actions/workflows/bioc-check.yaml/badge.svg?branch=gh-actions)](https://github.com/baerlachlan/spliceTerrain/actions/workflows/bioc-check.yaml)
+
 `spliceTerrain` is an R package for visualising RNA-seq splice patterns as sashimi plots.
 It combines coverage, splice junction arcs, and optional annotation tracks to show how transcripts are assembled across a genomic region.
 `spliceTerrain` was designed to integrate seamlessly within the Bioconductor ecosystem, keeping the workflow entirely within R to support reproducible, customisable splicing visualisation for exploratory analysis, reporting, and publication-quality figures.
