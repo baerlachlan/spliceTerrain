@@ -1,0 +1,5 @@
+# Changelog
+
+## spliceTerrain 0.99.0
+
+- Submitted to Bioconductor
