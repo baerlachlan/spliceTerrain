@@ -47,7 +47,7 @@ spliceTerrain(bam = bams, region = region)
 ```
 
 ![Basic sashimi plot of the SRSF5 gene region from BAM files in the
-RNAseqData.HNRNPC.bam.chr14 package](articles/fig/quickstart.png)
+RNAseqData.HNRNPC.bam.chr14 package](reference/figures/quickstart.png)
 
 Basic sashimi plot of the SRSF5 gene region from BAM files in the
 RNAseqData.HNRNPC.bam.chr14 package
