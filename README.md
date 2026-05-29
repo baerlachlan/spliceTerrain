@@ -35,4 +35,4 @@ region <- "chr14:70,233,810-70,238,690"
 spliceTerrain(bam = bams, region = region)
 ```
 
-![Basic sashimi plot of the SRSF5 gene region from BAM files in the RNAseqData.HNRNPC.bam.chr14 package](vignettes/fig/quickstart.png)
+![Basic sashimi plot of the SRSF5 gene region from BAM files in the RNAseqData.HNRNPC.bam.chr14 package](man/figures/quickstart.png)
