@@ -11,8 +11,9 @@ git merge devel
 git push
 ```
 
-The push to `gh-actions` triggers the coverage, R CMD check, and BiocCheck
-workflows.
+The push to `gh-actions` triggers the coverage, R CMD check, BiocCheck, and
+pkgdown workflows. The pkgdown workflow deploys the rendered site to the
+`gh-pages` branch.
 
 Do not merge `gh-actions` back into `devel`, because that would copy
 `.github/workflows/` into the Bioconductor-clean branch.

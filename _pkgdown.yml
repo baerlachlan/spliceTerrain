@@ -1,0 +1,9 @@
+url: https://baerlachlan.github.io/spliceTerrain/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [github]
