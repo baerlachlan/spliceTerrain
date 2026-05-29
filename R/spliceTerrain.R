@@ -97,7 +97,7 @@
 #' Must be one of \code{"both"}, \code{"above"}, or \code{"below"}. The default
 #' \code{"both"} alternates arcs above and below the coverage track.
 #'
-#' @param scale_arcs Logical scalar. If \code{TRUE}, scale junction arc line
+#' @param arc_scale Logical scalar. If \code{TRUE}, scale junction arc line
 #' width by junction read count after filtering. If \code{FALSE}, use a constant
 #' line width for all junction arcs.
 #'
@@ -280,7 +280,7 @@
 #'     highlight = "chr14:70233810-70234097",
 #'     arc_height = 2,
 #'     arc_side = "above",
-#'     scale_arcs = TRUE,
+#'     arc_scale = TRUE,
 #'     common_y = TRUE,
 #'     colours = c("darkblue", "darkred"),
 #'     highlight_colour = scales::alpha("gold", 0.25),
@@ -322,7 +322,7 @@ spliceTerrain <- function(
         common_y = FALSE,
         arc_height = 1,
         arc_side = c("both", "above", "below"),
-        scale_arcs = FALSE,
+        arc_scale = FALSE,
         colours = "black",
         highlight_colour = scales::alpha("red", 0.2),
         anno_fill_by = NULL,

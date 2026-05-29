@@ -364,11 +364,11 @@ spliceTerrain(
 
 ## Junction arc display
 
-Junction arcs can be tuned with `arc_height`, `arc_side`, and `scale_arcs`.
+Junction arcs can be tuned with `arc_height`, `arc_side`, and `arc_scale`.
 Increasing `arc_height` gives stacked arcs more vertical separation.
 The `arc_side` argument controls whether arcs are drawn above, below, or on both
 sides of the coverage track.
-When `scale_arcs = TRUE`, arc line width is scaled by junction read count after
+When `arc_scale = TRUE`, arc line width is scaled by junction read count after
 filtering.
 Junction label size is controlled with `junc_text_size`.
 
@@ -379,7 +379,7 @@ spliceTerrain(
     psi = "chr14:70234854-70234854",
     arc_height = 2,
     arc_side = "above",
-    scale_arcs = TRUE,
+    arc_scale = TRUE,
     junc_text_size = 2.5
 )
 ```

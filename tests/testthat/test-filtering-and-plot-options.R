@@ -158,7 +158,7 @@ test_that("plot assembly options work with multiple samples", {
             min_coverage = 1,
             min_junction_reads = 1,
             common_y = TRUE,
-            scale_arcs = TRUE,
+            arc_scale = TRUE,
             colours = c("black", "red"),
             panel_heights = c(1, 2)
         )

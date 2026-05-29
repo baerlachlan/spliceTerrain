@@ -12,7 +12,7 @@
         p <- .plotJunctions(
             p, juncs[[i]], cov[[i]], ctx$plot$psi, ctx$input$arc_height,
             ctx$input$arc_side, ctx$input$colours[[i]],
-            ctx$input$junc_text_size, ctx$input$scale_arcs, max_cov
+            ctx$input$junc_text_size, ctx$input$arc_scale, max_cov
         )
         p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(

@@ -1,13 +1,13 @@
 #' @keywords internal
 .plotJunctions <- function(
         p, juncs, cov, psi, arc_height, arc_side, colour, junc_text_size,
-        scale_arcs, max_cov
+        arc_scale, max_cov
 ) {
     if (is.null(juncs)) return(p)
     layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov, arc_side)
     arcs <- .junctionArcPoints(layout)
     labels <- .junctionArcLabels(layout, juncs, psi)
-    size_col <- ifelse(scale_arcs, "size_on", "size_off")
+    size_col <- ifelse(arc_scale, "size_on", "size_off")
     p + ggplot2::geom_line(
         data = arcs,
         ggplot2::aes(
