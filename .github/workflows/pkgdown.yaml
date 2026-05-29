@@ -33,6 +33,9 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Install package
+        run: R CMD INSTALL .
+
       - name: Deploy pkgdown site
         run: pkgdown::deploy_to_branch(new_process = FALSE)
         shell: Rscript {0}
