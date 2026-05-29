@@ -1,0 +1,37 @@
+name: BiocCheck
+
+on:
+  push:
+    branches: [gh-actions]
+
+permissions:
+  contents: read
+
+jobs:
+  BiocCheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: devel
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            bioc::BiocCheck
+          needs: check
+
+      - name: Build source package
+        run: R CMD build .
+
+      - name: Run BiocCheck
+        run: |
+          pkg_tarball=$(ls -1t *.tar.gz | head -n 1)
+          Rscript -e "BiocCheck::BiocCheck(commandArgs(TRUE)[1], quit.with.status = TRUE)" "$pkg_tarball"
