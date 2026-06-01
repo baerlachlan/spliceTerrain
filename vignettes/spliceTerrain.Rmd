@@ -160,7 +160,7 @@ annotation <- annotation[1:3]
 seqlevelsStyle(annotation) <- "UCSC"
 ```
 
-```{r annotation_plot, fig.wide=TRUE, fig.height=9}
+```{r annotation_plot, fig.wide=TRUE, fig.height=7.5}
 spliceTerrain(
     bam = bams,
     region = region,
@@ -181,7 +181,7 @@ The label colour and size are controlled by `anno_label_colour` and
 The `min_arrow` argument controls how wide an annotation intron must be before
 directional arrows are drawn.
 
-```{r annotation_styling, fig.wide=TRUE, fig.height=9}
+```{r annotation_styling, fig.wide=TRUE, fig.height=7.5}
 spliceTerrain(
     bam = bams,
     region = region,
@@ -392,7 +392,7 @@ It can be a single colour used for all samples or one colour per BAM file.
 
 Axis text sizes can be adjusted with `axis_title_size` and `axis_text_size`.
 
-```{r layout, fig.wide=TRUE, fig.height=9}
+```{r layout, fig.wide=TRUE, fig.height=7.5}
 spliceTerrain(
     bam = bams,
     region = region,

@@ -17,6 +17,37 @@
     sum(ctx$input$juncs$coverage)
 }
 
+test_that("single-end reverse-stranded alignments invert read strand", {
+    expect_identical(
+        as.character(spliceTerrain:::.invertStrand(c("+", "-", "*"))),
+        c("-", "+", "*")
+    )
+})
+
+test_that("reinterpreted reverse single-end alignments filter by transcript strand", {
+    aln <- GenomicAlignments::GAlignments(
+        seqnames = S4Vectors::Rle(c("chr1", "chr1")),
+        pos = c(1L, 10L),
+        cigar = c("5M", "5M"),
+        strand = c("-", "+")
+    )
+    region <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(1L, 20L),
+        strand = "+"
+    )
+
+    raw_direct <- IRanges::subsetByOverlaps(aln, region)
+    reverse <- aln
+    BiocGenerics::strand(reverse) <- spliceTerrain:::.invertStrand(
+        BiocGenerics::strand(reverse)
+    )
+    interpreted <- IRanges::subsetByOverlaps(reverse, region)
+
+    expect_identical(BiocGenerics::start(raw_direct), 10L)
+    expect_identical(BiocGenerics::start(interpreted), 1L)
+})
+
 test_that("unstranded regions retain both strands regardless of strandedness", {
     unstranded <- .strand_ctx(.hnrnpc_region(), "unstranded")
     forward <- .strand_ctx(.hnrnpc_region(), "forward")

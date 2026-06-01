@@ -19,6 +19,10 @@
             )
         } else {
             aln <- GenomicAlignments::readGAlignments(bam, param = param)
+            if (identical(ctx$input$strandedness[x], "reverse"))
+                BiocGenerics::strand(aln) <- .invertStrand(
+                    BiocGenerics::strand(aln)
+                )
         }
         ## Only filter for strand if library is stranded
         if (strandedness) {
@@ -30,6 +34,13 @@
     names(gal) <- names(ctx$input$bam)
     ctx$input$gal <- gal
     ctx
+}
+
+#' @keywords internal
+.invertStrand <- function(strand) {
+    strand <- as.character(strand)
+    strand <- ifelse(strand == "+", "-", ifelse(strand == "-", "+", strand))
+    BiocGenerics::strand(strand)
 }
 
 #' @keywords internal
