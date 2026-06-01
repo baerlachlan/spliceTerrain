@@ -479,7 +479,7 @@ sessionInfo() |>
     pander()
 ```
 
-**R Under development (unstable) (2026-05-27 r90083)**
+**R Under development (unstable) (2026-05-28 r90087)**
 
 **Platform:** x86_64-pc-linux-gnu
 
