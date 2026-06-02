@@ -89,7 +89,10 @@ start.
 
 The `bam` argument is a character vector of indexed BAM file paths. If
 the vector is named, those names are used as sample labels in the plot.
-If it is unnamed, labels are derived from the BAM file names.
+If it is unnamed, labels are derived from the BAM file names. BAM files
+must be indexed for region-restricted import. Index files should be
+discoverable by `Rsamtools` using standard same-directory naming,
+typically `file.bam.bai`.
 
 ``` r
 
@@ -122,7 +125,9 @@ region
 If multiple ranges are supplied,
 [`spliceTerrain()`](https://baerlachlan.github.io/spliceTerrain/reference/spliceTerrain-methods.md)
 reduces them to a single span on one chromosome and uses that span as
-the BAM query and plotting window.
+the BAM query and plotting window. The span is the smallest continuous
+interval containing all supplied ranges: it starts at the lowest start
+coordinate and ends at the highest end coordinate.
 
 ### Adding transcript annotation
 
@@ -235,9 +240,11 @@ Percent spliced in (PSI) is commonly used to summarise how often a
 splice choice is used relative to other local splice choices. In
 [`spliceTerrain()`](https://baerlachlan.github.io/spliceTerrain/reference/spliceTerrain-methods.md),
 the `psi` argument identifies a local genomic interval and labels
-junctions whose start or end anchor overlaps that interval. The label
-reports each selected junction’s fraction of the included junction
-reads.
+junctions whose start or end anchor overlaps that interval. Junction
+anchors use intronic coordinates: the start anchor is the first base of
+the intron, and the end anchor is the last base of the intron, not the
+adjacent exonic bases. The label reports each selected junction’s
+fraction of the included junction reads.
 
 This is intended as an interpretable local junction-usage label on the
 sashimi plot, rather than full transcript-level isoform inference.
@@ -479,7 +486,7 @@ sessionInfo() |>
     pander()
 ```
 
-**R Under development (unstable) (2026-05-28 r90087)**
+**R Under development (unstable) (2026-05-31 r90090)**
 
 **Platform:** x86_64-pc-linux-gnu
 
@@ -527,5 +534,5 @@ sessionInfo() |>
 *textshaping(v.1.0.5)*, *evaluate(v.1.0.5)*, *lattice(v.0.22-9)*,
 *cigarillo(v.1.3.0)*, *png(v.0.1-9)*, *Rsamtools(v.2.29.0)*,
 *memoise(v.2.0.1)*, *bslib(v.0.11.0)*, *Rcpp(v.1.1.1-1.1)*,
-*SparseArray(v.1.13.2)*, *xfun(v.0.57)*, *fs(v.2.1.0)*,
+*SparseArray(v.1.13.2)*, *xfun(v.0.58)*, *fs(v.2.1.0)*,
 *MatrixGenerics(v.1.25.0)* and *pkgconfig(v.2.0.3)*

@@ -51,10 +51,11 @@ spliceTerrain(
 
   Character vector of BAM file paths. If unnamed, sample labels are
   derived from BAM basenames with the `.bam` suffix removed. If names
-  are supplied, all names must be non-empty and unique. BAM files should
-  be indexed for region-restricted import. Single-end and paired-end
-  BAMs are both supported; paired-end status is detected from the BAM
-  flags.
+  are supplied, all names must be non-empty and unique. BAM files must
+  be indexed for region-restricted import. Index files should be
+  discoverable by Rsamtools using standard same-directory naming, such
+  as `file.bam.bai`. Single-end and paired-end BAMs are both supported;
+  paired-end status is detected from the BAM flags.
 
 - region:
 

@@ -93,9 +93,11 @@ area is focused on observed or annotated features.</p>
 <dl><dt id="arg-bam">bam<a class="anchor" aria-label="anchor" href="#arg-bam"></a></dt>
 <dd><p>Character vector of BAM file paths. If unnamed, sample labels are
 derived from BAM basenames with the <code>.bam</code> suffix removed. If names are
-supplied, all names must be non-empty and unique. BAM files should be indexed
-for region-restricted import. Single-end and paired-end BAMs are both
-supported; paired-end status is detected from the BAM flags.</p></dd>
+supplied, all names must be non-empty and unique. BAM files must be indexed
+for region-restricted import. Index files should be discoverable by
+<span class="pkg">Rsamtools</span> using standard same-directory naming, such as
+<code>file.bam.bai</code>. Single-end and paired-end BAMs are both supported;
+paired-end status is detected from the BAM flags.</p></dd>
 
 
 <dt id="arg-region">region<a class="anchor" aria-label="anchor" href="#arg-region"></a></dt>
