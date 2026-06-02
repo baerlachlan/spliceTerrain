@@ -111,6 +111,9 @@ The examples continue to use the HNRNPC chr14 BAM files from the quick start.
 The `bam` argument is a character vector of indexed BAM file paths.
 If the vector is named, those names are used as sample labels in the plot.
 If it is unnamed, labels are derived from the BAM file names.
+BAM files must be indexed for region-restricted import.
+Index files should be discoverable by `Rsamtools` using standard same-directory
+naming, typically `file.bam.bai`.
 
 ```{r named_bams}
 bams <- RNAseqData.HNRNPC.bam.chr14_BAMFILES[c(7, 1)]
@@ -135,6 +138,8 @@ region
 
 If multiple ranges are supplied, `spliceTerrain()` reduces them to a single span
 on one chromosome and uses that span as the BAM query and plotting window.
+The span is the smallest continuous interval containing all supplied ranges: it
+starts at the lowest start coordinate and ends at the highest end coordinate.
 
 ## Adding transcript annotation
 
@@ -235,6 +240,9 @@ Percent spliced in (PSI) is commonly used to summarise how often a splice choice
 is used relative to other local splice choices.
 In `spliceTerrain()`, the `psi` argument identifies a local genomic interval and
 labels junctions whose start or end anchor overlaps that interval.
+Junction anchors use intronic coordinates: the start anchor is the first base of
+the intron, and the end anchor is the last base of the intron, not the adjacent
+exonic bases.
 The label reports each selected junction's fraction of the included junction
 reads.
 
