@@ -1,11 +1,12 @@
-# GitHub Actions Branch
+GitHub Actions Branch
+=====================
 
 This repository keeps `devel` clean for Bioconductor submission. GitHub Actions
 workflows live only on the `gh-actions` branch.
 
 After committing changes to `devel`, update and run the workflows with:
 
-```bash
+```sh
 git switch gh-actions
 git merge devel
 git push

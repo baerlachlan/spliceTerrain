@@ -2,8 +2,10 @@ url: https://baerlachlan.github.io/spliceTerrain/
 
 template:
   bootstrap: 5
+  bootswatch: flatly
+  light-switch: true
 
 navbar:
   structure:
     left: [intro, reference, articles, news]
-    right: [github]
+    right: [search, github, lightswitch]
