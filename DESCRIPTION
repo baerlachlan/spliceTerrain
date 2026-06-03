@@ -21,7 +21,8 @@ License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 8.0.0
 Config/testthat/edition: 3
-URL: https://github.com/baerlachlan/spliceTerrain
+URL: https://github.com/baerlachlan/spliceTerrain,
+    https://baerlachlan.github.io/spliceTerrain/
 BugReports: https://github.com/baerlachlan/spliceTerrain/issues
 BiocType: Software
 biocViews:
