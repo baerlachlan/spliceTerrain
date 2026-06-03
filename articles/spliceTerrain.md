@@ -503,7 +503,7 @@ sessionInfo() |>
 *ensembldb(v.2.37.1)*, *AnnotationFilter(v.1.37.0)*,
 *GenomicFeatures(v.1.65.0)*, *AnnotationDbi(v.1.75.0)*,
 *Biobase(v.2.73.1)*, *GenomicRanges(v.1.65.0)*, *Seqinfo(v.1.3.0)*,
-*IRanges(v.2.47.1)*, *S4Vectors(v.0.51.2)*, *BiocGenerics(v.0.59.3)*,
+*IRanges(v.2.47.2)*, *S4Vectors(v.0.51.3)*, *BiocGenerics(v.0.59.6)*,
 *generics(v.0.1.4)*, *RNAseqData.HNRNPC.bam.chr14(v.0.51.0)*,
 *spliceTerrain(v.0.99.0)* and *BiocStyle(v.2.41.0)*
 
@@ -517,7 +517,7 @@ sessionInfo() |>
 *rlang(v.1.2.0)*, *sass(v.0.4.10)*, *tools(v.4.7.0)*, *yaml(v.2.3.12)*,
 *rtracklayer(v.1.73.0)*, *knitr(v.1.51)*, *labeling(v.0.4.3)*,
 *S4Arrays(v.1.13.0)*, *htmlwidgets(v.1.6.4)*, *bit(v.4.6.0)*,
-*curl(v.7.1.0)*, *DelayedArray(v.0.39.2)*, *RColorBrewer(v.1.1-3)*,
+*curl(v.7.1.0)*, *DelayedArray(v.0.39.3)*, *RColorBrewer(v.1.1-3)*,
 *abind(v.1.4-8)*, *BiocParallel(v.1.47.0)*, *withr(v.3.0.2)*,
 *desc(v.1.4.3)*, *grid(v.4.7.0)*, *ggplot2(v.4.0.3)*,
 *SummarizedExperiment(v.1.43.0)*, *cli(v.3.6.6)*, *rmarkdown(v.2.31)*,

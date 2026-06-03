@@ -1,0 +1,13 @@
+/* Keep rendered R plots faithful to their default light-background output. */
+[data-bs-theme="dark"] img.r-plt,
+[data-bs-theme="dark"] pre .r-plt.img img,
+[data-bs-theme="dark"] .cell-output-display img {
+  filter: none !important;
+  background-color: white;
+}
+
+/* Match vignette plot width to the article content column. */
+.template-article img.r-plt {
+  width: 100%;
+  height: auto;
+}
