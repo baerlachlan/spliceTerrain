@@ -140,6 +140,7 @@
     )
 }
 
+#' @keywords internal
 .junctionArcLabels <- function(layout, juncs, psi) {
     label_values <- juncs$coverage
     labels <- .formatJunctionLabels(label_values)

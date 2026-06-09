@@ -3,7 +3,8 @@
     gr <- ctx$input[[type]]
     region <- ctx$input$region
     if (is.null(gr)) return(ctx)
-    if (is.character(gr)) gr <- GenomicRanges::GRanges(gr)
+    if (is.character(gr))
+        gr <- GenomicRanges::GRanges(.normaliseRegionString(gr))
     if (inherits(gr, "GRangesList"))
         gr <- unlist(gr, use.names = FALSE)
     if (!length(GenomicRanges::intersect(

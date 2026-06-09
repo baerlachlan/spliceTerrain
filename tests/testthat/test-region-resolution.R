@@ -70,3 +70,17 @@ test_that("region inputs must resolve to exactly one seqname", {
         fixed = TRUE
     )
 })
+
+test_that("multiple region ranges must resolve to exactly one strand", {
+    mixed_strand_region <- GenomicRanges::GRanges(
+        seqnames = "chr14",
+        ranges = IRanges::IRanges(c(100L, 300L), c(150L, 350L)),
+        strand = c("+", "-")
+    )
+
+    expect_error(
+        .resolve_region(mixed_strand_region),
+        "`region` ranges must all have the same strand.",
+        fixed = TRUE
+    )
+})

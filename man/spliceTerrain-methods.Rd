@@ -60,8 +60,8 @@ a single span used as the BAM query and plotting window.}
 \link[GenomicRanges]{GRangesList}, with each list element representing one
 feature group such as a transcript model. Each group is drawn on its own
 annotation row. List element names are used as y-axis labels; if absent,
-default group labels are generated. Annotation is restricted to the plotting
-region.}
+default group labels are generated. Annotation groups are retained when they
+overlap the plotting region and are clipped to the plotting window when drawn.}
 
 \item{psi}{Optional genomic interval used to annotate junction labels with
 local junction usage (percent spliced in, PSI). Accepts the same formats as
@@ -229,7 +229,8 @@ The plot is built in three conceptual steps:
 ranges or as character strings coercible to \code{GRanges}. If multiple
 ranges are supplied for \code{region}, they must all be on the same seqname;
 their span is used as the BAM query and plotting window. Optional genomic
-overlays are restricted to the plotting region before plotting.
+overlays are retained when they overlap the plotting region and are clipped
+to the plotting window when drawn.
 
 \code{psi} and \code{highlight} are optional overlays:
 \itemize{

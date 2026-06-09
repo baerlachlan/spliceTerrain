@@ -5,7 +5,9 @@
     juncs <- split(ctx$plot$juncs, ctx$plot$juncs$sample)
     ctx$plot$plist <- lapply(ctx$input$bam, \(i){ggplot2::ggplot()})
     ## Provide global maximum for scaling arc height if common_y
-    max_cov <- if (ctx$input$common_y) max(ctx$input$cov$coverage) else NULL
+    max_cov <- NULL
+    if (ctx$input$common_y)
+        max_cov <- max(ctx$input$cov$coverage, 1, na.rm = TRUE)
     out <- lapply(names(ctx$plot$plist), \(i){
         p <- ctx$plot$plist[[i]]
         p <- .plotCoverage(p, cov[[i]], ctx$input$colours[[i]])
@@ -28,7 +30,7 @@
     en <- BiocGenerics::end(ctx$plot$region)
     ylim <- NULL
     if (ctx$input$common_y) {
-        ## TODO: check this is the best way to access ggplot obj data
+        ## Build panels to determine shared y limits
         ys <- unlist(lapply(out, \(x){
             pdat <- ggplot2::ggplot_build(x)@data
             unlist(lapply(pdat, `[[`, "y"))

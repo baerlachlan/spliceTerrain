@@ -10,9 +10,7 @@
         .rangesToAnchors(ctx$input$highlight),
         gap = ctx$input$intron_width
     )
-    ## Because .mapGenomeToPlot may need to return NULL, we always return
-    ## a list, otherwise the element will be removed from ctx
-    ## TODO: is this the best strategy?
+    ## List assignment preserves NULL plot elements in ctx
     ctx$plot["cov"] <- .mapGenomeToPlot(ctx$input$cov, ctx$plot$map)
     ctx$plot["juncs"] <- .mapGenomeToPlot(ctx$input$juncs, ctx$plot$map)
     ctx$plot["annotation"] <- .mapGenomeToPlot(
