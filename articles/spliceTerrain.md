@@ -486,7 +486,7 @@ sessionInfo() |>
     pander()
 ```
 
-**R Under development (unstable) (2026-05-31 r90090)**
+**R Under development (unstable) (2026-06-06 r90114)**
 
 **Platform:** x86_64-pc-linux-gnu
 
@@ -498,41 +498,41 @@ sessionInfo() |>
 **attached base packages:** *stats4*, *stats*, *graphics*, *grDevices*,
 *utils*, *datasets*, *methods* and *base*
 
-**other attached packages:** *GenomeInfoDb(v.1.49.1)*,
+**other attached packages:** *GenomeInfoDb(v.1.48.0)*,
 *pander(v.0.6.6)*, *scales(v.1.4.0)*, *EnsDb.Hsapiens.v75(v.2.99.0)*,
-*ensembldb(v.2.37.1)*, *AnnotationFilter(v.1.37.0)*,
-*GenomicFeatures(v.1.65.0)*, *AnnotationDbi(v.1.75.0)*,
-*Biobase(v.2.73.1)*, *GenomicRanges(v.1.65.0)*, *Seqinfo(v.1.3.0)*,
-*IRanges(v.2.47.2)*, *S4Vectors(v.0.51.3)*, *BiocGenerics(v.0.59.6)*,
-*generics(v.0.1.4)*, *RNAseqData.HNRNPC.bam.chr14(v.0.51.0)*,
-*spliceTerrain(v.0.99.0)* and *BiocStyle(v.2.41.0)*
+*ensembldb(v.2.36.1)*, *AnnotationFilter(v.1.36.0)*,
+*GenomicFeatures(v.1.64.0)*, *AnnotationDbi(v.1.74.0)*,
+*Biobase(v.2.72.0)*, *GenomicRanges(v.1.64.0)*, *Seqinfo(v.1.2.0)*,
+*IRanges(v.2.46.0)*, *S4Vectors(v.0.50.1)*, *BiocGenerics(v.0.58.1)*,
+*generics(v.0.1.4)*, *RNAseqData.HNRNPC.bam.chr14(v.0.50.0)*,
+*spliceTerrain(v.0.99.0)* and *BiocStyle(v.2.40.0)*
 
 **loaded via a namespace (and not attached):** *tidyselect(v.1.2.1)*,
 *dplyr(v.1.2.1)*, *farver(v.2.1.2)*, *blob(v.1.3.0)*,
-*Biostrings(v.2.81.2)*, *S7(v.0.2.2)*, *bitops(v.1.0-9)*,
-*lazyeval(v.0.2.3)*, *fastmap(v.1.2.0)*, *RCurl(v.1.98-1.18)*,
-*GenomicAlignments(v.1.49.0)*, *XML(v.3.99-0.23)*, *digest(v.0.6.39)*,
-*lifecycle(v.1.0.5)*, *ProtGenerics(v.1.45.0)*, *KEGGREST(v.1.53.0)*,
+*Biostrings(v.2.80.1)*, *S7(v.0.2.2)*, *bitops(v.1.0-9)*,
+*lazyeval(v.0.2.3)*, *fastmap(v.1.2.0)*, *RCurl(v.1.98-1.19)*,
+*GenomicAlignments(v.1.48.0)*, *XML(v.3.99-0.23)*, *digest(v.0.6.39)*,
+*lifecycle(v.1.0.5)*, *ProtGenerics(v.1.44.0)*, *KEGGREST(v.1.52.0)*,
 *RSQLite(v.3.53.1)*, *magrittr(v.2.0.5)*, *compiler(v.4.7.0)*,
 *rlang(v.1.2.0)*, *sass(v.0.4.10)*, *tools(v.4.7.0)*, *yaml(v.2.3.12)*,
-*rtracklayer(v.1.73.0)*, *knitr(v.1.51)*, *labeling(v.0.4.3)*,
-*S4Arrays(v.1.13.0)*, *htmlwidgets(v.1.6.4)*, *bit(v.4.6.0)*,
-*curl(v.7.1.0)*, *DelayedArray(v.0.39.3)*, *RColorBrewer(v.1.1-3)*,
-*abind(v.1.4-8)*, *BiocParallel(v.1.47.0)*, *withr(v.3.0.2)*,
+*rtracklayer(v.1.72.0)*, *knitr(v.1.51)*, *labeling(v.0.4.3)*,
+*S4Arrays(v.1.12.0)*, *htmlwidgets(v.1.6.4)*, *bit(v.4.6.0)*,
+*curl(v.7.1.0)*, *DelayedArray(v.0.38.2)*, *RColorBrewer(v.1.1-3)*,
+*abind(v.1.4-8)*, *BiocParallel(v.1.46.0)*, *withr(v.3.0.2)*,
 *desc(v.1.4.3)*, *grid(v.4.7.0)*, *ggplot2(v.4.0.3)*,
-*SummarizedExperiment(v.1.43.0)*, *cli(v.3.6.6)*, *rmarkdown(v.2.31)*,
+*SummarizedExperiment(v.1.42.0)*, *cli(v.3.6.6)*, *rmarkdown(v.2.31)*,
 *crayon(v.1.5.3)*, *ragg(v.1.5.2)*, *otel(v.0.2.0)*, *httr(v.1.4.8)*,
-*rjson(v.0.2.23)*, *BiocBaseUtils(v.1.15.1)*, *DBI(v.1.3.0)*,
-*cachem(v.1.1.0)*, *parallel(v.4.7.0)*, *BiocManager(v.1.30.27)*,
-*XVector(v.0.53.0)*, *restfulr(v.0.0.16)*, *matrixStats(v.1.5.0)*,
-*vctrs(v.0.7.3)*, *Matrix(v.1.7-5)*, *jsonlite(v.2.0.0)*,
-*bookdown(v.0.46)*, *patchwork(v.1.3.2)*, *bit64(v.4.8.2)*,
-*systemfonts(v.1.3.2)*, *jquerylib(v.0.1.4)*, *glue(v.1.8.1)*,
-*pkgdown(v.2.2.0)*, *codetools(v.0.2-20)*, *gtable(v.0.3.6)*,
-*UCSC.utils(v.1.9.0)*, *BiocIO(v.1.23.3)*, *tibble(v.3.3.1)*,
-*pillar(v.1.11.1)*, *htmltools(v.0.5.9)*, *R6(v.2.6.1)*,
-*textshaping(v.1.0.5)*, *evaluate(v.1.0.5)*, *lattice(v.0.22-9)*,
-*cigarillo(v.1.3.0)*, *png(v.0.1-9)*, *Rsamtools(v.2.29.0)*,
-*memoise(v.2.0.1)*, *bslib(v.0.11.0)*, *Rcpp(v.1.1.1-1.1)*,
-*SparseArray(v.1.13.2)*, *xfun(v.0.58)*, *fs(v.2.1.0)*,
-*MatrixGenerics(v.1.25.0)* and *pkgconfig(v.2.0.3)*
+*rjson(v.0.2.23)*, *DBI(v.1.3.0)*, *cachem(v.1.1.0)*,
+*parallel(v.4.7.0)*, *BiocManager(v.1.30.27)*, *XVector(v.0.52.0)*,
+*restfulr(v.0.0.16)*, *matrixStats(v.1.5.0)*, *vctrs(v.0.7.3)*,
+*Matrix(v.1.7-5)*, *jsonlite(v.2.0.0)*, *bookdown(v.0.46)*,
+*patchwork(v.1.3.2)*, *bit64(v.4.8.2)*, *systemfonts(v.1.3.2)*,
+*jquerylib(v.0.1.4)*, *glue(v.1.8.1)*, *pkgdown(v.2.2.0)*,
+*codetools(v.0.2-20)*, *gtable(v.0.3.6)*, *UCSC.utils(v.1.8.0)*,
+*BiocIO(v.1.22.0)*, *tibble(v.3.3.1)*, *pillar(v.1.11.1)*,
+*htmltools(v.0.5.9)*, *R6(v.2.6.1)*, *textshaping(v.1.0.5)*,
+*evaluate(v.1.0.5)*, *lattice(v.0.22-9)*, *png(v.0.1-9)*,
+*Rsamtools(v.2.28.0)*, *cigarillo(v.1.2.0)*, *memoise(v.2.0.1)*,
+*bslib(v.0.11.0)*, *Rcpp(v.1.1.1-1.1)*, *SparseArray(v.1.12.2)*,
+*xfun(v.0.58)*, *fs(v.2.1.0)*, *MatrixGenerics(v.1.24.0)* and
+*pkgconfig(v.2.0.3)*

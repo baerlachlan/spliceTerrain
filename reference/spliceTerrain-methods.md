@@ -76,7 +76,8 @@ spliceTerrain(
   with each list element representing one feature group such as a
   transcript model. Each group is drawn on its own annotation row. List
   element names are used as y-axis labels; if absent, default group
-  labels are generated. Annotation is restricted to the plotting region.
+  labels are generated. Annotation groups are retained when they overlap
+  the plotting region and are clipped to the plotting window when drawn.
 
 - psi:
 
@@ -293,7 +294,8 @@ The plot is built in three conceptual steps:
 character strings coercible to `GRanges`. If multiple ranges are
 supplied for `region`, they must all be on the same seqname; their span
 is used as the BAM query and plotting window. Optional genomic overlays
-are restricted to the plotting region before plotting.
+are retained when they overlap the plotting region and are clipped to
+the plotting window when drawn.
 
 `psi` and `highlight` are optional overlays:
 

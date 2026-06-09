@@ -123,8 +123,8 @@ a single span used as the BAM query and plotting window.</p></dd>
 <a href="https://rdrr.io/pkg/GenomicRanges/man/GRangesList-class.html" class="external-link">GRangesList</a>, with each list element representing one
 feature group such as a transcript model. Each group is drawn on its own
 annotation row. List element names are used as y-axis labels; if absent,
-default group labels are generated. Annotation is restricted to the plotting
-region.</p></dd>
+default group labels are generated. Annotation groups are retained when they
+overlap the plotting region and are clipped to the plotting window when drawn.</p></dd>
 
 
 <dt id="arg-psi">psi<a class="anchor" aria-label="anchor" href="#arg-psi"></a></dt>
@@ -340,7 +340,8 @@ shown in genome coordinates, including when introns are compressed.</p>
 ranges or as character strings coercible to <code>GRanges</code>. If multiple
 ranges are supplied for <code>region</code>, they must all be on the same seqname;
 their span is used as the BAM query and plotting window. Optional genomic
-overlays are restricted to the plotting region before plotting.</p>
+overlays are retained when they overlap the plotting region and are clipped
+to the plotting window when drawn.</p>
 <p><code>psi</code> and <code>highlight</code> are optional overlays:</p><ul><li><p><code>psi</code> identifies a local region used to add percentage labels to
   selected junctions. Junctions with an anchor overlapping <code>psi</code> are
   labelled with their fraction of total reads among those selected junctions.</p></li>
