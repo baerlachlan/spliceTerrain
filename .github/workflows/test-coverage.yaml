@@ -26,6 +26,6 @@ jobs:
             any::covr
           needs: coverage
 
-      - name: Upload coverage to Codecov
-        run: covr::codecov()
-        shell: Rscript {0}
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
