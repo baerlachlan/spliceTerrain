@@ -87,6 +87,22 @@ test_that("junction-only plots work when coverage is removed", {
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
+test_that("common y-axis works when coverage is removed", {
+    bams <- .hnrnpc_bams()
+    ctx <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        min_coverage = 1000,
+        min_junction_reads = 1,
+        common_y = TRUE,
+        return_ctx = TRUE
+    )
+
+    expect_length(ctx$input$cov, 0)
+    expect_gt(length(ctx$input$juncs), 0)
+    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+})
+
 test_that("regions with no alignments return an empty plot", {
     bams <- .hnrnpc_bams()
     ctx <- spliceTerrain(
