@@ -12,6 +12,8 @@
         stop("`region` must be a GRanges or GRangesList.")
     if (length(unique(as.character(Seqinfo::seqnames(region)))) != 1)
         stop("`region` must resolve to ranges on exactly one seqname.")
+    if (length(unique(as.character(BiocGenerics::strand(region)))) != 1)
+        stop("`region` ranges must all have the same strand.")
     ## Ensure only a single range (the span) is returned
     ## So we don't load duplicate alignments
     ## See `which` arg of scanBamParam
@@ -38,6 +40,6 @@
     GenomicRanges::GRanges(
         seqnames = GenomicRanges::seqnames(gr)[1],
         ranges   = IRanges::IRanges(start = s, end = e),
-        strand   = GenomicRanges::strand(gr)[1]
+        strand   = unique(GenomicRanges::strand(gr))
     )
 }
