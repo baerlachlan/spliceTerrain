@@ -30,7 +30,7 @@
     en <- BiocGenerics::end(ctx$plot$region)
     ylim <- NULL
     if (ctx$input$common_y) {
-        ## TODO: check this is the best way to access ggplot obj data
+        ## Build panels to determine shared y limits
         ys <- unlist(lapply(out, \(x){
             pdat <- ggplot2::ggplot_build(x)@data
             unlist(lapply(pdat, `[[`, "y"))

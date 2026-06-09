@@ -14,10 +14,7 @@
         stop("`region` must resolve to ranges on exactly one seqname.")
     if (length(unique(as.character(BiocGenerics::strand(region)))) != 1)
         stop("`region` ranges must all have the same strand.")
-    ## Ensure only a single range (the span) is returned
-    ## So we don't load duplicate alignments
-    ## See `which` arg of scanBamParam
-    ## TODO: add warning if reducing to single range
+    ## Use one span so BAM queries do not load duplicate alignments
     span <- .spanOfRanges(region)
     ctx$input$region <- span
     ctx$plot$region <- span
