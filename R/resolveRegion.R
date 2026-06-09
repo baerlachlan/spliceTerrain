@@ -3,10 +3,7 @@
     region <- ctx$input$region
     if (is.null(region)) return(region)
     if (is.character(region)) {
-        region <- gsub(",", "", region)
-        region <- gsub(" ", "", region)
-        region <- gsub("\u2013", "-", region)
-        region <- gsub("\u2014", "-", region)
+        region <- .normaliseRegionString(region)
         region <- GenomicRanges::GRanges(region)
     }
     if (inherits(region, "GRangesList"))
@@ -23,6 +20,15 @@
     ctx$input$region <- span
     ctx$plot$region <- span
     ctx
+}
+
+#' @keywords internal
+.normaliseRegionString <- function(x) {
+    x <- gsub(",", "", x)
+    x <- gsub(" ", "", x)
+    x <- gsub("\u2013", "-", x)
+    x <- gsub("\u2014", "-", x)
+    x
 }
 
 #' @keywords internal

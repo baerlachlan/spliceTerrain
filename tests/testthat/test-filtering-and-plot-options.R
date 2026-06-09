@@ -165,6 +165,24 @@ test_that("highlight and psi overlays are resolved and mapped", {
     expect_length(ctx$plot$highlight, 1)
 })
 
+test_that("overlay character regions are normalised before coercion", {
+    bams <- .hnrnpc_bams()
+    ctx <- spliceTerrain(
+        bam = bams[7],
+        region = .hnrnpc_region(),
+        psi = "chr14:70,234,854 - 70,234,854",
+        highlight = "chr14:70234056\u201370234097",
+        min_coverage = 1,
+        min_junction_reads = 1,
+        return_ctx = TRUE
+    )
+
+    expect_identical(BiocGenerics::start(ctx$input$psi), 70234854L)
+    expect_identical(BiocGenerics::end(ctx$input$psi), 70234854L)
+    expect_identical(BiocGenerics::start(ctx$input$highlight), 70234056L)
+    expect_identical(BiocGenerics::end(ctx$input$highlight), 70234097L)
+})
+
 test_that("plot assembly options work with multiple samples", {
     bams <- .hnrnpc_bams()
     .expect_patchwork_renders(
