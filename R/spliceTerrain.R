@@ -36,6 +36,10 @@
 #' are labelled with their fraction of total junction reads among the selected
 #' junctions.
 #'
+#' @param psi_label_sep Character scalar inserted between junction counts and
+#' PSI percentages in junction labels when \code{psi} is supplied. Defaults to
+#' \code{"\n"}; use \code{" "} to keep percentages inline with counts.
+#'
 #' @param highlight Optional interval(s) to highlight. Accepts the same formats
 #' as \code{region}. Multiple ranges may be supplied. Highlighted intervals are
 #' drawn as shaded vertical bands spanning the full panel height.
@@ -311,6 +315,7 @@ spliceTerrain <- function(
         region,
         annotation = NULL,
         psi = NULL,
+        psi_label_sep = "\n",
         highlight = NULL,
         strandedness = "unstranded",
         min_mapq = 0,

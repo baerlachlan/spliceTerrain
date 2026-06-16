@@ -1,12 +1,12 @@
 #' @keywords internal
 .plotJunctions <- function(
         p, juncs, cov, psi, arc_height, arc_side, colour, junc_text_size,
-        arc_scale, max_cov
+        arc_scale, max_cov, psi_label_sep
 ) {
     if (is.null(juncs)) return(p)
     layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov, arc_side)
     arcs <- .junctionArcPoints(layout)
-    labels <- .junctionArcLabels(layout, juncs, psi)
+    labels <- .junctionArcLabels(layout, juncs, psi, psi_label_sep)
     size_col <- ifelse(arc_scale, "size_on", "size_off")
     p + ggplot2::geom_line(
         data = arcs,
@@ -141,7 +141,7 @@
 }
 
 #' @keywords internal
-.junctionArcLabels <- function(layout, juncs, psi) {
+.junctionArcLabels <- function(layout, juncs, psi, psi_label_sep = "\n") {
     label_values <- juncs$coverage
     labels <- .formatJunctionLabels(label_values)
     if (!is.null(psi)) {
@@ -157,7 +157,7 @@
         sh_en <- S4Vectors::subjectHits(hits_en)
         sh <- unique(c(sh_st, sh_en))
         labels[sh] <- paste0(
-            labels[sh], "\n",
+            labels[sh], psi_label_sep,
             "(",
             scales::percent(
                 round(label_values[sh] / sum(label_values[sh]), 3)

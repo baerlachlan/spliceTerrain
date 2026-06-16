@@ -9,6 +9,7 @@ spliceTerrain(
   region,
   annotation = NULL,
   psi = NULL,
+  psi_label_sep = "\n",
   highlight = NULL,
   strandedness = "unstranded",
   min_mapq = 0,
@@ -68,6 +69,10 @@ local junction usage (percent spliced in, PSI). Accepts the same formats as
 \code{region}. Junctions with a start or end anchor overlapping \code{psi}
 are labelled with their fraction of total junction reads among the selected
 junctions.}
+
+\item{psi_label_sep}{Character scalar inserted between junction counts and
+PSI percentages in junction labels when \code{psi} is supplied. Defaults to
+\code{"\n"}; use \code{" "} to keep percentages inline with counts.}
 
 \item{highlight}{Optional interval(s) to highlight. Accepts the same formats
 as \code{region}. Multiple ranges may be supplied. Highlighted intervals are
