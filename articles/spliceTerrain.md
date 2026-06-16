@@ -486,7 +486,7 @@ sessionInfo() |>
     pander()
 ```
 
-**R Under development (unstable) (2026-06-08 r90120)**
+**R Under development (unstable) (2026-06-14 r90150)**
 
 **Platform:** x86_64-pc-linux-gnu
 
@@ -524,7 +524,7 @@ sessionInfo() |>
 *crayon(v.1.5.3)*, *ragg(v.1.5.2)*, *otel(v.0.2.0)*, *httr(v.1.4.8)*,
 *rjson(v.0.2.23)*, *DBI(v.1.3.0)*, *cachem(v.1.1.0)*,
 *parallel(v.4.7.0)*, *BiocManager(v.1.30.27)*, *XVector(v.0.52.0)*,
-*restfulr(v.0.0.16)*, *matrixStats(v.1.5.0)*, *vctrs(v.0.7.3)*,
+*restfulr(v.0.0.17)*, *matrixStats(v.1.5.0)*, *vctrs(v.0.7.3)*,
 *Matrix(v.1.7-5)*, *jsonlite(v.2.0.0)*, *bookdown(v.0.46)*,
 *patchwork(v.1.3.2)*, *bit64(v.4.8.2)*, *systemfonts(v.1.3.2)*,
 *jquerylib(v.0.1.4)*, *glue(v.1.8.1)*, *pkgdown(v.2.2.0)*,

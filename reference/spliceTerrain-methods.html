@@ -63,6 +63,7 @@ area is focused on observed or annotated features.</p>
 <span>  <span class="va">region</span>,</span>
 <span>  annotation <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  psi <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  psi_label_sep <span class="op">=</span> <span class="st">"\n"</span>,</span>
 <span>  highlight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  strandedness <span class="op">=</span> <span class="st">"unstranded"</span>,</span>
 <span>  min_mapq <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -133,6 +134,12 @@ local junction usage (percent spliced in, PSI). Accepts the same formats as
 <code>region</code>. Junctions with a start or end anchor overlapping <code>psi</code>
 are labelled with their fraction of total junction reads among the selected
 junctions.</p></dd>
+
+
+<dt id="arg-psi-label-sep">psi_label_sep<a class="anchor" aria-label="anchor" href="#arg-psi-label-sep"></a></dt>
+<dd><p>Character scalar inserted between junction counts and
+PSI percentages in junction labels when <code>psi</code> is supplied. Defaults to
+<code>"\n"</code>; use <code>" "</code> to keep percentages inline with counts.</p></dd>
 
 
 <dt id="arg-highlight">highlight<a class="anchor" aria-label="anchor" href="#arg-highlight"></a></dt>

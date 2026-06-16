@@ -14,6 +14,7 @@ spliceTerrain(
   region,
   annotation = NULL,
   psi = NULL,
+  psi_label_sep = "\n",
   highlight = NULL,
   strandedness = "unstranded",
   min_mapq = 0,
@@ -86,6 +87,12 @@ spliceTerrain(
   `region`. Junctions with a start or end anchor overlapping `psi` are
   labelled with their fraction of total junction reads among the
   selected junctions.
+
+- psi_label_sep:
+
+  Character scalar inserted between junction counts and PSI percentages
+  in junction labels when `psi` is supplied. Defaults to `"\n"`; use
+  `" "` to keep percentages inline with counts.
 
 - highlight:
 
