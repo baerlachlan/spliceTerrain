@@ -37,9 +37,14 @@ test_that("annotation panel and annotation labels can be plotted", {
 
     expect_true("annotation" %in% names(plotted$plot$plist))
     expect_s3_class(plotted$plot$plist$annotation, "ggplot")
-    expect_true(any(vapply(
+    segment_layers <- vapply(
         plotted$plot$plist$annotation$layers,
-        function(layer) inherits(layer$geom, "GeomPolygon"),
+        function(layer) inherits(layer$geom, "GeomSegment"),
+        logical(1)
+    )
+    expect_true(any(vapply(
+        plotted$plot$plist$annotation$layers[segment_layers],
+        function(layer) !is.null(layer$geom_params$arrow),
         logical(1)
     )))
     text_layers <- vapply(
@@ -178,6 +183,37 @@ test_that("single-exon annotation groups can be plotted", {
     plotted <- spliceTerrain:::.plotAnnotation(plotted)
     .expect_ggplot_renders(plotted$plot$plist$annotation)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+})
+
+test_that("annotation arrow ranges follow transcript strand", {
+    introns <- data.frame(
+        start = c(10L, 30L),
+        end = c(20L, 40L),
+        width = c(10L, 10L),
+        midpoint = c(15, 35),
+        strand = c("+", "-"),
+        y = c(0, 0),
+        draw_arrow = TRUE
+    )
+
+    arrow_ranges <- spliceTerrain:::.annotationArrowRange(introns)
+
+    expect_equal(arrow_ranges$arrow_start, c(14.5, 35.5))
+    expect_equal(arrow_ranges$arrow_end, c(15.5, 34.5))
+})
+
+test_that("annotation intron midpoint matches plotted segment center", {
+    exons <- list(tx = data.frame(
+        start = c(10L, 40L),
+        end = c(20L, 50L),
+        strand = "+",
+        group = "tx",
+        y = 1L
+    ))
+
+    introns <- spliceTerrain:::.getIntrons(exons, min_arrow = 1L)
+
+    expect_equal(introns$midpoint, (introns$start + introns$end) / 2)
 })
 
 test_that("annotation input must be a GRangesList overlapping region", {
