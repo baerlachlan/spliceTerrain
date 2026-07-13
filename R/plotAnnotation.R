@@ -8,10 +8,10 @@
     df$y <- unname(group_y[df$group])
     exons <- split(df, df[["group"]])
     introns <- .getIntrons(exons, ctx$input$min_arrow)
-    arrowheads <- .annotationArrowheads(introns, ctx$plot$region)
+    introns <- .annotationArrowRange(introns)
     p <- ggplot2::ggplot()
     p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
-    p <- .plotAnnotationIntrons(p, introns, arrowheads)
+    p <- .plotAnnotationIntrons(p, introns)
     p <- .plotAnnotationExons(
         p, df, ctx$input$anno_fill_by, ctx$input$anno_fill_colours
     )
@@ -67,24 +67,47 @@
 }
 
 #' @keywords internal
-.plotAnnotationIntrons <- function(p, introns, arrowheads) {
+.plotAnnotationIntrons <- function(p, introns) {
     if (!is.null(introns) && nrow(introns)) {
-        p <- p + ggplot2::geom_segment(
-            data = introns,
-            ggplot2::aes(x = .data$start, xend = .data$end, y = .data$y),
-            linewidth = 0.4, colour = "black"
-        )
-    }
-    if (!is.null(arrowheads) && nrow(arrowheads)) {
-        p <- p + ggplot2::geom_polygon(
-            data = arrowheads,
-            ggplot2::aes(
-                x = .data$x, y = .data$y, group = .data$arrow_id
-            ),
-            fill = "black", colour = NA
-        )
+        plain_introns <- introns
+        arrow_introns <- introns[introns$draw_arrow, ]
+        if (nrow(plain_introns)) {
+            p <- p + ggplot2::geom_segment(
+                data = plain_introns,
+                ggplot2::aes(x = .data$start, xend = .data$end, y = .data$y),
+                linewidth = 0.4, colour = "black"
+            )
+        }
+        if (nrow(arrow_introns)) {
+            p <- p + ggplot2::geom_segment(
+                data = arrow_introns,
+                ggplot2::aes(
+                    x = .data$arrow_start, xend = .data$arrow_end, y = .data$y,
+                    yend = .data$y
+                ),
+                linewidth = 0.4, colour = "black",
+                arrow = grid::arrow(
+                    type = "closed", length = grid::unit(2.2, "mm")
+                )
+            )
+        }
     }
     p
+}
+
+#' @keywords internal
+.annotationArrowRange <- function(introns) {
+    if (is.null(introns) || !nrow(introns)) return(introns)
+    ## Data-space shaft is deliberately short; min_arrow controls visibility.
+    arrow_width <- rep(1, nrow(introns))
+    introns$arrow_start <- introns$midpoint - (arrow_width / 2)
+    introns$arrow_end <- introns$midpoint + (arrow_width / 2)
+    reverse <- introns$strand == "-"
+    introns$arrow_start[reverse] <- introns$midpoint[reverse] +
+        (arrow_width[reverse] / 2)
+    introns$arrow_end[reverse] <- introns$midpoint[reverse] -
+        (arrow_width[reverse] / 2)
+    introns
 }
 
 #' @keywords internal
@@ -113,7 +136,7 @@
                 strand = unique(x$strand),
                 group = unique(x[["group"]])
             )
-            df$width <- df$end - df$start - 1 # 1-based
+            df$width <- df$end - df$start
             df$midpoint <- df$start + (df$width / 2)
             df$y <- unique(x$y)
             df$draw_arrow <- df$width >= min_arrow &
@@ -122,30 +145,4 @@
         }
     })
     do.call(rbind, introns)
-}
-
-#' @keywords internal
-.annotationArrowheads <- function(introns, region) {
-    if (is.null(introns) || !nrow(introns)) return(NULL)
-    introns <- introns[introns$draw_arrow, ]
-    if (!nrow(introns)) return(NULL)
-
-    arrow_width <- as.numeric(BiocGenerics::width(region)) * 0.012
-    ## Centre on geometric centroid
-    tip_x <- ifelse(
-        introns$strand == "+",
-        introns$midpoint + (2 * arrow_width / 3),
-        introns$midpoint - (2 * arrow_width / 3)
-    )
-    base_x <- ifelse(
-        introns$strand == "+",
-        introns$midpoint - (arrow_width / 3),
-        introns$midpoint + (arrow_width / 3)
-    )
-
-    data.frame(
-        arrow_id = rep(seq_len(nrow(introns)), each = 3),
-        x = c(rbind(tip_x, base_x, base_x)),
-        y = c(rbind(introns$y, introns$y + 0.08, introns$y - 0.08))
-    )
 }
