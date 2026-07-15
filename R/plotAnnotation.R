@@ -10,7 +10,6 @@
     introns <- .getIntrons(exons, ctx$input$min_arrow)
     introns <- .annotationArrowRange(introns)
     p <- ggplot2::ggplot()
-    p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
     p <- .plotAnnotationIntrons(p, introns)
     p <- .plotAnnotationExons(
         p, df, ctx$input$anno_fill_by, ctx$input$anno_fill_colours
@@ -19,6 +18,7 @@
         p, df, ctx$input$anno_label_by, ctx$input$anno_label_colour,
         ctx$input$anno_label_size
     )
+    p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
     p <- p + ggplot2::coord_cartesian(
         xlim = c(
             BiocGenerics::start(ctx$plot$region),
