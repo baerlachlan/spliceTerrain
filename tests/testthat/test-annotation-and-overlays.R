@@ -322,6 +322,12 @@ test_that("highlight intervals are plotted with sample and annotation panels", {
             inherits(layer$geom, "GeomRect")
         }, logical(1)))
     }, logical(1))))
+    expect_true(inherits(
+        plotted$plot$plist$annotation$layers[[
+            length(plotted$plot$plist$annotation$layers)
+        ]]$geom,
+        "GeomRect"
+    ))
 })
 
 test_that("annotation and overlays render without intron compression", {
