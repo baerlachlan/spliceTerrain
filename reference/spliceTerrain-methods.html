@@ -124,8 +124,10 @@ a single span used as the BAM query and plotting window.</p></dd>
 <a href="https://rdrr.io/pkg/GenomicRanges/man/GRangesList-class.html" class="external-link">GRangesList</a>, with each list element representing one
 feature group such as a transcript model. Each group is drawn on its own
 annotation row. List element names are used as y-axis labels; if absent,
-default group labels are generated. Annotation groups are retained when they
-overlap the plotting region and are clipped to the plotting window when drawn.</p></dd>
+default group labels are generated. Supplied names must be non-empty and
+unique. Annotation groups are retained in full when they overlap the plotting
+region and are clipped to the plotting window when drawn. All ranges in a
+retained group must be on the plotting seqname and share one strand.</p></dd>
 
 
 <dt id="arg-psi">psi<a class="anchor" aria-label="anchor" href="#arg-psi"></a></dt>

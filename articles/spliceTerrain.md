@@ -532,7 +532,7 @@ sessionInfo() |>
 *BiocIO(v.1.22.0)*, *tibble(v.3.3.1)*, *pillar(v.1.11.1)*,
 *htmltools(v.0.5.9)*, *R6(v.2.6.1)*, *textshaping(v.1.0.5)*,
 *evaluate(v.1.0.5)*, *lattice(v.0.22-9)*, *png(v.0.1-9)*,
-*Rsamtools(v.2.28.0)*, *cigarillo(v.1.2.0)*, *memoise(v.2.0.1)*,
+*Rsamtools(v.2.28.0)*, *cigarillo(v.1.2.1)*, *memoise(v.2.0.1)*,
 *bslib(v.0.11.0)*, *Rcpp(v.1.1.2)*, *SparseArray(v.1.12.2)*,
 *xfun(v.0.60)*, *fs(v.2.1.0)*, *MatrixGenerics(v.1.24.0)* and
 *pkgconfig(v.2.0.3)*
