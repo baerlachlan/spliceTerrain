@@ -23,7 +23,8 @@ test_that("coverage and junction thresholds filter processed data", {
 
 test_that("coverage runs are clipped to the plotting region", {
     aln <- GenomicAlignments::GAlignments(
-        seqnames = "chr1", pos = 95L, cigar = "10M", strand = "+"
+        seqnames = rep("chr1", 3), pos = c(90L, 95L, 110L),
+        cigar = c("5M", "10M", "5M"), strand = rep("+", 3)
     )
     ctx <- list(
         input = list(

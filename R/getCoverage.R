@@ -22,12 +22,13 @@
         )
         gr <- gr[vals != 0]
         gr <- gr[gr$coverage_raw >= ctx$input$min_coverage[x]]
-        IRanges::restrict(
+        gr <- IRanges::restrict(
             gr,
             start = BiocGenerics::start(ctx$input$region),
             end = BiocGenerics::end(ctx$input$region),
             keep.all.ranges = FALSE
         )
+        gr[BiocGenerics::width(gr) > 0]
     })
     cov <- do.call(c, cov)
     cov <- IRanges::subsetByOverlaps(cov, ctx$input$region, type = "within")
