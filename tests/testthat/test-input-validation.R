@@ -40,6 +40,28 @@ test_that("per-BAM numeric arguments must be scalar or one value per BAM", {
         "`min_junction_reads` must be length 1 or the number of BAMs",
         fixed = TRUE
     )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7], region = .hnrnpc_region(), min_mapq = NA_real_
+        ),
+        "`min_mapq` must be a non-negative whole number.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7], region = .hnrnpc_region(), min_coverage = -1
+        ),
+        "`min_coverage` values must be non-negative whole numbers.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = bams[7], region = .hnrnpc_region(),
+            min_junction_reads = 1.5
+        ),
+        "`min_junction_reads` values must be non-negative whole numbers.",
+        fixed = TRUE
+    )
 })
 
 test_that("normalisation inputs must match BAMs", {
