@@ -34,8 +34,12 @@
         ## Build panels to determine shared y limits
         ys <- unlist(lapply(out, \(x){
             pdat <- ggplot2::ggplot_build(x)@data
-            unlist(lapply(pdat, `[[`, "y"))
+            unlist(lapply(pdat, function(layer) {
+                fields <- intersect(c("y", "ymin", "ymax"), names(layer))
+                unlist(layer[fields])
+            }))
         }))
+        ys <- ys[is.finite(ys)]
         if (length(ys))
             ylim <- c(min(ys), max(ys))
     }
@@ -53,9 +57,12 @@
 .plotCoverage <- function(p, cov, colour) {
     if (is.null(cov)) return(p)
     cov <- as.data.frame(cov)
-    p + ggplot2::geom_bar(
+    p + ggplot2::geom_rect(
         data = cov,
-        ggplot2::aes(.data$start, .data$coverage),
-        stat = "identity", width = 1, colour = colour, fill = colour
+        ggplot2::aes(
+            xmin = .data$start - 0.5, xmax = .data$end + 0.5,
+            ymin = 0, ymax = .data$coverage
+        ),
+        colour = colour, fill = colour
     )
 }

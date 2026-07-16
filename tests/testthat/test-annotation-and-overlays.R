@@ -143,24 +143,74 @@ test_that("annotation styling columns must exist", {
 })
 
 test_that("unnamed annotation groups get default labels", {
-    bams <- .hnrnpc_bams()
-    annotation <- .hnrnpc_annotation()
-    names(annotation) <- NULL
-
-    ctx <- spliceTerrain(
-        bam = bams[7],
-        region = .hnrnpc_region(),
-        annotation = annotation,
-        min_coverage = 1,
-        min_junction_reads = 1,
-        return_ctx = TRUE
+    annotation <- GenomicRanges::GRangesList(
+        GenomicRanges::GRanges("chr1:110-120"),
+        GenomicRanges::GRanges("chr1:150-160")
     )
+    names(annotation[[1]]) <- "exon_1"
+    ctx <- list(
+        input = list(
+            annotation = annotation,
+            region = GenomicRanges::GRanges("chr1:100-200"),
+            anno_fill_by = NULL,
+            anno_label_by = NULL
+        ),
+        plot = list()
+    )
+    resolved <- spliceTerrain:::.resolveAnnotation(ctx)
 
     expect_identical(
-        unique(ctx$input$annotation$group),
+        unique(resolved$input$annotation$group),
         c("annotation_1", "annotation_2")
     )
-    .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+
+    for (bad_names in list(c("tx", "tx"), c("tx", ""))) {
+        names(ctx$input$annotation) <- bad_names
+        expect_error(
+            spliceTerrain:::.resolveAnnotation(ctx),
+            "`annotation` group names must be non-empty and unique.",
+            fixed = TRUE
+        )
+    }
+})
+
+test_that("annotation groups retain off-window ranges on one seqname", {
+    annotation <- GenomicRanges::GRangesList(
+        tx = GenomicRanges::GRanges(c("chr1:1-10", "chr1:150-160"))
+    )
+    ctx <- list(
+        input = list(
+            annotation = annotation,
+            region = GenomicRanges::GRanges("chr1:100-200"),
+            anno_fill_by = NULL,
+            anno_label_by = NULL
+        ),
+        plot = list()
+    )
+
+    resolved <- spliceTerrain:::.resolveAnnotation(ctx)
+    expect_identical(BiocGenerics::start(resolved$input$annotation), c(1L, 150L))
+
+    ctx$input$annotation[[1]] <- GenomicRanges::GRanges(
+        c("chr1:1-10", "chr1:150-160", "chr2:1-10")
+    )
+    expect_error(
+        spliceTerrain:::.resolveAnnotation(ctx),
+        paste(
+            "Each `annotation` group must contain ranges only on the",
+            "plotting seqname."
+        ),
+        fixed = TRUE
+    )
+
+    ctx$input$annotation[[1]] <- GenomicRanges::GRanges(
+        c("chr1:1-10:+", "chr1:150-160:-")
+    )
+    expect_error(
+        spliceTerrain:::.resolveAnnotation(ctx),
+        "Ranges within each `annotation` group must share one strand.",
+        fixed = TRUE
+    )
 })
 
 test_that("single-exon annotation groups can be plotted", {

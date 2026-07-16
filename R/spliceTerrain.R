@@ -27,8 +27,10 @@
 #' \link[GenomicRanges]{GRangesList}, with each list element representing one
 #' feature group such as a transcript model. Each group is drawn on its own
 #' annotation row. List element names are used as y-axis labels; if absent,
-#' default group labels are generated. Annotation groups are retained when they
-#' overlap the plotting region and are clipped to the plotting window when drawn.
+#' default group labels are generated. Supplied names must be non-empty and
+#' unique. Annotation groups are retained in full when they overlap the plotting
+#' region and are clipped to the plotting window when drawn. All ranges in a
+#' retained group must be on the plotting seqname and share one strand.
 #'
 #' @param psi Optional genomic interval used to annotate junction labels with
 #' local junction usage (percent spliced in, PSI). Accepts the same formats as

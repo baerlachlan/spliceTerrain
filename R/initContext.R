@@ -11,6 +11,7 @@
     ctx <- .checkColours(ctx)
     ctx <- .checkStrandedness(ctx)
     ctx <- .checkArcSide(ctx)
+    ctx <- .checkMinMapq(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
     ctx <- .checkPanelHeights(ctx)
@@ -91,9 +92,22 @@
 }
 
 #' @keywords internal
+.checkMinMapq <- function(ctx) {
+    x <- ctx$input$min_mapq
+    if (length(x) != 1 || !is.numeric(x) || is.na(x) || !is.finite(x) ||
+            x < 0 || x != floor(x))
+        stop("`min_mapq` must be a non-negative whole number.")
+    ctx
+}
+
+#' @keywords internal
 .checkMinCoverage <- function(ctx) {
     if (!(length(ctx$input$min_coverage) %in% c(1, length(ctx$input$bam))))
         stop("`min_coverage` must be length 1 or the number of BAMs")
+    x <- ctx$input$min_coverage
+    if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)) || any(x < 0) ||
+            any(x != floor(x)))
+        stop("`min_coverage` values must be non-negative whole numbers.")
     if (length(ctx$input$min_coverage) == 1) ctx$input$min_coverage <- rep(
         ctx$input$min_coverage, length(ctx$input$bam)
     )
@@ -107,6 +121,12 @@
     len_check <- length(ctx$input$bam)
     if (!(len %in% c(1, len_check)))
         stop("`min_junction_reads` must be length 1 or the number of BAMs")
+    x <- ctx$input$min_junction_reads
+    if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)) || any(x < 0) ||
+            any(x != floor(x)))
+        stop(
+            "`min_junction_reads` values must be non-negative whole numbers."
+        )
     if (length(ctx$input$min_junction_reads) == 1)
         ctx$input$min_junction_reads <- rep(
             ctx$input$min_junction_reads, length(ctx$input$bam)

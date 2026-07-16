@@ -9,7 +9,7 @@ spliceTerrain(
   region,
   annotation = NULL,
   psi = NULL,
-  psi_label_sep = "\n",
+  psi_label_sep = "\\n",
   highlight = NULL,
   strandedness = "unstranded",
   min_mapq = 0,
@@ -61,8 +61,10 @@ a single span used as the BAM query and plotting window.}
 \link[GenomicRanges]{GRangesList}, with each list element representing one
 feature group such as a transcript model. Each group is drawn on its own
 annotation row. List element names are used as y-axis labels; if absent,
-default group labels are generated. Annotation groups are retained when they
-overlap the plotting region and are clipped to the plotting window when drawn.}
+default group labels are generated. Supplied names must be non-empty and
+unique. Annotation groups are retained in full when they overlap the plotting
+region and are clipped to the plotting window when drawn. All ranges in a
+retained group must be on the plotting seqname and share one strand.}
 
 \item{psi}{Optional genomic interval used to annotate junction labels with
 local junction usage (percent spliced in, PSI). Accepts the same formats as

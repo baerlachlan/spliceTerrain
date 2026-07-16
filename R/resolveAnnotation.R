@@ -5,21 +5,43 @@
     if (is.null(annotation)) return(ctx)
     if (!inherits(annotation, "GRangesList"))
         stop("'annotation' must be a GRangesList.")
-    if (!length(GenomicRanges::intersect(
-        Seqinfo::seqlevels(annotation), Seqinfo::seqlevels(region)
-    ))) stop("`annotation` does not overlap `region`")
+    same_seqlevel <- any(
+        Seqinfo::seqlevels(annotation) %in% Seqinfo::seqlevels(region)
+    )
+    if (!same_seqlevel) stop("`annotation` does not overlap `region`")
     hits <- GenomicRanges::findOverlaps(annotation, region)
     if (!length(hits)) stop("`annotation` does not overlap `region`")
     annotation <- annotation[S4Vectors::from(hits)]
     annotation <- BiocGenerics::sort(annotation)
+
+    group <- names(annotation)
     len <- length(annotation)
-    lens <- lengths(annotation)
-    annotation <- unlist(annotation)
-    if (!is.null(names(annotation))) {
-        annotation$group <- rep(names(lens), lens)
-    } else {
-        annotation$group <- rep(paste0("annotation_", seq_len(len)), lens)
+    if (is.null(group)) {
+        group <- paste0("annotation_", seq_len(len))
+    } else if (anyNA(group) || any(!nzchar(group)) || anyDuplicated(group)) {
+        stop("`annotation` group names must be non-empty and unique.")
     }
+
+    region_seqname <- as.character(Seqinfo::seqnames(region))[1]
+    wrong_seqname <- vapply(annotation, function(x) {
+        any(as.character(Seqinfo::seqnames(x)) != region_seqname)
+    }, logical(1))
+    if (any(wrong_seqname)) {
+        stop(
+            "Each `annotation` group must contain ranges only on the ",
+            "plotting seqname."
+        )
+    }
+    mixed_strand <- vapply(annotation, function(x) {
+        length(unique(as.character(BiocGenerics::strand(x)))) != 1
+    }, logical(1))
+    if (any(mixed_strand)) {
+        stop("Ranges within each `annotation` group must share one strand.")
+    }
+
+    lens <- lengths(annotation)
+    annotation <- unlist(annotation, use.names = FALSE)
+    annotation$group <- rep(group, lens)
     ctx$input$annotation <- annotation
     ctx <- .checkAnnotationColumn(ctx, "anno_fill_by")
     ctx <- .checkAnnotationColumn(ctx, "anno_label_by")
