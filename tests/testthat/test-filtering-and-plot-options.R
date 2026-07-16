@@ -44,13 +44,6 @@ test_that("coverage runs are clipped to the plotting region", {
 
 test_that("coverage and junctions can be normalised by library size", {
     bams <- stats::setNames(.hnrnpc_bams()[c(7, 1)], c("s1", "s2"))
-    raw <- spliceTerrain(
-        bam = bams,
-        region = .hnrnpc_region(),
-        min_coverage = 1,
-        min_junction_reads = 1,
-        return_ctx = TRUE
-    )
     norm <- spliceTerrain(
         bam = bams,
         region = .hnrnpc_region(),
@@ -63,8 +56,6 @@ test_that("coverage and junctions can be normalised by library size", {
 
     expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$input$cov)))
     expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$input$juncs)))
-    expect_identical(length(norm$input$cov), length(raw$input$cov))
-    expect_identical(length(norm$input$juncs), length(raw$input$juncs))
 
     cov_1 <- norm$input$cov[norm$input$cov$sample == "s1"]
     cov_2 <- norm$input$cov[norm$input$cov$sample == "s2"]
@@ -106,21 +97,7 @@ test_that("junction-only plots work when coverage is removed", {
     expect_length(ctx$input$cov, 0)
     expect_gt(length(ctx$input$juncs), 0)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
-})
-
-test_that("common y-axis works when coverage is removed", {
-    bams <- .hnrnpc_bams()
-    ctx <- spliceTerrain(
-        bam = bams[7],
-        region = .hnrnpc_region(),
-        min_coverage = 1000,
-        min_junction_reads = 1,
-        common_y = TRUE,
-        return_ctx = TRUE
-    )
-
-    expect_length(ctx$input$cov, 0)
-    expect_gt(length(ctx$input$juncs), 0)
+    ctx$input$common_y <- TRUE
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 

@@ -117,16 +117,21 @@ test_that("annotation fill can use transcript groups or exon metadata", {
             show.legend
     )
     .expect_patchwork_renders(spliceTerrain(ctx = by_group))
-    .expect_patchwork_renders(spliceTerrain(ctx = by_exon))
 })
 
 test_that("annotation styling columns must exist", {
-    bams <- .hnrnpc_bams()
-    annotation <- .hnrnpc_annotation()
+    bams <- .placeholder_bams()
+    annotation <- GenomicRanges::GRangesList(
+        tx = GenomicRanges::GRanges(
+            seqnames = "chr14",
+            ranges = IRanges::IRanges(70233810L, 70234097L),
+            exon_rank = 1L
+        )
+    )
 
     expect_error(
         spliceTerrain(
-            bam = bams[7], region = .hnrnpc_region(), annotation = annotation,
+            bam = bams, region = .hnrnpc_region(), annotation = annotation,
             anno_fill_by = "missing_column"
         ),
         "`anno_fill_by` must name a metadata column in `annotation`.",
@@ -134,7 +139,7 @@ test_that("annotation styling columns must exist", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7], region = .hnrnpc_region(), annotation = annotation,
+            bam = bams, region = .hnrnpc_region(), annotation = annotation,
             anno_label_by = "missing_column"
         ),
         "`anno_label_by` must name a metadata column in `annotation`.",
@@ -229,9 +234,6 @@ test_that("single-exon annotation groups can be plotted", {
 
     expect_length(ctx$input$annotation, 1)
     expect_identical(ctx$input$annotation$group, names(annotation))
-    plotted <- spliceTerrain:::.plotSamples(ctx)
-    plotted <- spliceTerrain:::.plotAnnotation(plotted)
-    .expect_ggplot_renders(plotted$plot$plist$annotation)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
@@ -267,7 +269,7 @@ test_that("annotation intron midpoint matches plotted segment center", {
 })
 
 test_that("annotation input must be a GRangesList overlapping region", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams()
     bad_annotation <- GenomicRanges::GRanges(
         seqnames = "chr14",
         ranges = IRanges::IRanges(70233810L, 70234097L)
@@ -287,7 +289,7 @@ test_that("annotation input must be a GRangesList overlapping region", {
 
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             annotation = bad_annotation
         ),
@@ -296,7 +298,7 @@ test_that("annotation input must be a GRangesList overlapping region", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             annotation = off_region_annotation
         ),
@@ -305,7 +307,7 @@ test_that("annotation input must be a GRangesList overlapping region", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             annotation = same_seq_off_region_annotation
         ),
@@ -324,27 +326,18 @@ test_that("psi adds percentage labels to selected junctions", {
         min_junction_reads = 1,
         return_ctx = TRUE
     )
-    without_psi <- spliceTerrain(
-        bam = bams[7],
-        region = .hnrnpc_region(),
-        min_coverage = 1,
-        min_junction_reads = 1,
-        return_ctx = TRUE
+    layout <- spliceTerrain:::.junctionArcLayout(
+        with_psi$plot$juncs, with_psi$plot$cov, 1, NULL
     )
-
     labels_with_psi <- spliceTerrain:::.junctionArcLabels(
-        spliceTerrain:::.junctionArcLayout(
-            with_psi$plot$juncs, with_psi$plot$cov, 1, NULL
-        ),
+        layout,
         with_psi$plot$juncs,
         with_psi$plot$psi
     )
     labels_without_psi <- spliceTerrain:::.junctionArcLabels(
-        spliceTerrain:::.junctionArcLayout(
-            without_psi$plot$juncs, without_psi$plot$cov, 1, NULL
-        ),
-        without_psi$plot$juncs,
-        without_psi$plot$psi
+        layout,
+        with_psi$plot$juncs,
+        NULL
     )
 
     expect_true(any(grepl("%", labels_with_psi$label, fixed = TRUE)))

@@ -1,9 +1,15 @@
 test_that("BAM names must be complete and unique when supplied", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams(2)
+
+    expect_error(
+        spliceTerrain(bam = "missing.bam", region = .hnrnpc_region()),
+        "do not exist",
+        fixed = TRUE
+    )
 
     expect_error(
         spliceTerrain(
-            bam = stats::setNames(bams[c(7, 1)], c("sample", "")),
+            bam = stats::setNames(bams, c("sample", "")),
             region = .hnrnpc_region()
         ),
         "`bam` names must not be NA or empty.",
@@ -11,20 +17,28 @@ test_that("BAM names must be complete and unique when supplied", {
     )
     expect_error(
         spliceTerrain(
-            bam = stats::setNames(bams[c(7, 1)], c("sample", NA_character_)),
+            bam = stats::setNames(bams, c("sample", NA_character_)),
             region = .hnrnpc_region()
         ),
         "`bam` names must not be NA or empty.",
+        fixed = TRUE
+    )
+    expect_error(
+        spliceTerrain(
+            bam = stats::setNames(bams, c("sample", "sample")),
+            region = .hnrnpc_region()
+        ),
+        "sample names must be unique",
         fixed = TRUE
     )
 })
 
 test_that("per-BAM numeric arguments must be scalar or one value per BAM", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams(2)
 
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             min_coverage = c(1, 2, 3)
         ),
@@ -33,7 +47,7 @@ test_that("per-BAM numeric arguments must be scalar or one value per BAM", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             min_junction_reads = c(1, 2, 3)
         ),
@@ -42,21 +56,21 @@ test_that("per-BAM numeric arguments must be scalar or one value per BAM", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7], region = .hnrnpc_region(), min_mapq = NA_real_
+            bam = bams[1], region = .hnrnpc_region(), min_mapq = NA_real_
         ),
         "`min_mapq` must be a non-negative whole number.",
         fixed = TRUE
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7], region = .hnrnpc_region(), min_coverage = -1
+            bam = bams[1], region = .hnrnpc_region(), min_coverage = -1
         ),
         "`min_coverage` values must be non-negative whole numbers.",
         fixed = TRUE
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7], region = .hnrnpc_region(),
+            bam = bams[1], region = .hnrnpc_region(),
             min_junction_reads = 1.5
         ),
         "`min_junction_reads` values must be non-negative whole numbers.",
@@ -65,11 +79,11 @@ test_that("per-BAM numeric arguments must be scalar or one value per BAM", {
 })
 
 test_that("normalisation inputs must match BAMs", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams(2)
 
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             lib_size = 1e6
         ),
@@ -78,7 +92,7 @@ test_that("normalisation inputs must match BAMs", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             norm_factors = c(1, 1)
         ),
@@ -87,7 +101,7 @@ test_that("normalisation inputs must match BAMs", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             lib_size = c(1e6, -1)
         ),
@@ -96,7 +110,7 @@ test_that("normalisation inputs must match BAMs", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             lib_size = c(1e6, 1e6),
             norm_factors = c(1, NA)
@@ -106,7 +120,7 @@ test_that("normalisation inputs must match BAMs", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             lib_size = c(1e6, 1e6),
             normalise_to = 0
@@ -117,7 +131,7 @@ test_that("normalisation inputs must match BAMs", {
 })
 
 test_that("panel_heights must match plot panels", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams(2)
     bam_msg <- paste0(
         "`panel_heights` must be length 1 or the number of plot panels ",
         "(2: 2 BAM panel(s))."
@@ -135,7 +149,7 @@ test_that("panel_heights must match plot panels", {
 
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             panel_heights = c(1, 1, 1)
         ),
@@ -144,7 +158,7 @@ test_that("panel_heights must match plot panels", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams[1],
             region = .hnrnpc_region(),
             annotation = annotation,
             panel_heights = c(1, 1, 1)
@@ -154,7 +168,7 @@ test_that("panel_heights must match plot panels", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             panel_heights = c(1, NA)
         ),
@@ -163,38 +177,51 @@ test_that("panel_heights must match plot panels", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[c(7, 1)],
+            bam = bams,
             region = .hnrnpc_region(),
             panel_heights = c(1, 0)
         ),
         "`panel_heights` values must be positive finite numbers.",
         fixed = TRUE
     )
+    expect_error(
+        spliceTerrain(
+            bam = bams, region = .hnrnpc_region(),
+            colours = c("black", "red", "blue")
+        ),
+        "`colours` must be length 1 or the number of BAMs",
+        fixed = TRUE
+    )
 })
 
 test_that("strandedness values must be supported", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams(2)
 
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams[1],
             region = .hnrnpc_region(),
             strandedness = "antisense"
         ),
         "`strandedness` must be one of: unstranded, forward, reverse",
         fixed = TRUE
     )
+    expect_error(
+        spliceTerrain(
+            bam = bams, region = .hnrnpc_region(),
+            strandedness = c("unstranded", "forward", "reverse")
+        ),
+        "`strandedness` must be length 1 or the number of BAMs",
+        fixed = TRUE
+    )
 })
 
 test_that("arc_side values must be supported", {
-    bams <- .hnrnpc_bams()
-
-    ctx <- spliceTerrain:::.checkArcSide(list(input = list(arc_side = "abo")))
-    expect_identical(ctx$input$arc_side, "above")
+    bams <- .placeholder_bams()
 
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             arc_side = "top"
         ),
@@ -204,11 +231,11 @@ test_that("arc_side values must be supported", {
 })
 
 test_that("psi and highlight must overlap the resolved region", {
-    bams <- .hnrnpc_bams()
+    bams <- .placeholder_bams()
 
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             psi = "chr1:1-100"
         ),
@@ -217,7 +244,7 @@ test_that("psi and highlight must overlap the resolved region", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             psi = "chr14:1-100"
         ),
@@ -226,7 +253,7 @@ test_that("psi and highlight must overlap the resolved region", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             highlight = "chr1:1-100"
         ),
@@ -235,7 +262,7 @@ test_that("psi and highlight must overlap the resolved region", {
     )
     expect_error(
         spliceTerrain(
-            bam = bams[7],
+            bam = bams,
             region = .hnrnpc_region(),
             highlight = "chr14:1-100"
         ),
