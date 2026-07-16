@@ -21,6 +21,26 @@ test_that("coverage and junction thresholds filter processed data", {
     expect_true(all(low$input$juncs$coverage >= 1))
 })
 
+test_that("coverage runs are clipped to the plotting region", {
+    aln <- GenomicAlignments::GAlignments(
+        seqnames = "chr1", pos = 95L, cigar = "10M", strand = "+"
+    )
+    ctx <- list(
+        input = list(
+            gal = list(sample = aln),
+            region = GenomicRanges::GRanges("chr1:100-102"),
+            min_coverage = c(sample = 0),
+            lib_size = NULL
+        ),
+        plot = list()
+    )
+
+    resolved <- spliceTerrain:::.getCoverage(ctx)$input$cov
+
+    expect_identical(IRanges::ranges(resolved), IRanges::IRanges(100L, 102L))
+    expect_identical(resolved$coverage_raw, 1L)
+})
+
 test_that("coverage and junctions can be normalised by library size", {
     bams <- stats::setNames(.hnrnpc_bams()[c(7, 1)], c("s1", "s2"))
     raw <- spliceTerrain(

@@ -21,23 +21,13 @@
             coverage = .normaliseCounts(vals, x, ctx)
         )
         gr <- gr[vals != 0]
-        gr
-        ## Convert to single bp ranges for nicer plotting with geom_bar
-        ## May cause a performance hit, revert to geom_area if needed
-        w <- BiocGenerics::width(gr)
-        idx <- rep(seq_along(gr), times = w)
-        pos <- BiocGenerics::start(gr)[idx] + sequence(w) - 1
-        out <- GenomicRanges::GRanges(
-            seqnames = Seqinfo::seqnames(gr)[idx],
-            ranges = IRanges::IRanges(start = pos, width = 1),
-            strand = BiocGenerics::strand(gr)[idx],
-            sample = gr$sample[idx],
-            coverage_raw = gr$coverage_raw[idx],
-            coverage = gr$coverage[idx],
-            seqinfo = Seqinfo::seqinfo(gr)
+        gr <- gr[gr$coverage_raw >= ctx$input$min_coverage[x]]
+        IRanges::restrict(
+            gr,
+            start = BiocGenerics::start(ctx$input$region),
+            end = BiocGenerics::end(ctx$input$region),
+            keep.all.ranges = FALSE
         )
-        out <- out[out$coverage_raw >= ctx$input$min_coverage[x]]
-        out
     })
     cov <- do.call(c, cov)
     cov <- IRanges::subsetByOverlaps(cov, ctx$input$region, type = "within")
