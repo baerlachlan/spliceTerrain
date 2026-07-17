@@ -37,7 +37,8 @@ spliceTerrain(
   axis_title_size = 12,
   axis_text_size = 9,
   return_ctx = FALSE,
-  ctx = NULL
+  ctx = NULL,
+  annotated_junctions = FALSE
 )
 }
 \arguments{
@@ -196,6 +197,12 @@ or modifying processed data before plotting.}
 summarisation, filtering, and coordinate mapping are skipped, and the context
 is plotted directly. This supports advanced workflows where users inspect or
 modify processed data before drawing the final plot.}
+
+\item{annotated_junctions}{Logical scalar. If \code{TRUE}, junctions that
+exactly match an intron implied by \code{annotation} are drawn with solid
+arcs and unmatched junctions are drawn with dashed arcs. Matching uses
+seqname, start, and end coordinates and ignores strand. Requires
+\code{annotation}.}
 }
 \value{
 If \code{return_ctx = FALSE}, a \pkg{patchwork} object containing one sample

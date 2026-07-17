@@ -236,3 +236,20 @@ test_that("arc_side controls junction arc placement", {
     expect_true(all(above$above))
     expect_false(any(below$above))
 })
+
+test_that("annotation matches control junction arc linetype", {
+    junc <- GenomicRanges::GRanges(
+        c("chr1:10-20", "chr1:30-40"),
+        coverage = c(2, 3),
+        annotation_match = c(TRUE, FALSE)
+    )
+    layout <- spliceTerrain:::.junctionArcLayout(
+        junc, GenomicRanges::GRanges(), 1, 1
+    )
+
+    arcs <- spliceTerrain:::.junctionArcPoints(layout)
+
+    expect_identical(unique(arcs$linetype_on[arcs$id == 1]), "solid")
+    expect_identical(unique(arcs$linetype_on[arcs$id == 2]), "dashed")
+    expect_identical(unique(arcs$linetype_off), "solid")
+})

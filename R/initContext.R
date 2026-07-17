@@ -11,6 +11,7 @@
     ctx <- .checkColours(ctx)
     ctx <- .checkStrandedness(ctx)
     ctx <- .checkArcSide(ctx)
+    ctx <- .checkAnnotatedJunctions(ctx)
     ctx <- .checkMinMapq(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
@@ -88,6 +89,16 @@
         FUN.VALUE = character(1)
     )
     names(ctx$input$strandedness) <- names(ctx$input$bam)
+    ctx
+}
+
+#' @keywords internal
+.checkAnnotatedJunctions <- function(ctx) {
+    x <- ctx$input$annotated_junctions
+    if (length(x) != 1 || !is.logical(x) || is.na(x))
+        stop("`annotated_junctions` must be TRUE or FALSE.")
+    if (x && is.null(ctx$input$annotation))
+        stop("`annotated_junctions = TRUE` requires `annotation`.")
     ctx
 }
 

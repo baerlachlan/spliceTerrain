@@ -29,6 +29,7 @@ test_that("spliceTerrain builds plots from returned contexts", {
         return_ctx = TRUE
     )
 
+    ctx$input$annotated_junctions <- NULL
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
     ctx$plot$juncs <- ctx$plot$juncs[FALSE]
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))

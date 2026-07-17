@@ -109,6 +109,12 @@
 #' width by junction read count after filtering. If \code{FALSE}, use a constant
 #' line width for all junction arcs.
 #'
+#' @param annotated_junctions Logical scalar. If \code{TRUE}, junctions that
+#' exactly match an intron implied by \code{annotation} are drawn with solid
+#' arcs and unmatched junctions are drawn with dashed arcs. Matching uses
+#' seqname, start, and end coordinates and ignores strand. Requires
+#' \code{annotation}.
+#'
 #' @param colours Character vector of colours used for each sample's coverage
 #' bars and junction arcs. Must be either length 1, in which case the same
 #' colour is used for all BAMs, or the same length as \code{bam}, in which case
@@ -345,7 +351,8 @@ spliceTerrain <- function(
         axis_title_size = 12,
         axis_text_size = 9,
         return_ctx = FALSE,
-        ctx = NULL
+        ctx = NULL,
+        annotated_junctions = FALSE
 ) {
     if (is.null(ctx)) {
         ctx <- .initContext(as.list(environment()))

@@ -3,6 +3,7 @@
 .plotSamples <- function(ctx) {
     cov <- split(ctx$plot$cov, ctx$plot$cov$sample)
     juncs <- split(ctx$plot$juncs, ctx$plot$juncs$sample)
+    annotated_junctions <- isTRUE(ctx$input$annotated_junctions)
     ctx$plot$plist <- lapply(ctx$input$bam, \(i){ggplot2::ggplot()})
     ## Provide global maximum for scaling arc height if common_y
     max_cov <- NULL
@@ -15,7 +16,7 @@
             p, juncs[[i]], cov[[i]], ctx$plot$psi, ctx$input$arc_height,
             ctx$input$arc_side, ctx$input$colours[[i]],
             ctx$input$junc_text_size, ctx$input$arc_scale, max_cov,
-            ctx$input$psi_label_sep
+            ctx$input$psi_label_sep, annotated_junctions
         )
         p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(

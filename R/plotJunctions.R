@@ -1,22 +1,27 @@
 #' @keywords internal
 .plotJunctions <- function(
         p, juncs, cov, psi, arc_height, arc_side, colour, junc_text_size,
-        arc_scale, max_cov, psi_label_sep
+        arc_scale, max_cov, psi_label_sep, annotated_junctions
 ) {
     if (is.null(juncs)) return(p)
     layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov, arc_side)
     arcs <- .junctionArcPoints(layout)
     labels <- .junctionArcLabels(layout, juncs, psi, psi_label_sep)
     size_col <- ifelse(arc_scale, "size_on", "size_off")
+    linetype_col <- ifelse(
+        annotated_junctions, "linetype_on", "linetype_off"
+    )
     p + ggplot2::geom_line(
         data = arcs,
         ggplot2::aes(
             x = .data$x, y = .data$y, group = .data$id,
-            linewidth = .data[[size_col]]
+            linewidth = .data[[size_col]],
+            linetype = .data[[linetype_col]]
         ),
         colour = colour, lineend = "round", show.legend = FALSE
     ) +
         ggplot2::scale_linewidth(range = c(0.2, 0.8)) +
+        ggplot2::scale_linetype_identity() +
         ggplot2::geom_label(
             data = labels,
             ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
@@ -70,10 +75,14 @@
     ## "below" arcs start at 0 and peak at height
     diff_l[!above] <- heights[!above]
     diff_r[!above] <- heights[!above]
+    annotation_match <- junc$annotation_match
+    if (is.null(annotation_match))
+        annotation_match <- rep(FALSE, length(junc))
     list(
         mid = mid, hw = hw, heights = heights, above = above,
         diff_l = diff_l, diff_r = diff_r,
-        cov_l = cov_l, cov_r = cov_r, cov_j = junc$coverage
+        cov_l = cov_l, cov_r = cov_r, cov_j = junc$coverage,
+        annotation_match = annotation_match
     )
 }
 
@@ -136,7 +145,11 @@
         y = c(t(y_mat)),
         id = id,
         size_on = layout$cov_j[id],
-        size_off = 1
+        size_off = 1,
+        linetype_on = ifelse(
+            layout$annotation_match[id], "solid", "dashed"
+        ),
+        linetype_off = "solid"
     )
 }
 
