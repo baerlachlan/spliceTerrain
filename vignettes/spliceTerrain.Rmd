@@ -152,6 +152,11 @@ When annotation is present, the final plot contains one panel per BAM file plus
 one annotation panel.
 The relative heights of these panels are controlled with `panel_heights`, where
 the final value corresponds to the annotation panel.
+Setting `annotated_junctions = TRUE` distinguishes junctions that exactly match
+an intron in the supplied annotation with solid arcs, while unmatched junctions
+are drawn with dashed arcs.
+Junction classification is relative to the supplied annotation, so known
+junctions may appear unmatched when only a subset of transcripts is provided.
 
 For this vignette, the plotting region covers the *SRSF5* gene.
 We retrieve exon ranges for the gene and keep a small number of transcripts so
@@ -170,6 +175,7 @@ spliceTerrain(
     bam = bams,
     region = region,
     annotation = annotation,
+    annotated_junctions = TRUE,
     panel_heights = c(2, 2, 1)
 )
 ```
@@ -248,12 +254,15 @@ reads.
 
 This is intended as an interpretable local junction-usage label on the sashimi
 plot, rather than full transcript-level isoform inference.
+By default, the junction count and PSI percentage are separated by a new line.
+Use `psi_label_sep = " "` to display them together on one line.
 
 ```{r psi, fig.wide=TRUE, fig.height=6}
 spliceTerrain(
     bam = bams,
     region = region,
-    psi = "chr14:70234854-70234854"
+    psi = "chr14:70234854-70234854",
+    psi_label_sep = " "
 )
 ```
 
@@ -264,6 +273,11 @@ Three arguments control how much signal is imported and displayed.
 `min_coverage` filters per-base coverage positions before plotting.
 `min_junction_reads` filters splice junction arcs by their supporting read
 count.
+The latter two arguments also accept percentage strings such as `"10%"`.
+Percentage thresholds are calculated separately for each BAM relative to its
+maximum raw coverage or junction count within the plotting region.
+When supplying one threshold per BAM, whole-number counts and percentages can be
+mixed in a character vector.
 
 ```{r filtering, fig.wide=TRUE, fig.height=6}
 spliceTerrain(
@@ -271,7 +285,7 @@ spliceTerrain(
     region = region,
     min_mapq = 10,
     min_coverage = 10,
-    min_junction_reads = 20
+    min_junction_reads = "10%"
 )
 ```
 
@@ -433,8 +447,10 @@ names(ctx$plot)
 
 The context can be passed back with the `ctx` argument to redraw the plot
 without re-importing BAM files or recalculating coverage and junctions.
+For example, the processed junctions can be filtered further before plotting.
 
 ```{r ctx_plot, fig.wide=TRUE, fig.height=6}
+ctx$plot$juncs <- ctx$plot$juncs[ctx$plot$juncs$coverage >= 20]
 spliceTerrain(ctx = ctx)
 ```
 
