@@ -198,7 +198,13 @@ list elements are used as y-axis labels in the annotation panel. When
 annotation is present, the final plot contains one panel per BAM file
 plus one annotation panel. The relative heights of these panels are
 controlled with <code>panel_heights</code>, where the final value
-corresponds to the annotation panel.</p>
+corresponds to the annotation panel. Setting
+<code>annotated_junctions = TRUE</code> distinguishes junctions that
+exactly match an intron in the supplied annotation with solid arcs,
+while unmatched junctions are drawn with dashed arcs. Junction
+classification is relative to the supplied annotation, so known
+junctions may appear unmatched when only a subset of transcripts is
+provided.</p>
 <p>For this vignette, the plotting region covers the <em>SRSF5</em>
 gene. We retrieve exon ranges for the gene and keep a small number of
 transcripts so the annotation panel remains readable.</p>
@@ -213,6 +219,7 @@ transcripts so the annotation panel remains readable.</p>
 <span>    bam <span class="op">=</span> <span class="va">bams</span>,</span>
 <span>    region <span class="op">=</span> <span class="va">region</span>,</span>
 <span>    annotation <span class="op">=</span> <span class="va">annotation</span>,</span>
+<span>    annotated_junctions <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    panel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="spliceTerrain_files/figure-html/annotation_plot-1.png" class="r-plt" alt="" width="700"></p>
@@ -288,13 +295,16 @@ last base of the intron, not the adjacent exonic bases. The label
 reports each selected junction’s fraction of the included junction
 reads.</p>
 <p>This is intended as an interpretable local junction-usage label on
-the sashimi plot, rather than full transcript-level isoform
-inference.</p>
+the sashimi plot, rather than full transcript-level isoform inference.
+By default, the junction count and PSI percentage are separated by a new
+line. Use <code>psi_label_sep = " "</code> to display them together on
+one line.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span></span>
 <span>    bam <span class="op">=</span> <span class="va">bams</span>,</span>
 <span>    region <span class="op">=</span> <span class="va">region</span>,</span>
-<span>    psi <span class="op">=</span> <span class="st">"chr14:70234854-70234854"</span></span>
+<span>    psi <span class="op">=</span> <span class="st">"chr14:70234854-70234854"</span>,</span>
+<span>    psi_label_sep <span class="op">=</span> <span class="st">" "</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="spliceTerrain_files/figure-html/psi-1.png" class="r-plt" alt="" width="700"></p>
 </div>
@@ -305,14 +315,19 @@ inference.</p>
 <code>min_mapq</code> filters alignments by mapping quality during BAM
 import. <code>min_coverage</code> filters per-base coverage positions
 before plotting. <code>min_junction_reads</code> filters splice junction
-arcs by their supporting read count.</p>
+arcs by their supporting read count. The latter two arguments also
+accept percentage strings such as <code>"10%"</code>. Percentage
+thresholds are calculated separately for each BAM relative to its
+maximum raw coverage or junction count within the plotting region. When
+supplying one threshold per BAM, whole-number counts and percentages can
+be mixed in a character vector.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span></span>
 <span>    bam <span class="op">=</span> <span class="va">bams</span>,</span>
 <span>    region <span class="op">=</span> <span class="va">region</span>,</span>
 <span>    min_mapq <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>    min_coverage <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>    min_junction_reads <span class="op">=</span> <span class="fl">20</span></span>
+<span>    min_junction_reads <span class="op">=</span> <span class="st">"10%"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="spliceTerrain_files/figure-html/filtering-1.png" class="r-plt" alt="" width="700"></p>
 <p>Technical note: <code>min_coverage</code> and
@@ -472,9 +487,11 @@ settings.</p>
 <span><span class="co">#&gt; [1] "cov"        "juncs"      "map"        "annotation" "region"     "psi"        "highlight"  "plist"</span></span></code></pre></div>
 <p>The context can be passed back with the <code>ctx</code> argument to
 redraw the plot without re-importing BAM files or recalculating coverage
-and junctions.</p>
+and junctions. For example, the processed junctions can be filtered
+further before plotting.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span>ctx <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span> <span class="op">&lt;-</span> <span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span><span class="op">[</span><span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span><span class="op">$</span><span class="va">coverage</span> <span class="op">&gt;=</span> <span class="fl">20</span><span class="op">]</span></span>
+<span><span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span>ctx <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spliceTerrain_files/figure-html/ctx_plot-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 </div>
