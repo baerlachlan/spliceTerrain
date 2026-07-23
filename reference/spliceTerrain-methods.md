@@ -42,7 +42,8 @@ spliceTerrain(
   axis_title_size = 12,
   axis_text_size = 9,
   return_ctx = FALSE,
-  ctx = NULL
+  ctx = NULL,
+  annotated_junctions = FALSE
 )
 ```
 
@@ -122,16 +123,21 @@ spliceTerrain(
 
 - min_coverage:
 
-  Integer scalar or integer vector. Minimum per-base coverage required
-  for positions to be retained for plotting. May be supplied either as a
-  single value applied to all BAMs or as one value per BAM.
+  Integer or percentage string. Minimum per-base coverage required for
+  positions to be retained for plotting. Percentage strings such as
+  `"10%"` are relative to the maximum coverage within the plotting
+  region for each BAM. May be supplied either as a single value applied
+  to all BAMs or as one value per BAM. Per-BAM character vectors may
+  combine whole-number counts and percentage strings.
 
 - min_junction_reads:
 
-  Integer scalar or integer vector. Minimum number of split reads
-  supporting a junction for it to be retained for plotting. May be
-  supplied either as a single value applied to all BAMs or as one value
-  per BAM.
+  Integer or percentage string. Minimum number of split reads supporting
+  a junction for it to be retained for plotting. Percentage strings such
+  as `"10%"` are relative to the most-supported junction within the
+  plotting region for each BAM. May be supplied either as a single value
+  applied to all BAMs or as one value per BAM. Per-BAM character vectors
+  may combine whole-number counts and percentage strings.
 
 - lib_size:
 
@@ -270,6 +276,13 @@ spliceTerrain(
   context is plotted directly. This supports advanced workflows where
   users inspect or modify processed data before drawing the final plot.
 
+- annotated_junctions:
+
+  Logical scalar. If `TRUE`, junctions that exactly match an intron
+  implied by `annotation` are drawn with solid arcs and unmatched
+  junctions are drawn with dashed arcs. Matching uses seqname, start,
+  and end coordinates and ignores strand. Requires `annotation`.
+
 ## Value
 
 If `return_ctx = FALSE`, a patchwork object containing one sample panel
@@ -327,7 +340,9 @@ sizes are calculated as `lib_size * norm_factors`, with
 `norm_factors = 1` when not supplied. If `normalise_to = NULL`, counts
 are normalised to the median effective library size. Filtering
 thresholds `min_coverage` and `min_junction_reads` are always applied to
-raw counts before normalisation.
+raw counts before normalisation. Percentage thresholds are calculated
+separately for each BAM from the maximum raw value within the plotting
+region.
 
 Strand filtering is applied after BAM import. Unstranded libraries
 retain alignments from both strands. For stranded libraries, reads are

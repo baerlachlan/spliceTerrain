@@ -91,7 +91,8 @@ area is focused on observed or annotated features.</p>
 <span>  axis_title_size <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>  axis_text_size <span class="op">=</span> <span class="fl">9</span>,</span>
 <span>  return_ctx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  ctx <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  ctx <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  annotated_junctions <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -168,16 +169,21 @@ to be imported from the BAM file.</p></dd>
 
 
 <dt id="arg-min-coverage">min_coverage<a class="anchor" aria-label="anchor" href="#arg-min-coverage"></a></dt>
-<dd><p>Integer scalar or integer vector. Minimum per-base
-coverage required for positions to be retained for plotting. May be supplied
-either as a single value applied to all BAMs or as one value per BAM.</p></dd>
+<dd><p>Integer or percentage string. Minimum per-base coverage
+required for positions to be retained for plotting. Percentage strings such
+as <code>"10%"</code> are relative to the maximum coverage within the plotting
+region for each BAM. May be supplied either as a single value applied to all
+BAMs or as one value per BAM. Per-BAM character vectors may combine
+whole-number counts and percentage strings.</p></dd>
 
 
 <dt id="arg-min-junction-reads">min_junction_reads<a class="anchor" aria-label="anchor" href="#arg-min-junction-reads"></a></dt>
-<dd><p>Integer scalar or integer vector. Minimum number of
-split reads supporting a junction for it to be retained for plotting. May be
-supplied either as a single value applied to all BAMs or as one value per
-BAM.</p></dd>
+<dd><p>Integer or percentage string. Minimum number of
+split reads supporting a junction for it to be retained for plotting.
+Percentage strings such as <code>"10%"</code> are relative to the most-supported
+junction within the plotting region for each BAM. May be supplied either as
+a single value applied to all BAMs or as one value per BAM. Per-BAM character
+vectors may combine whole-number counts and percentage strings.</p></dd>
 
 
 <dt id="arg-lib-size">lib_size<a class="anchor" aria-label="anchor" href="#arg-lib-size"></a></dt>
@@ -320,6 +326,14 @@ summarisation, filtering, and coordinate mapping are skipped, and the context
 is plotted directly. This supports advanced workflows where users inspect or
 modify processed data before drawing the final plot.</p></dd>
 
+
+<dt id="arg-annotated-junctions">annotated_junctions<a class="anchor" aria-label="anchor" href="#arg-annotated-junctions"></a></dt>
+<dd><p>Logical scalar. If <code>TRUE</code>, junctions that
+exactly match an intron implied by <code>annotation</code> are drawn with solid
+arcs and unmatched junctions are drawn with dashed arcs. Matching uses
+seqname, start, and end coordinates and ignores strand. Requires
+<code>annotation</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -366,7 +380,9 @@ are calculated as <code>lib_size * norm_factors</code>, with
 <code>norm_factors = 1</code> when not supplied. If <code>normalise_to = NULL</code>,
 counts are normalised to the median effective library size. Filtering
 thresholds <code>min_coverage</code> and <code>min_junction_reads</code> are always
-applied to raw counts before normalisation.</p>
+applied to raw counts before normalisation. Percentage thresholds are
+calculated separately for each BAM from the maximum raw value within the
+plotting region.</p>
 <p>Strand filtering is applied after BAM import. Unstranded libraries retain
 alignments from both strands. For stranded libraries, reads are interpreted
 according to <code>strandedness</code>; when the resolved <code>region</code> has a
