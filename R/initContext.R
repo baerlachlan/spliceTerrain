@@ -158,17 +158,12 @@
     count <- !is.na(x) & grepl("^[0-9]+$", x)
     pattern <- "^([0-9]+(\\.[0-9]*)?|\\.[0-9]+)%$"
     percentage <- !is.na(x) & grepl(pattern, x)
-    values <- suppressWarnings(as.numeric(sub("%$", "", x[percentage])))
+    values <- as.numeric(sub("%$", "", x[percentage]))
     if (any(!count & !percentage) || any(!is.finite(values)) ||
             any(values < 0) || any(values > 100))
         stop(
-            sprintf(
-                paste0(
-                    "`%s` character values must be whole numbers or ",
-                    "percentages between 0%% and 100%%."
-                ),
-                arg
-            )
+            "`", arg, "` character values must be whole numbers or ",
+            "percentages between 0% and 100%."
         )
 }
 

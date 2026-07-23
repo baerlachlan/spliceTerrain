@@ -31,19 +31,7 @@
     st <- BiocGenerics::start(ctx$plot$region)
     en <- BiocGenerics::end(ctx$plot$region)
     ylim <- NULL
-    if (ctx$input$common_y) {
-        ## Build panels to determine shared y limits
-        ys <- unlist(lapply(out, \(x){
-            pdat <- ggplot2::ggplot_build(x)@data
-            unlist(lapply(pdat, function(layer) {
-                fields <- intersect(c("y", "ymin", "ymax"), names(layer))
-                unlist(layer[fields])
-            }))
-        }))
-        ys <- ys[is.finite(ys)]
-        if (length(ys))
-            ylim <- c(min(ys), max(ys))
-    }
+    if (ctx$input$common_y) ylim <- .sampleYLimits(out)
     out <- lapply(out, \(p){
         p + ggplot2::coord_cartesian(
             xlim = c(st, en), ylim = ylim, clip = "off"
@@ -52,6 +40,21 @@
     names(out) <- names(ctx$plot$plist)
     ctx$plot$plist <- out
     ctx
+}
+
+#' @keywords internal
+.sampleYLimits <- function(plots) {
+    ## Build panels to determine shared y limits
+    ys <- unlist(lapply(plots, \(x){
+        pdat <- ggplot2::ggplot_build(x)@data
+        unlist(lapply(pdat, function(layer) {
+            fields <- intersect(c("y", "ymin", "ymax"), names(layer))
+            unlist(layer[fields])
+        }))
+    }))
+    ys <- ys[is.finite(ys)]
+    if (!length(ys)) return(NULL)
+    range(ys)
 }
 
 #' @keywords internal

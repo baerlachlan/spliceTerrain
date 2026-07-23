@@ -44,21 +44,9 @@
     end_j <- BiocGenerics::end(junc)
     mid <- (start_j + end_j) / 2
     hw <- (end_j - start_j) / 2
-    ## Coverage at junction anchors
-    anc <- .rangesToAnchors(junc)
-    left <- GenomicRanges::shift(anc[anc$anchor == "start"], -1)
-    right <- GenomicRanges::shift(anc[anc$anchor == "end"], 1)
-    cov_l <- .coverageAtPos(cov, left)
-    cov_r <- .coverageAtPos(cov, right)
-    cov_lr <- pmax(cov_l, cov_r)
-    ## Overlap clusters and per-cluster max anchor coverage
-    overlap <- GenomicRanges::reduce(junc, with.revmap = TRUE)
-    revmap <- S4Vectors::mcols(overlap)$revmap
-    cluster_id <- rep(seq_along(revmap), lengths(revmap))
-    cluster_max_cov <- vapply(revmap, function(i) {
-        max(cov_lr[i], na.rm = TRUE)
-    }, numeric(1))
-    cluster_max_cov_per_junc <- cluster_max_cov[cluster_id]
+    anchor_cov <- .junctionAnchorCoverage(junc, cov)
+    cov_l <- anchor_cov$left
+    cov_r <- anchor_cov$right
     ## Determine incremental heights from max coverage
     ## 1 to allow arcs if coverage is filtered
     if (is.null(max_cov)) {
@@ -68,7 +56,7 @@
     heights <- (y_step + levels * y_step) * sign
     ## “above” arcs start at anchor coverage and peak at coverage + height
     above <- sign == 1
-    heights[above] <- heights[above] + cluster_max_cov_per_junc[above]
+    heights[above] <- heights[above] + anchor_cov$cluster_max[above]
     ## Amount the arc must rise above left/right anchors
     diff_l <- heights - cov_l
     diff_r <- heights - cov_r
@@ -83,6 +71,26 @@
         diff_l = diff_l, diff_r = diff_r,
         cov_l = cov_l, cov_r = cov_r, cov_j = junc$coverage,
         annotation_match = annotation_match
+    )
+}
+
+#' @keywords internal
+.junctionAnchorCoverage <- function(junc, cov) {
+    anc <- .rangesToAnchors(junc)
+    left <- GenomicRanges::shift(anc[anc$anchor == "start"], -1)
+    right <- GenomicRanges::shift(anc[anc$anchor == "end"], 1)
+    cov_l <- .coverageAtPos(cov, left)
+    cov_r <- .coverageAtPos(cov, right)
+    cov_lr <- pmax(cov_l, cov_r)
+    overlap <- GenomicRanges::reduce(junc, with.revmap = TRUE)
+    revmap <- S4Vectors::mcols(overlap)$revmap
+    cluster_id <- rep(seq_along(revmap), lengths(revmap))
+    cluster_max <- vapply(revmap, function(i) {
+        max(cov_lr[i], na.rm = TRUE)
+    }, numeric(1))
+    list(
+        left = cov_l, right = cov_r,
+        cluster_max = cluster_max[cluster_id]
     )
 }
 
