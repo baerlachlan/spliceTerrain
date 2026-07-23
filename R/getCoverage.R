@@ -21,14 +21,17 @@
             coverage = .normaliseCounts(vals, x, ctx)
         )
         gr <- gr[vals != 0]
-        gr <- gr[gr$coverage_raw >= ctx$input$min_coverage[x]]
         gr <- IRanges::restrict(
             gr,
             start = BiocGenerics::start(ctx$input$region),
             end = BiocGenerics::end(ctx$input$region),
             keep.all.ranges = FALSE
         )
-        gr[BiocGenerics::width(gr) > 0]
+        gr <- gr[BiocGenerics::width(gr) > 0]
+        threshold <- .resolveMinThreshold(
+            ctx$input$min_coverage[x], gr$coverage_raw
+        )
+        gr[gr$coverage_raw >= threshold]
     })
     cov <- do.call(c, cov)
     cov <- IRanges::subsetByOverlaps(cov, ctx$input$region, type = "within")

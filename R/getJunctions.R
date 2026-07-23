@@ -21,7 +21,13 @@
             coverage = .normaliseCounts(cov, x, ctx)
         )
         out <- juncs[[x]]
-        out <- out[out$coverage_raw >= ctx$input$min_junction_reads[x]]
+        out <- IRanges::subsetByOverlaps(
+            out, ctx$input$region, type = "within"
+        )
+        threshold <- .resolveMinThreshold(
+            ctx$input$min_junction_reads[x], out$coverage_raw
+        )
+        out <- out[out$coverage_raw >= threshold]
     })
     juncs <- do.call(c, juncs)
     juncs <- IRanges::subsetByOverlaps(juncs, ctx$input$region, type = "within")

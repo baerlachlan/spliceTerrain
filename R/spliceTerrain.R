@@ -59,14 +59,19 @@
 #' @param min_mapq Integer scalar. Minimum mapping quality (MAPQ) for alignments
 #' to be imported from the BAM file.
 #'
-#' @param min_coverage Integer scalar or integer vector. Minimum per-base
-#' coverage required for positions to be retained for plotting. May be supplied
-#' either as a single value applied to all BAMs or as one value per BAM.
+#' @param min_coverage Integer or percentage string. Minimum per-base coverage
+#' required for positions to be retained for plotting. Percentage strings such
+#' as \code{"10\%"} are relative to the maximum coverage within the plotting
+#' region for each BAM. May be supplied either as a single value applied to all
+#' BAMs or as one value per BAM. Per-BAM character vectors may combine
+#' whole-number counts and percentage strings.
 #'
-#' @param min_junction_reads Integer scalar or integer vector. Minimum number of
-#' split reads supporting a junction for it to be retained for plotting. May be
-#' supplied either as a single value applied to all BAMs or as one value per
-#' BAM.
+#' @param min_junction_reads Integer or percentage string. Minimum number of
+#' split reads supporting a junction for it to be retained for plotting.
+#' Percentage strings such as \code{"10\%"} are relative to the most-supported
+#' junction within the plotting region for each BAM. May be supplied either as
+#' a single value applied to all BAMs or as one value per BAM. Per-BAM character
+#' vectors may combine whole-number counts and percentage strings.
 #'
 #' @param lib_size Optional numeric vector giving RNA-seq library sizes, one per
 #' BAM file. When supplied, coverage and junction counts are normalised by
@@ -211,7 +216,9 @@
 #' \code{norm_factors = 1} when not supplied. If \code{normalise_to = NULL},
 #' counts are normalised to the median effective library size. Filtering
 #' thresholds \code{min_coverage} and \code{min_junction_reads} are always
-#' applied to raw counts before normalisation.
+#' applied to raw counts before normalisation. Percentage thresholds are
+#' calculated separately for each BAM from the maximum raw value within the
+#' plotting region.
 #'
 #' Strand filtering is applied after BAM import. Unstranded libraries retain
 #' alignments from both strands. For stranded libraries, reads are interpreted
