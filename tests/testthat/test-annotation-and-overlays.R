@@ -5,6 +5,7 @@ test_that("EnsDb annotation is resolved into grouped plotting ranges", {
         bam = bams[7],
         region = .hnrnpc_region(),
         annotation = annotation,
+        annotated_junctions = TRUE,
         anno_label_by = "exon_rank",
         min_coverage = 1,
         min_junction_reads = 1,
@@ -15,6 +16,10 @@ test_that("EnsDb annotation is resolved into grouped plotting ranges", {
     expect_s4_class(ctx$plot$annotation, "GRanges")
     expect_true(all(ctx$input$annotation$group %in% names(annotation)))
     expect_true("exon_rank" %in% names(S4Vectors::mcols(ctx$input$annotation)))
+    expect_identical(
+        ctx$input$juncs$annotation_match,
+        ctx$plot$juncs$annotation_match
+    )
     seqnames <- as.character(Seqinfo::seqnames(ctx$input$annotation))
     expect_true(all(seqnames == "chr14"))
 })
@@ -25,6 +30,7 @@ test_that("annotation panel and annotation labels can be plotted", {
         bam = bams[7],
         region = .hnrnpc_region(),
         annotation = .hnrnpc_annotation(),
+        annotated_junctions = TRUE,
         anno_label_by = "exon_rank",
         anno_label_colour = "black",
         min_coverage = 1,
@@ -254,7 +260,7 @@ test_that("annotation arrow ranges follow transcript strand", {
     expect_equal(arrow_ranges$arrow_end, c(15.5, 34.5))
 })
 
-test_that("annotation intron midpoint matches plotted segment center", {
+test_that("annotation intron midpoint matches plotted segment centre", {
     exons <- list(tx = data.frame(
         start = c(10L, 40L),
         end = c(20L, 50L),
@@ -266,6 +272,29 @@ test_that("annotation intron midpoint matches plotted segment center", {
     introns <- spliceTerrain:::.getIntrons(exons, min_arrow = 1L)
 
     expect_equal(introns$midpoint, (introns$start + introns$end) / 2)
+})
+
+test_that("junctions are matched exactly to annotation introns", {
+    annotation <- GenomicRanges::GRanges(
+        c(
+            "chr1:100-120:+", "chr1:200-220:+",
+            "chr1:100-120:-", "chr1:200-220:-"
+        ),
+        group = rep(c("tx1", "tx2"), each = 2)
+    )
+    juncs <- GenomicRanges::GRanges(c("chr1:121-199", "chr1:122-199"))
+
+    matched <- spliceTerrain:::.matchAnnotatedJunctions(juncs, annotation)
+
+    expect_identical(matched$annotation_match, c(TRUE, FALSE))
+    expect_length(spliceTerrain:::.annotationJunctions(annotation), 1)
+    expect_error(
+        spliceTerrain:::.checkAnnotatedJunctions(list(input = list(
+            annotated_junctions = TRUE, annotation = NULL
+        ))),
+        "`annotated_junctions = TRUE` requires `annotation`.",
+        fixed = TRUE
+    )
 })
 
 test_that("annotation input must be a GRangesList overlapping region", {

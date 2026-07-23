@@ -52,9 +52,7 @@ Imports:
     Seqinfo,
 Suggests:
     AnnotationFilter,
-    AnnotationHub,
     BiocStyle,
-    dplyr,
     EnsDb.Hsapiens.v75,
     ensembldb,
     GenomeInfoDb,
@@ -62,6 +60,4 @@ Suggests:
     pander,
     rmarkdown,
     RNAseqData.HNRNPC.bam.chr14,
-    stringr,
-    testthat (>= 3.0.0),
-    tibble,
+    testthat (>= 3.0.0)

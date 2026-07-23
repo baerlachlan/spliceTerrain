@@ -59,14 +59,19 @@
 #' @param min_mapq Integer scalar. Minimum mapping quality (MAPQ) for alignments
 #' to be imported from the BAM file.
 #'
-#' @param min_coverage Integer scalar or integer vector. Minimum per-base
-#' coverage required for positions to be retained for plotting. May be supplied
-#' either as a single value applied to all BAMs or as one value per BAM.
+#' @param min_coverage Integer or percentage string. Minimum per-base coverage
+#' required for positions to be retained for plotting. Percentage strings such
+#' as \code{"10\%"} are relative to the maximum coverage within the plotting
+#' region for each BAM. May be supplied either as a single value applied to all
+#' BAMs or as one value per BAM. Per-BAM character vectors may combine
+#' whole-number counts and percentage strings.
 #'
-#' @param min_junction_reads Integer scalar or integer vector. Minimum number of
-#' split reads supporting a junction for it to be retained for plotting. May be
-#' supplied either as a single value applied to all BAMs or as one value per
-#' BAM.
+#' @param min_junction_reads Integer or percentage string. Minimum number of
+#' split reads supporting a junction for it to be retained for plotting.
+#' Percentage strings such as \code{"10\%"} are relative to the most-supported
+#' junction within the plotting region for each BAM. May be supplied either as
+#' a single value applied to all BAMs or as one value per BAM. Per-BAM character
+#' vectors may combine whole-number counts and percentage strings.
 #'
 #' @param lib_size Optional numeric vector giving RNA-seq library sizes, one per
 #' BAM file. When supplied, coverage and junction counts are normalised by
@@ -108,6 +113,12 @@
 #' @param arc_scale Logical scalar. If \code{TRUE}, scale junction arc line
 #' width by junction read count after filtering. If \code{FALSE}, use a constant
 #' line width for all junction arcs.
+#'
+#' @param annotated_junctions Logical scalar. If \code{TRUE}, junctions that
+#' exactly match an intron implied by \code{annotation} are drawn with solid
+#' arcs and unmatched junctions are drawn with dashed arcs. Matching uses
+#' seqname, start, and end coordinates and ignores strand. Requires
+#' \code{annotation}.
 #'
 #' @param colours Character vector of colours used for each sample's coverage
 #' bars and junction arcs. Must be either length 1, in which case the same
@@ -205,7 +216,9 @@
 #' \code{norm_factors = 1} when not supplied. If \code{normalise_to = NULL},
 #' counts are normalised to the median effective library size. Filtering
 #' thresholds \code{min_coverage} and \code{min_junction_reads} are always
-#' applied to raw counts before normalisation.
+#' applied to raw counts before normalisation. Percentage thresholds are
+#' calculated separately for each BAM from the maximum raw value within the
+#' plotting region.
 #'
 #' Strand filtering is applied after BAM import. Unstranded libraries retain
 #' alignments from both strands. For stranded libraries, reads are interpreted
@@ -313,39 +326,25 @@
 #' @aliases spliceTerrain
 #' @export
 spliceTerrain <- function(
-        bam,
-        region,
-        annotation = NULL,
-        psi = NULL,
-        psi_label_sep = "\n",
-        highlight = NULL,
+        bam, region,
+        annotation = NULL, psi = NULL,
+        psi_label_sep = "\n", highlight = NULL,
         strandedness = "unstranded",
-        min_mapq = 0,
-        min_coverage = 0,
+        min_mapq = 0, min_coverage = 0,
         min_junction_reads = 10,
-        lib_size = NULL,
-        norm_factors = NULL,
-        normalise_to = NULL,
-        compress_introns = TRUE,
-        intron_width = 50,
+        lib_size = NULL, norm_factors = NULL, normalise_to = NULL,
+        compress_introns = TRUE, intron_width = 50,
         min_arrow = intron_width + 1,
-        common_y = FALSE,
-        arc_height = 1,
+        common_y = FALSE, arc_height = 1,
         arc_side = c("both", "above", "below"),
-        arc_scale = FALSE,
-        colours = "black",
+        arc_scale = FALSE, colours = "black",
         highlight_colour = scales::alpha("red", 0.2),
-        anno_fill_by = NULL,
-        anno_fill_colours = NULL,
-        anno_label_by = NULL,
-        anno_label_colour = "white",
-        anno_label_size = 3,
-        junc_text_size = 3,
-        panel_heights = 1,
-        axis_title_size = 12,
-        axis_text_size = 9,
-        return_ctx = FALSE,
-        ctx = NULL
+        anno_fill_by = NULL, anno_fill_colours = NULL,
+        anno_label_by = NULL, anno_label_colour = "white",
+        anno_label_size = 3, junc_text_size = 3,
+        panel_heights = 1, axis_title_size = 12, axis_text_size = 9,
+        return_ctx = FALSE, ctx = NULL,
+        annotated_junctions = FALSE
 ) {
     if (is.null(ctx)) {
         ctx <- .initContext(as.list(environment()))

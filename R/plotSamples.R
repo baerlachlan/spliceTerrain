@@ -3,6 +3,7 @@
 .plotSamples <- function(ctx) {
     cov <- split(ctx$plot$cov, ctx$plot$cov$sample)
     juncs <- split(ctx$plot$juncs, ctx$plot$juncs$sample)
+    annotated_junctions <- isTRUE(ctx$input$annotated_junctions)
     ctx$plot$plist <- lapply(ctx$input$bam, \(i){ggplot2::ggplot()})
     ## Provide global maximum for scaling arc height if common_y
     max_cov <- NULL
@@ -15,7 +16,7 @@
             p, juncs[[i]], cov[[i]], ctx$plot$psi, ctx$input$arc_height,
             ctx$input$arc_side, ctx$input$colours[[i]],
             ctx$input$junc_text_size, ctx$input$arc_scale, max_cov,
-            ctx$input$psi_label_sep
+            ctx$input$psi_label_sep, annotated_junctions
         )
         p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(
@@ -30,19 +31,7 @@
     st <- BiocGenerics::start(ctx$plot$region)
     en <- BiocGenerics::end(ctx$plot$region)
     ylim <- NULL
-    if (ctx$input$common_y) {
-        ## Build panels to determine shared y limits
-        ys <- unlist(lapply(out, \(x){
-            pdat <- ggplot2::ggplot_build(x)@data
-            unlist(lapply(pdat, function(layer) {
-                fields <- intersect(c("y", "ymin", "ymax"), names(layer))
-                unlist(layer[fields])
-            }))
-        }))
-        ys <- ys[is.finite(ys)]
-        if (length(ys))
-            ylim <- c(min(ys), max(ys))
-    }
+    if (ctx$input$common_y) ylim <- .sampleYLimits(out)
     out <- lapply(out, \(p){
         p + ggplot2::coord_cartesian(
             xlim = c(st, en), ylim = ylim, clip = "off"
@@ -51,6 +40,21 @@
     names(out) <- names(ctx$plot$plist)
     ctx$plot$plist <- out
     ctx
+}
+
+#' @keywords internal
+.sampleYLimits <- function(plots) {
+    ## Build panels to determine shared y limits
+    ys <- unlist(lapply(plots, \(x){
+        pdat <- ggplot2::ggplot_build(x)@data
+        unlist(lapply(pdat, function(layer) {
+            fields <- intersect(c("y", "ymin", "ymax"), names(layer))
+            unlist(layer[fields])
+        }))
+    }))
+    ys <- ys[is.finite(ys)]
+    if (!length(ys)) return(NULL)
+    range(ys)
 }
 
 #' @keywords internal

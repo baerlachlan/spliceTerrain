@@ -46,7 +46,7 @@
                     x = .data$start + (.data$width / 2), y = .data$y,
                     width = .data$width
                 ),
-                height = 0.3, colour = "black", fill = "black"
+                height = 0.6, colour = "black", fill = "black"
             )
         )
     }
@@ -58,7 +58,7 @@
             x = .data$start + (.data$width / 2), y = .data$y,
             width = .data$width, fill = .data[[fill_by]]
         ),
-        height = 0.3, colour = "black", show.legend = FALSE
+        height = 0.6, colour = "black", show.legend = FALSE
     )
     if (!is.null(fill_by) && !is.null(fill_colours)) {
         p <- p + ggplot2::scale_fill_manual(values = fill_colours)

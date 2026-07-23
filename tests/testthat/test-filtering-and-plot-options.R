@@ -42,6 +42,68 @@ test_that("coverage runs are clipped to the plotting region", {
     expect_identical(resolved$coverage_raw, 1L)
 })
 
+test_that("percentage coverage thresholds use the in-region maximum", {
+    aln <- GenomicAlignments::GAlignments(
+        seqnames = rep("chr1", 3), pos = rep(90L, 3),
+        cigar = c("10M100N5M", "10M100N5M", "10M110N5M"),
+        strand = rep("+", 3)
+    )
+    ctx <- list(
+        input = list(
+            gal = list(sample = aln),
+            region = GenomicRanges::GRanges("chr1:200-214"),
+            min_coverage = c(sample = "75%"),
+            lib_size = NULL
+        ),
+        plot = list()
+    )
+
+    resolved <- spliceTerrain:::.getCoverage(ctx)$input$cov
+
+    expect_length(resolved, 1)
+    expect_identical(resolved$coverage_raw, 2L)
+})
+
+test_that("percentage junction thresholds use the in-region maximum", {
+    aln <- GenomicAlignments::GAlignments(
+        seqnames = rep("chr1", 3), pos = rep(180L, 3),
+        cigar = c(
+            "5M5N5M100N5M", "5M5N5M100N5M", "5M5N5M90N5M"
+        ),
+        strand = rep("+", 3)
+    )
+    ctx <- list(
+        input = list(
+            gal = list(sample = aln),
+            region = GenomicRanges::GRanges("chr1:195-300"),
+            min_junction_reads = c(sample = "75%"),
+            strandedness = c(sample = "unstranded"),
+            lib_size = NULL,
+            annotation = NULL
+        ),
+        plot = list()
+    )
+
+    resolved <- spliceTerrain:::.getJunctions(ctx)$input$juncs
+
+    expect_length(resolved, 1)
+    expect_identical(resolved$coverage_raw, 2L)
+})
+
+test_that("per-BAM thresholds can mix counts and percentages", {
+    thresholds <- c("5", "10%")
+
+    expect_silent(
+        spliceTerrain:::.checkPercentageThreshold(thresholds, "threshold")
+    )
+    expect_equal(
+        spliceTerrain:::.resolveMinThreshold(thresholds[1], c(5, 20)), 5
+    )
+    expect_equal(
+        spliceTerrain:::.resolveMinThreshold(thresholds[2], c(5, 20)), 2
+    )
+})
+
 test_that("coverage and junctions can be normalised by library size", {
     bams <- stats::setNames(.hnrnpc_bams()[c(7, 1)], c("s1", "s2"))
     norm <- spliceTerrain(
@@ -235,4 +297,21 @@ test_that("arc_side controls junction arc placement", {
     expect_true(any(!both$above))
     expect_true(all(above$above))
     expect_false(any(below$above))
+})
+
+test_that("annotation matches control junction arc linetype", {
+    junc <- GenomicRanges::GRanges(
+        c("chr1:10-20", "chr1:30-40"),
+        coverage = c(2, 3),
+        annotation_match = c(TRUE, FALSE)
+    )
+    layout <- spliceTerrain:::.junctionArcLayout(
+        junc, GenomicRanges::GRanges(), 1, 1
+    )
+
+    arcs <- spliceTerrain:::.junctionArcPoints(layout)
+
+    expect_identical(unique(arcs$linetype_on[arcs$id == 1]), "solid")
+    expect_identical(unique(arcs$linetype_on[arcs$id == 2]), "dashed")
+    expect_identical(unique(arcs$linetype_off), "solid")
 })

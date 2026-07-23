@@ -11,6 +11,7 @@
     ctx <- .checkColours(ctx)
     ctx <- .checkStrandedness(ctx)
     ctx <- .checkArcSide(ctx)
+    ctx <- .checkAnnotatedJunctions(ctx)
     ctx <- .checkMinMapq(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
@@ -92,6 +93,16 @@
 }
 
 #' @keywords internal
+.checkAnnotatedJunctions <- function(ctx) {
+    x <- ctx$input$annotated_junctions
+    if (length(x) != 1 || !is.logical(x) || is.na(x))
+        stop("`annotated_junctions` must be TRUE or FALSE.")
+    if (x && is.null(ctx$input$annotation))
+        stop("`annotated_junctions = TRUE` requires `annotation`.")
+    ctx
+}
+
+#' @keywords internal
 .checkMinMapq <- function(ctx) {
     x <- ctx$input$min_mapq
     if (length(x) != 1 || !is.numeric(x) || is.na(x) || !is.finite(x) ||
@@ -105,9 +116,12 @@
     if (!(length(ctx$input$min_coverage) %in% c(1, length(ctx$input$bam))))
         stop("`min_coverage` must be length 1 or the number of BAMs")
     x <- ctx$input$min_coverage
-    if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)) || any(x < 0) ||
-            any(x != floor(x)))
+    if (is.character(x)) {
+        .checkPercentageThreshold(x, "min_coverage")
+    } else if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)) ||
+            any(x < 0) || any(x != floor(x))) {
         stop("`min_coverage` values must be non-negative whole numbers.")
+    }
     if (length(ctx$input$min_coverage) == 1) ctx$input$min_coverage <- rep(
         ctx$input$min_coverage, length(ctx$input$bam)
     )
@@ -122,17 +136,35 @@
     if (!(len %in% c(1, len_check)))
         stop("`min_junction_reads` must be length 1 or the number of BAMs")
     x <- ctx$input$min_junction_reads
-    if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)) || any(x < 0) ||
-            any(x != floor(x)))
+    if (is.character(x)) {
+        .checkPercentageThreshold(x, "min_junction_reads")
+    } else if (!is.numeric(x) || anyNA(x) || any(!is.finite(x)) ||
+            any(x < 0) || any(x != floor(x))) {
         stop(
             "`min_junction_reads` values must be non-negative whole numbers."
         )
+    }
     if (length(ctx$input$min_junction_reads) == 1)
         ctx$input$min_junction_reads <- rep(
             ctx$input$min_junction_reads, length(ctx$input$bam)
         )
     names(ctx$input$min_junction_reads) <- names(ctx$input$bam)
     ctx
+}
+
+#' @keywords internal
+.checkPercentageThreshold <- function(x, arg) {
+    x <- trimws(x)
+    count <- !is.na(x) & grepl("^[0-9]+$", x)
+    pattern <- "^([0-9]+(\\.[0-9]*)?|\\.[0-9]+)%$"
+    percentage <- !is.na(x) & grepl(pattern, x)
+    values <- as.numeric(sub("%$", "", x[percentage]))
+    if (any(!count & !percentage) || any(!is.finite(values)) ||
+            any(values < 0) || any(values > 100))
+        stop(
+            "`", arg, "` character values must be whole numbers or ",
+            "percentages between 0% and 100%."
+        )
 }
 
 #' @keywords internal
