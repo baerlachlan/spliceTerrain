@@ -5,3 +5,8 @@
     stopifnot(all(file.create(paths)))
     paths
 }
+
+.prepare_plot_context <- function(ctx) {
+    ctx <- spliceTerrain:::.restoreContext(ctx)
+    spliceTerrain:::.preparePlotContext(ctx)
+}

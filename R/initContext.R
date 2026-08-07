@@ -15,9 +15,55 @@
     ctx <- .checkMinMapq(ctx)
     ctx <- .checkMinCoverage(ctx)
     ctx <- .checkMinJunctionReads(ctx)
+    ctx <- .checkPlotOptions(ctx)
     ctx <- .checkPanelHeights(ctx)
     ctx <- .checkNormalisation(ctx)
     ctx
+}
+
+#' @keywords internal
+.checkPlotOptions <- function(ctx) {
+    for (field in c("compress_introns", "common_y", "arc_scale"))
+        .checkLogicalOption(ctx, field)
+    .checkNumericOption(ctx, "intron_width", minimum = 0, whole = TRUE)
+    .checkNumericOption(ctx, "min_arrow", minimum = 0, whole = TRUE)
+    .checkNumericOption(ctx, "arc_height", minimum = 0)
+    for (field in c(
+        "anno_label_size", "junc_text_size", "axis_title_size", "axis_text_size"
+    )) .checkNumericOption(ctx, field, minimum = 0)
+    for (field in c(
+        "psi_label_sep", "highlight_colour", "anno_label_colour"
+    )) .checkCharacterOption(ctx, field)
+    if (!is.null(ctx$input$anno_fill_colours) &&
+            (!is.character(ctx$input$anno_fill_colours) ||
+                anyNA(ctx$input$anno_fill_colours)))
+        stop("`anno_fill_colours` must be NULL or a character vector.")
+    ctx
+}
+
+#' @keywords internal
+.checkLogicalOption <- function(ctx, field) {
+    x <- ctx$input[[field]]
+    if (length(x) != 1 || !is.logical(x) || is.na(x))
+        stop("`", field, "` must be TRUE or FALSE.")
+}
+
+#' @keywords internal
+.checkNumericOption <- function(ctx, field, minimum, whole = FALSE) {
+    x <- ctx$input[[field]]
+    invalid <- length(x) != 1 || !is.numeric(x) || is.na(x) || !is.finite(x) ||
+        x < minimum || (whole && x != floor(x))
+    if (invalid) {
+        qualifier <- if (whole) "whole number" else "number"
+        stop("`", field, "` must be a non-negative finite ", qualifier, ".")
+    }
+}
+
+#' @keywords internal
+.checkCharacterOption <- function(ctx, field) {
+    x <- ctx$input[[field]]
+    if (length(x) != 1 || !is.character(x) || is.na(x))
+        stop("`", field, "` must be a character scalar.")
 }
 
 #' @keywords internal
@@ -97,7 +143,7 @@
     x <- ctx$input$annotated_junctions
     if (length(x) != 1 || !is.logical(x) || is.na(x))
         stop("`annotated_junctions` must be TRUE or FALSE.")
-    if (x && is.null(ctx$input$annotation))
+    if (x && (is.null(ctx$input$annotation) || !length(ctx$input$annotation)))
         stop("`annotated_junctions = TRUE` requires `annotation`.")
     ctx
 }
@@ -175,7 +221,9 @@
         stop("`panel_heights` values must be positive finite numbers.")
 
     n_bam <- length(ctx$input$bam)
-    n_annotation <- as.integer(!is.null(ctx$input$annotation))
+    n_annotation <- as.integer(
+        !is.null(ctx$input$annotation) && length(ctx$input$annotation) > 0
+    )
     n_panel <- n_bam + n_annotation
     if (!(length(panel_heights) %in% c(1, n_panel))) {
         msg <- "`panel_heights` must be length 1 or the number of plot panels "

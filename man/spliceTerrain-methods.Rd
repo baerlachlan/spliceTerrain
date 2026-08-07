@@ -193,15 +193,16 @@ used in the final plot theme.}
 
 \item{return_ctx}{Logical scalar. If \code{FALSE}, return the assembled
 sashimi plot. If \code{TRUE}, return the processed context list after BAM
-import, coverage and junction summarisation, filtering, and coordinate
-mapping, but before final plot assembly. This is mainly useful for inspecting
-or modifying processed data before plotting.}
+import, coverage and junction summarisation, and filtering, but before
+coordinate mapping or plot assembly. Coordinate-bearing fields in the
+returned context use genomic coordinates.}
 
 \item{ctx}{Optional context list previously returned by
 \code{spliceTerrain(..., return_ctx = TRUE)}. When supplied, BAM import,
-summarisation, filtering, and coordinate mapping are skipped, and the context
-is plotted directly. This supports advanced workflows where users inspect or
-modify processed data before drawing the final plot.}
+summarisation, and filtering are skipped. Plot-space coordinates are rebuilt
+from the context's genomic data before drawing the plot. No other arguments
+may be supplied with \code{ctx}; plotting options can instead be modified in
+the context itself.}
 
 \item{annotated_junctions}{Logical scalar. If \code{TRUE}, junctions that
 exactly match an intron implied by \code{annotation} are drawn with solid
@@ -213,11 +214,10 @@ seqname, start, and end coordinates and ignores strand. Requires
 If \code{return_ctx = FALSE}, a \pkg{patchwork} object containing one sample
 panel per BAM file plus an optional annotation panel.
 
-If \code{return_ctx = TRUE}, a context list with \code{input} and \code{plot}
-components. The \code{input} component contains validated user inputs and
-processed alignment, coverage, and junction data. The \code{plot} component
-contains plotting ranges and mapped plot-space data, but not the final
-assembled plot.
+If \code{return_ctx = TRUE}, a flat list containing validated settings and
+processed alignment, coverage, junction, annotation, and overlay data. All
+coordinate-bearing fields use genomic coordinates; plot-space data are
+generated internally when the context is plotted.
 
 In the returned plot, the x-axis is shared across panels. Tick labels are
 shown in genome coordinates, including when introns are compressed.
@@ -289,9 +289,19 @@ Highlighted intervals are overlaid across both sample and annotation panels
 when present.
 
 For advanced workflows, \code{return_ctx = TRUE} can be used to inspect or
-modify the processed context before plotting. Passing the modified context
-back through \code{ctx} skips the data-processing steps and rebuilds the plot
-from that context.
+modify processed genomic data before plotting. The returned context is flat:
+fields such as \code{cov}, \code{juncs}, \code{annotation}, \code{psi}, and
+\code{highlight} all use genomic coordinates. Passing the modified context
+back through \code{ctx} regenerates all internal plot-space data and rebuilds
+the plot without reading the BAM files again.
+
+Coverage and junctions in a returned context have already been summarised,
+filtered, and normalised. Changing processing settings such as
+\code{min_mapq}, \code{min_coverage}, \code{min_junction_reads}, or
+\code{lib_size} does not repeat those processing steps; modify
+\code{ctx$cov} or \code{ctx$juncs} directly instead. Plotting settings such
+as \code{colours}, \code{arc_side}, and \code{compress_introns} may be
+changed in the context before replotting.
 }
 \examples{
 if (
@@ -355,7 +365,7 @@ if (
     panel_heights = c(2, 2, 1),
     return_ctx = TRUE
   )
-  ctx$plot$juncs <- ctx$plot$juncs[ctx$plot$juncs$coverage >= 20]
+  ctx$juncs <- ctx$juncs[ctx$juncs$coverage >= 20]
   spliceTerrain(ctx = ctx)
 }
 

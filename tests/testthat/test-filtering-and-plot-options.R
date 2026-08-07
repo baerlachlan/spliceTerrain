@@ -15,10 +15,10 @@ test_that("coverage and junction thresholds filter processed data", {
         return_ctx = TRUE
     )
 
-    expect_gt(length(low$input$cov), length(high$input$cov))
-    expect_gt(length(low$input$juncs), length(high$input$juncs))
-    expect_true(all(low$input$cov$coverage >= 1))
-    expect_true(all(low$input$juncs$coverage >= 1))
+    expect_gt(length(low$cov), length(high$cov))
+    expect_gt(length(low$juncs), length(high$juncs))
+    expect_true(all(low$cov$coverage >= 1))
+    expect_true(all(low$juncs$coverage >= 1))
 })
 
 test_that("coverage runs are clipped to the plotting region", {
@@ -116,12 +116,12 @@ test_that("coverage and junctions can be normalised by library size", {
         return_ctx = TRUE
     )
 
-    expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$input$cov)))
-    expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$input$juncs)))
+    expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$cov)))
+    expect_true("coverage_raw" %in% names(S4Vectors::mcols(norm$juncs)))
 
-    cov_1 <- norm$input$cov[norm$input$cov$sample == "s1"]
-    cov_2 <- norm$input$cov[norm$input$cov$sample == "s2"]
-    junc_2 <- norm$input$juncs[norm$input$juncs$sample == "s2"]
+    cov_1 <- norm$cov[norm$cov$sample == "s1"]
+    cov_2 <- norm$cov[norm$cov$sample == "s2"]
+    junc_2 <- norm$juncs[norm$juncs$sample == "s2"]
     expect_equal(cov_1$coverage, cov_1$coverage_raw)
     expect_equal(cov_2$coverage, cov_2$coverage_raw / 2)
     expect_equal(junc_2$coverage, junc_2$coverage_raw / 2)
@@ -140,8 +140,8 @@ test_that("normalisation factors adjust effective library sizes", {
         return_ctx = TRUE
     )
 
-    cov_2 <- norm$input$cov[norm$input$cov$sample == "s2"]
-    junc_2 <- norm$input$juncs[norm$input$juncs$sample == "s2"]
+    cov_2 <- norm$cov[norm$cov$sample == "s2"]
+    junc_2 <- norm$juncs[norm$juncs$sample == "s2"]
     expect_equal(cov_2$coverage, cov_2$coverage_raw / 2)
     expect_equal(junc_2$coverage, junc_2$coverage_raw / 2)
 })
@@ -156,10 +156,10 @@ test_that("junction-only plots work when coverage is removed", {
         return_ctx = TRUE
     )
 
-    expect_length(ctx$input$cov, 0)
-    expect_gt(length(ctx$input$juncs), 0)
+    expect_length(ctx$cov, 0)
+    expect_gt(length(ctx$juncs), 0)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
-    ctx$input$common_y <- TRUE
+    ctx$common_y <- TRUE
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
@@ -171,10 +171,10 @@ test_that("regions with no alignments return an empty plot", {
         return_ctx = TRUE
     )
 
-    expect_s4_class(ctx$input$cov, "GRanges")
-    expect_s4_class(ctx$input$juncs, "GRanges")
-    expect_length(ctx$input$cov, 0)
-    expect_length(ctx$input$juncs, 0)
+    expect_s4_class(ctx$cov, "GRanges")
+    expect_s4_class(ctx$juncs, "GRanges")
+    expect_length(ctx$cov, 0)
+    expect_length(ctx$juncs, 0)
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
@@ -197,8 +197,14 @@ test_that("compress_introns controls whether plot-space map is created", {
         return_ctx = TRUE
     )
 
+    toggled <- compressed
+    toggled$compress_introns <- FALSE
+    compressed <- .prepare_plot_context(compressed)
+    genomic <- .prepare_plot_context(genomic)
+    toggled <- .prepare_plot_context(toggled)
     expect_s4_class(compressed$plot$map, "GRanges")
     expect_null(genomic$plot$map)
+    expect_null(toggled$plot$map)
     expect_true(
         max(BiocGenerics::end(compressed$plot$region)) <
             max(BiocGenerics::end(genomic$plot$region))
@@ -217,12 +223,13 @@ test_that("highlight and psi overlays are resolved and mapped", {
         return_ctx = TRUE
     )
 
-    expect_s4_class(ctx$input$psi, "GRanges")
-    expect_s4_class(ctx$input$highlight, "GRanges")
-    expect_s4_class(ctx$plot$psi, "GRanges")
-    expect_s4_class(ctx$plot$highlight, "GRanges")
-    expect_length(ctx$plot$psi, 1)
-    expect_length(ctx$plot$highlight, 1)
+    expect_s4_class(ctx$psi, "GRanges")
+    expect_s4_class(ctx$highlight, "GRanges")
+    plotted <- .prepare_plot_context(ctx)
+    expect_s4_class(plotted$plot$psi, "GRanges")
+    expect_s4_class(plotted$plot$highlight, "GRanges")
+    expect_length(plotted$plot$psi, 1)
+    expect_length(plotted$plot$highlight, 1)
 })
 
 test_that("overlay character regions are normalised before coercion", {
@@ -237,10 +244,10 @@ test_that("overlay character regions are normalised before coercion", {
         return_ctx = TRUE
     )
 
-    expect_identical(BiocGenerics::start(ctx$input$psi), 70234854L)
-    expect_identical(BiocGenerics::end(ctx$input$psi), 70234854L)
-    expect_identical(BiocGenerics::start(ctx$input$highlight), 70234056L)
-    expect_identical(BiocGenerics::end(ctx$input$highlight), 70234097L)
+    expect_identical(BiocGenerics::start(ctx$psi), 70234854L)
+    expect_identical(BiocGenerics::end(ctx$psi), 70234854L)
+    expect_identical(BiocGenerics::start(ctx$highlight), 70234056L)
+    expect_identical(BiocGenerics::end(ctx$highlight), 70234097L)
 })
 
 test_that("plot assembly options work with multiple samples", {
