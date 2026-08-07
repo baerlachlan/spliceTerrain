@@ -314,17 +314,18 @@ used in the final plot theme.</p></dd>
 <dt id="arg-return-ctx">return_ctx<a class="anchor" aria-label="anchor" href="#arg-return-ctx"></a></dt>
 <dd><p>Logical scalar. If <code>FALSE</code>, return the assembled
 sashimi plot. If <code>TRUE</code>, return the processed context list after BAM
-import, coverage and junction summarisation, filtering, and coordinate
-mapping, but before final plot assembly. This is mainly useful for inspecting
-or modifying processed data before plotting.</p></dd>
+import, coverage and junction summarisation, and filtering, but before
+coordinate mapping or plot assembly. Coordinate-bearing fields in the
+returned context use genomic coordinates.</p></dd>
 
 
 <dt id="arg-ctx">ctx<a class="anchor" aria-label="anchor" href="#arg-ctx"></a></dt>
 <dd><p>Optional context list previously returned by
 <code>spliceTerrain(..., return_ctx = TRUE)</code>. When supplied, BAM import,
-summarisation, filtering, and coordinate mapping are skipped, and the context
-is plotted directly. This supports advanced workflows where users inspect or
-modify processed data before drawing the final plot.</p></dd>
+summarisation, and filtering are skipped. Plot-space coordinates are rebuilt
+from the context's genomic data before drawing the plot. No other arguments
+may be supplied with <code>ctx</code>; plotting options can instead be modified in
+the context itself.</p></dd>
 
 
 <dt id="arg-annotated-junctions">annotated_junctions<a class="anchor" aria-label="anchor" href="#arg-annotated-junctions"></a></dt>
@@ -339,11 +340,10 @@ seqname, start, and end coordinates and ignores strand. Requires
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>If <code>return_ctx = FALSE</code>, a <span class="pkg">patchwork</span> object containing one sample
 panel per BAM file plus an optional annotation panel.</p>
-<p>If <code>return_ctx = TRUE</code>, a context list with <code>input</code> and <code>plot</code>
-components. The <code>input</code> component contains validated user inputs and
-processed alignment, coverage, and junction data. The <code>plot</code> component
-contains plotting ranges and mapped plot-space data, but not the final
-assembled plot.</p>
+<p>If <code>return_ctx = TRUE</code>, a flat list containing validated settings and
+processed alignment, coverage, junction, annotation, and overlay data. All
+coordinate-bearing fields use genomic coordinates; plot-space data are
+generated internally when the context is plotted.</p>
 <p>In the returned plot, the x-axis is shared across panels. Tick labels are
 shown in genome coordinates, including when introns are compressed.</p>
     </div>
@@ -394,9 +394,18 @@ coordinates.</p>
 Highlighted intervals are overlaid across both sample and annotation panels
 when present.</p>
 <p>For advanced workflows, <code>return_ctx = TRUE</code> can be used to inspect or
-modify the processed context before plotting. Passing the modified context
-back through <code>ctx</code> skips the data-processing steps and rebuilds the plot
-from that context.</p>
+modify processed genomic data before plotting. The returned context is flat:
+fields such as <code>cov</code>, <code>juncs</code>, <code>annotation</code>, <code>psi</code>, and
+<code>highlight</code> all use genomic coordinates. Passing the modified context
+back through <code>ctx</code> regenerates all internal plot-space data and rebuilds
+the plot without reading the BAM files again.</p>
+<p>Coverage and junctions in a returned context have already been summarised,
+filtered, and normalised. Changing processing settings such as
+<code>min_mapq</code>, <code>min_coverage</code>, <code>min_junction_reads</code>, or
+<code>lib_size</code> does not repeat those processing steps; modify
+<code>ctx$cov</code> or <code>ctx$juncs</code> directly instead. Plotting settings such
+as <code>colours</code>, <code>arc_side</code>, and <code>compress_introns</code> may be
+changed in the context before replotting.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -468,7 +477,7 @@ from that context.</p>
 <span class="r-in"><span>    panel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    return_ctx <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span> <span class="op">&lt;-</span> <span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span><span class="op">[</span><span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span><span class="op">$</span><span class="va">coverage</span> <span class="op">&gt;=</span> <span class="fl">20</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">ctx</span><span class="op">$</span><span class="va">juncs</span> <span class="op">&lt;-</span> <span class="va">ctx</span><span class="op">$</span><span class="va">juncs</span><span class="op">[</span><span class="va">ctx</span><span class="op">$</span><span class="va">juncs</span><span class="op">$</span><span class="va">coverage</span> <span class="op">&gt;=</span> <span class="fl">20</span><span class="op">]</span></span></span>
 <span class="r-in"><span>  <span class="fu">spliceTerrain</span><span class="op">(</span>ctx <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-plt img"><img src="spliceTerrain-methods-1.png" alt="" width="700" height="433"></span>

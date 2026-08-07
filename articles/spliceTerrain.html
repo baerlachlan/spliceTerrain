@@ -471,28 +471,41 @@ all samples or one colour per BAM file.</p>
 <p>Most users can work directly with the final plot returned by
 <code><a href="../reference/spliceTerrain-methods.html">spliceTerrain()</a></code>. For advanced workflows, set
 <code>return_ctx = TRUE</code> to return the processed context instead.
-This contains the validated inputs, imported alignments, summarised
-coverage, junction counts, mapped plot-space data, and plot
-settings.</p>
+This contains validated settings, imported alignments, summarised
+coverage, junction counts, annotation, and overlays. All
+coordinate-bearing fields use genomic coordinates; compressed plot
+coordinates are generated internally only when the context is
+plotted.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span></span>
 <span>    bam <span class="op">=</span> <span class="va">bams</span>,</span>
 <span>    region <span class="op">=</span> <span class="va">region</span>,</span>
+<span>    annotation <span class="op">=</span> <span class="va">annotation</span>,</span>
+<span>    min_junction_reads <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>    panel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>    min_arrow <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>    return_ctx <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "input" "plot"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "cov"        "juncs"      "map"        "annotation" "region"     "psi"        "highlight"  "plist"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "bam"                 "region"              "annotation"          "psi"                 "psi_label_sep"       "highlight"           "strandedness"        "min_mapq"            "min_coverage"        "min_junction_reads"  "lib_size"            "norm_factors"        "normalise_to"        "compress_introns"    "intron_width"        "min_arrow"           "common_y"            "arc_height"          "arc_side"            "arc_scale"           "colours"             "highlight_colour"    "anno_fill_by"        "anno_fill_colours"   "anno_label_by"       "anno_label_colour"   "anno_label_size"     "junc_text_size"      "panel_heights"       "axis_title_size"     "axis_text_size"      "annotated_junctions" "gal"                 "cov"                 "juncs"</span></span></code></pre></div>
 <p>The context can be passed back with the <code>ctx</code> argument to
 redraw the plot without re-importing BAM files or recalculating coverage
-and junctions. For example, the processed junctions can be filtered
-further before plotting.</p>
+and junctions. For example, the annotation can be used to retain only
+coverage overlapping annotated exons and junctions that exactly match
+annotated introns.</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span> <span class="op">&lt;-</span> <span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span><span class="op">[</span><span class="va">ctx</span><span class="op">$</span><span class="va">plot</span><span class="op">$</span><span class="va">juncs</span><span class="op">$</span><span class="va">coverage</span> <span class="op">&gt;=</span> <span class="fl">20</span><span class="op">]</span></span>
+<code class="sourceCode R"><span><span class="va">ctx</span><span class="op">$</span><span class="va">cov</span> <span class="op">&lt;-</span> <span class="va">ctx</span><span class="op">$</span><span class="va">cov</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/findOverlaps-methods.html" class="external-link">overlapsAny</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">$</span><span class="va">cov</span>, <span class="va">ctx</span><span class="op">$</span><span class="va">annotation</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">ctx</span><span class="op">$</span><span class="va">juncs</span> <span class="op">&lt;-</span> <span class="va">ctx</span><span class="op">$</span><span class="va">juncs</span><span class="op">[</span><span class="va">ctx</span><span class="op">$</span><span class="va">juncs</span><span class="op">$</span><span class="va">annotation_match</span><span class="op">]</span></span>
 <span><span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span>ctx <span class="op">=</span> <span class="va">ctx</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spliceTerrain_files/figure-html/ctx_plot-1.png" class="r-plt" alt="" width="700"></p>
+<p>The <code>annotation_match</code> field records whether each junction
+exactly matches an intron implied by the supplied annotation. Plotting
+settings can also be changed directly, for example with
+<code>ctx$colours &lt;- c("darkblue", "darkred")</code>. Settings that
+control BAM import, filtering, or normalisation are not reapplied when a
+context is replotted because its coverage and junctions are already
+processed.</p>
 </div>
 </div>
 <div class="section level2">
@@ -525,20 +538,18 @@ r90185)</strong></p>
 <em>RNAseqData.HNRNPC.bam.chr14(v.0.50.0)</em>,
 <em>spliceTerrain(v.0.99.0)</em> and <em>BiocStyle(v.2.40.0)</em></p>
 <p><strong>loaded via a namespace (and not attached):</strong>
-<em>tidyselect(v.1.2.1)</em>, <em>dplyr(v.1.2.1)</em>,
 <em>farver(v.2.1.2)</em>, <em>blob(v.1.3.0)</em>,
 <em>Biostrings(v.2.80.1)</em>, <em>S7(v.0.2.2)</em>,
-<em>bitops(v.1.0-9)</em>, <em>lazyeval(v.0.2.3)</em>,
-<em>fastmap(v.1.2.0)</em>, <em>RCurl(v.1.98-1.19)</em>,
+<em>bitops(v.1.1-0)</em>, <em>fastmap(v.1.2.0)</em>,
+<em>RCurl(v.1.98-1.19)</em>, <em>lazyeval(v.0.2.3)</em>,
 <em>GenomicAlignments(v.1.48.0)</em>, <em>XML(v.3.99-0.23)</em>,
 <em>digest(v.0.6.39)</em>, <em>lifecycle(v.1.0.5)</em>,
 <em>ProtGenerics(v.1.44.0)</em>, <em>KEGGREST(v.1.52.2)</em>,
-<em>RSQLite(v.3.53.3)</em>, <em>magrittr(v.2.0.5)</em>,
-<em>compiler(v.4.7.0)</em>, <em>rlang(v.1.3.0)</em>,
-<em>sass(v.0.4.10)</em>, <em>tools(v.4.7.0)</em>,
-<em>yaml(v.2.3.12)</em>, <em>rtracklayer(v.1.72.0)</em>,
-<em>knitr(v.1.51)</em>, <em>labeling(v.0.4.3)</em>,
-<em>S4Arrays(v.1.12.0)</em>, <em>htmlwidgets(v.1.6.4)</em>,
+<em>RSQLite(v.3.53.3)</em>, <em>compiler(v.4.7.0)</em>,
+<em>rlang(v.1.3.0)</em>, <em>sass(v.0.4.10)</em>,
+<em>tools(v.4.7.0)</em>, <em>yaml(v.2.3.12)</em>,
+<em>rtracklayer(v.1.72.0)</em>, <em>knitr(v.1.51)</em>,
+<em>labeling(v.0.4.3)</em>, <em>S4Arrays(v.1.12.0)</em>,
 <em>bit(v.4.6.0)</em>, <em>curl(v.7.1.0)</em>,
 <em>DelayedArray(v.0.38.2)</em>, <em>RColorBrewer(v.1.1-3)</em>,
 <em>abind(v.1.4-8)</em>, <em>BiocParallel(v.1.46.0)</em>,
@@ -557,16 +568,15 @@ r90185)</strong></p>
 <em>systemfonts(v.1.3.2)</em>, <em>jquerylib(v.0.1.4)</em>,
 <em>glue(v.1.8.1)</em>, <em>pkgdown(v.2.2.1)</em>,
 <em>codetools(v.0.2-20)</em>, <em>gtable(v.0.3.6)</em>,
-<em>UCSC.utils(v.1.8.0)</em>, <em>BiocIO(v.1.22.0)</em>,
-<em>tibble(v.3.3.1)</em>, <em>pillar(v.1.11.1)</em>,
+<em>BiocIO(v.1.22.0)</em>, <em>UCSC.utils(v.1.8.0)</em>,
 <em>htmltools(v.0.5.9)</em>, <em>R6(v.2.6.1)</em>,
 <em>textshaping(v.1.0.5)</em>, <em>evaluate(v.1.0.5)</em>,
 <em>lattice(v.0.22-9)</em>, <em>png(v.0.1-9)</em>,
 <em>Rsamtools(v.2.28.0)</em>, <em>cigarillo(v.1.2.1)</em>,
-<em>memoise(v.2.0.1)</em>, <em>bslib(v.0.11.0)</em>,
+<em>memoise(v.2.0.1)</em>, <em>bslib(v.0.12.0)</em>,
 <em>Rcpp(v.1.1.2)</em>, <em>SparseArray(v.1.12.2)</em>,
-<em>xfun(v.0.60)</em>, <em>fs(v.2.1.0)</em>,
-<em>MatrixGenerics(v.1.24.0)</em> and <em>pkgconfig(v.2.0.3)</em></p>
+<em>xfun(v.0.60)</em>, <em>pkgconfig(v.2.0.3)</em>, <em>fs(v.2.1.0)</em>
+and <em>MatrixGenerics(v.1.24.0)</em></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

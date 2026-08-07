@@ -264,17 +264,18 @@ spliceTerrain(
 
   Logical scalar. If `FALSE`, return the assembled sashimi plot. If
   `TRUE`, return the processed context list after BAM import, coverage
-  and junction summarisation, filtering, and coordinate mapping, but
-  before final plot assembly. This is mainly useful for inspecting or
-  modifying processed data before plotting.
+  and junction summarisation, and filtering, but before coordinate
+  mapping or plot assembly. Coordinate-bearing fields in the returned
+  context use genomic coordinates.
 
 - ctx:
 
   Optional context list previously returned by
   `spliceTerrain(..., return_ctx = TRUE)`. When supplied, BAM import,
-  summarisation, filtering, and coordinate mapping are skipped, and the
-  context is plotted directly. This supports advanced workflows where
-  users inspect or modify processed data before drawing the final plot.
+  summarisation, and filtering are skipped. Plot-space coordinates are
+  rebuilt from the context's genomic data before drawing the plot. No
+  other arguments may be supplied with `ctx`; plotting options can
+  instead be modified in the context itself.
 
 - annotated_junctions:
 
@@ -288,11 +289,10 @@ spliceTerrain(
 If `return_ctx = FALSE`, a patchwork object containing one sample panel
 per BAM file plus an optional annotation panel.
 
-If `return_ctx = TRUE`, a context list with `input` and `plot`
-components. The `input` component contains validated user inputs and
-processed alignment, coverage, and junction data. The `plot` component
-contains plotting ranges and mapped plot-space data, but not the final
-assembled plot.
+If `return_ctx = TRUE`, a flat list containing validated settings and
+processed alignment, coverage, junction, annotation, and overlay data.
+All coordinate-bearing fields use genomic coordinates; plot-space data
+are generated internally when the context is plotted.
 
 In the returned plot, the x-axis is shared across panels. Tick labels
 are shown in genome coordinates, including when introns are compressed.
@@ -358,9 +358,18 @@ Highlighted intervals are overlaid across both sample and annotation
 panels when present.
 
 For advanced workflows, `return_ctx = TRUE` can be used to inspect or
-modify the processed context before plotting. Passing the modified
-context back through `ctx` skips the data-processing steps and rebuilds
-the plot from that context.
+modify processed genomic data before plotting. The returned context is
+flat: fields such as `cov`, `juncs`, `annotation`, `psi`, and
+`highlight` all use genomic coordinates. Passing the modified context
+back through `ctx` regenerates all internal plot-space data and rebuilds
+the plot without reading the BAM files again.
+
+Coverage and junctions in a returned context have already been
+summarised, filtered, and normalised. Changing processing settings such
+as `min_mapq`, `min_coverage`, `min_junction_reads`, or `lib_size` does
+not repeat those processing steps; modify `ctx$cov` or `ctx$juncs`
+directly instead. Plotting settings such as `colours`, `arc_side`, and
+`compress_introns` may be changed in the context before replotting.
 
 ## See also
 
@@ -435,7 +444,7 @@ if (
     panel_heights = c(2, 2, 1),
     return_ctx = TRUE
   )
-  ctx$plot$juncs <- ctx$plot$juncs[ctx$plot$juncs$coverage >= 20]
+  ctx$juncs <- ctx$juncs[ctx$juncs$coverage >= 20]
   spliceTerrain(ctx = ctx)
 }
 
