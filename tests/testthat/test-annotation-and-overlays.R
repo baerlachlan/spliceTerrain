@@ -12,15 +12,11 @@ test_that("EnsDb annotation is resolved into grouped plotting ranges", {
         return_ctx = TRUE
     )
 
-    expect_s4_class(ctx$input$annotation, "GRanges")
-    expect_s4_class(ctx$plot$annotation, "GRanges")
-    expect_true(all(ctx$input$annotation$group %in% names(annotation)))
-    expect_true("exon_rank" %in% names(S4Vectors::mcols(ctx$input$annotation)))
-    expect_identical(
-        ctx$input$juncs$annotation_match,
-        ctx$plot$juncs$annotation_match
-    )
-    seqnames <- as.character(Seqinfo::seqnames(ctx$input$annotation))
+    expect_s4_class(ctx$annotation, "GRanges")
+    expect_true(all(ctx$annotation$group %in% names(annotation)))
+    expect_true("exon_rank" %in% names(S4Vectors::mcols(ctx$annotation)))
+    expect_true(any(ctx$juncs$annotation_match))
+    seqnames <- as.character(Seqinfo::seqnames(ctx$annotation))
     expect_true(all(seqnames == "chr14"))
 })
 
@@ -38,7 +34,8 @@ test_that("annotation panel and annotation labels can be plotted", {
         return_ctx = TRUE
     )
 
-    plotted <- spliceTerrain:::.plotSamples(ctx)
+    plotted <- .prepare_plot_context(ctx)
+    plotted <- spliceTerrain:::.plotSamples(plotted)
     plotted <- spliceTerrain:::.plotAnnotation(plotted)
 
     expect_true("annotation" %in% names(plotted$plot$plist))
@@ -93,11 +90,13 @@ test_that("annotation fill can use transcript groups or exon metadata", {
         return_ctx = TRUE
     )
 
+    plotted_group <- .prepare_plot_context(by_group)
     plotted_group <- spliceTerrain:::.plotAnnotation(
-        spliceTerrain:::.plotSamples(by_group)
+        spliceTerrain:::.plotSamples(plotted_group)
     )
+    plotted_exon <- .prepare_plot_context(by_exon)
     plotted_exon <- spliceTerrain:::.plotAnnotation(
-        spliceTerrain:::.plotSamples(by_exon)
+        spliceTerrain:::.plotSamples(plotted_exon)
     )
     expect_equal(
         unname(
@@ -238,8 +237,8 @@ test_that("single-exon annotation groups can be plotted", {
         return_ctx = TRUE
     )
 
-    expect_length(ctx$input$annotation, 1)
-    expect_identical(ctx$input$annotation$group, names(annotation))
+    expect_length(ctx$annotation, 1)
+    expect_identical(ctx$annotation$group, names(annotation))
     .expect_patchwork_renders(spliceTerrain(ctx = ctx))
 })
 
@@ -355,6 +354,7 @@ test_that("psi adds percentage labels to selected junctions", {
         min_junction_reads = 1,
         return_ctx = TRUE
     )
+    with_psi <- .prepare_plot_context(with_psi)
     layout <- spliceTerrain:::.junctionArcLayout(
         with_psi$plot$juncs, with_psi$plot$cov, 1, NULL
     )
@@ -384,11 +384,12 @@ test_that("highlight intervals are plotted with sample and annotation panels", {
         min_junction_reads = 1,
         return_ctx = TRUE
     )
-    plotted <- spliceTerrain:::.plotSamples(ctx)
+    plotted <- .prepare_plot_context(ctx)
+    plotted <- spliceTerrain:::.plotSamples(plotted)
     plotted <- spliceTerrain:::.plotAnnotation(plotted)
 
-    expect_s4_class(ctx$input$highlight, "GRanges")
-    expect_s4_class(ctx$plot$highlight, "GRanges")
+    expect_s4_class(ctx$highlight, "GRanges")
+    expect_s4_class(plotted$plot$highlight, "GRanges")
     expect_true(all(vapply(plotted$plot$plist, function(p) {
         any(vapply(p$layers, function(layer) {
             inherits(layer$geom, "GeomRect")

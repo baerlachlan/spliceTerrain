@@ -10,11 +10,11 @@
 }
 
 .n_alignments <- function(ctx) {
-    length(ctx$input$gal[[1]])
+    length(ctx$gal[[1]])
 }
 
 .junction_coverage <- function(ctx) {
-    sum(ctx$input$juncs$coverage)
+    sum(ctx$juncs$coverage)
 }
 
 test_that("single-end reverse-stranded alignments invert read strand", {
@@ -53,7 +53,7 @@ test_that("unstranded regions retain both strands regardless of strandedness", {
     forward <- .strand_ctx(.hnrnpc_region(), "forward")
     reverse <- .strand_ctx(.hnrnpc_region(), "reverse")
 
-    strand <- as.character(BiocGenerics::strand(unstranded$input$region))
+    strand <- as.character(BiocGenerics::strand(unstranded$region))
     expect_identical(strand, "*")
     expect_identical(.n_alignments(forward), .n_alignments(unstranded))
     expect_identical(.n_alignments(reverse), .n_alignments(unstranded))

@@ -431,28 +431,43 @@ spliceTerrain(
 Most users can work directly with the final plot returned by `spliceTerrain()`.
 For advanced workflows, set `return_ctx = TRUE` to return the processed context
 instead.
-This contains the validated inputs, imported alignments, summarised coverage,
-junction counts, mapped plot-space data, and plot settings.
+This contains validated settings, imported alignments, summarised coverage,
+junction counts, annotation, and overlays.
+All coordinate-bearing fields use genomic coordinates; compressed plot
+coordinates are generated internally only when the context is plotted.
 
 ```{r return_ctx}
 ctx <- spliceTerrain(
     bam = bams,
     region = region,
+    annotation = annotation,
+    min_junction_reads = 1,
+    panel_heights = c(2, 2, 1),
+    min_arrow = 100,
     return_ctx = TRUE
 )
 
 names(ctx)
-names(ctx$plot)
 ```
 
 The context can be passed back with the `ctx` argument to redraw the plot
 without re-importing BAM files or recalculating coverage and junctions.
-For example, the processed junctions can be filtered further before plotting.
+For example, the annotation can be used to retain only coverage overlapping
+annotated exons and junctions that exactly match annotated introns.
 
 ```{r ctx_plot, fig.wide=TRUE, fig.height=6}
-ctx$plot$juncs <- ctx$plot$juncs[ctx$plot$juncs$coverage >= 20]
+ctx$cov <- ctx$cov[overlapsAny(ctx$cov, ctx$annotation)]
+ctx$juncs <- ctx$juncs[ctx$juncs$annotation_match]
 spliceTerrain(ctx = ctx)
 ```
+
+The `annotation_match` field records whether each junction exactly matches an
+intron implied by the supplied annotation.
+Plotting settings can also be changed directly, for example with
+`ctx$colours <- c("darkblue", "darkred")`.
+Settings that control BAM import, filtering, or normalisation are not reapplied
+when a context is replotted because its coverage and junctions are already
+processed.
 
 # Session information
 
