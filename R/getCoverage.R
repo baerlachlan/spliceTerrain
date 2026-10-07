@@ -1,7 +1,9 @@
 #' @keywords internal
 .getCoverage <- function(ctx) {
     cov <- lapply(ctx$input$gal, GenomicAlignments::coverage)
-    cov <- lapply(cov, unlist)
+    seqname <- as.character(Seqinfo::seqnames(ctx$input$region))
+    ## Paired imports can include a mate on another chromosome
+    cov <- lapply(cov, \(x) unlist(x[names(x) %in% seqname]))
     cov <- lapply(names(cov), \(x){
         lens <- S4Vectors::runLength(cov[[x]])
         vals <- as.integer(S4Vectors::runValue(cov[[x]]))

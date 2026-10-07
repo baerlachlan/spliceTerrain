@@ -19,7 +19,7 @@
             )
         } else {
             aln <- GenomicAlignments::readGAlignments(bam, param = param)
-            if (identical(ctx$input$strandedness[x], "reverse"))
+            if (identical(ctx$input$strandedness[[x]], "reverse"))
                 BiocGenerics::strand(aln) <- .invertStrand(
                     BiocGenerics::strand(aln)
                 )

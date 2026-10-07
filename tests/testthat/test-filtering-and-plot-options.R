@@ -1,3 +1,31 @@
+.with_interchromosomal_bam <- function(code) {
+    sam <- tempfile(fileext = ".sam")
+    destination <- sub("\\.sam$", "", sam)
+    bam <- paste0(destination, ".bam")
+    on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
+
+    ## One synthetic pair crosses chromosomes; the control pair stays on c.
+    ## Different mate positions expose chromosome concatenation/relabeling.
+    records <- data.frame(
+        qname = c("cross", "cross", "same", "same"),
+        flag = c(97L, 145L, 99L, 147L),
+        rname = c("synthetic_a", "synthetic_b", rep("synthetic_c", 2)),
+        pos = c(100L, 300L, 100L, 300L), mapq = 60L,
+        cigar = rep(c("10M90N10M", "10M190N10M"), 2),
+        rnext = c("synthetic_b", "synthetic_a", "=", "="),
+        pnext = c(300L, 100L, 300L, 100L),
+        tlen = c(0L, 0L, 410L, -410L),
+        seq = strrep("A", 20), qual = strrep("I", 20)
+    )
+    writeLines(c(
+        "@HD\tVN:1.6\tSO:coordinate",
+        paste0("@SQ\tSN:synthetic_", c("a", "b", "c"), "\tLN:1000"),
+        do.call(paste, c(records, sep = "\t"))
+    ), sam)
+    Rsamtools::asBam(sam, destination = destination, indexDestination = TRUE)
+    code(bam)
+}
+
 test_that("coverage and junction thresholds filter processed data", {
     bams <- .hnrnpc_bams()
     low <- spliceTerrain(
@@ -19,6 +47,52 @@ test_that("coverage and junction thresholds filter processed data", {
     expect_gt(length(low$juncs), length(high$juncs))
     expect_true(all(low$cov$coverage >= 1))
     expect_true(all(low$juncs$coverage >= 1))
+})
+
+test_that("paired BAM coverage stays on the requested chromosome", {
+    .with_interchromosomal_bam(function(bam) {
+        cases <- data.frame(
+            chromosome = paste0(
+                "synthetic_", c("a", "b", "b", "b", "c", "b")
+            ),
+            window = c(
+                "90-700", "90-700", "250-700", "305-505", "90-700", "800-900"
+            ),
+            pairs = c(1L, 1L, 1L, 1L, 1L, 0L)
+        )
+        starts <- list(
+            c(100L, 200L), c(300L, 500L), c(300L, 500L),
+            c(305L, 500L), c(100L, 200L, 300L, 500L), integer()
+        )
+        ends <- list(
+            c(109L, 209L), c(309L, 509L), c(309L, 509L),
+            c(309L, 505L), c(109L, 209L, 309L, 509L), integer()
+        )
+
+        for (i in seq_len(nrow(cases))) {
+            region <- paste(cases$chromosome[i], cases$window[i], sep = ":")
+            ctx <- spliceTerrain(
+                bam = c(sample = bam), region = region,
+                min_junction_reads = 1, return_ctx = TRUE
+            )
+
+            expect_s4_class(ctx$gal[[1]], "GAlignmentPairs")
+            expect_length(ctx$gal[[1]], cases$pairs[i])
+            expect_identical(
+                as.character(Seqinfo::seqnames(ctx$cov)),
+                rep(cases$chromosome[i], length(starts[[i]])), info = region
+            )
+            expect_identical(
+                IRanges::ranges(ctx$cov),
+                IRanges::IRanges(starts[[i]], ends[[i]]), info = region
+            )
+            expect_equal(ctx$cov$coverage_raw, rep(1L, length(starts[[i]])),
+                         info = region)
+            expect_equal(ctx$cov$coverage, rep(1L, length(starts[[i]])),
+                         info = region)
+            .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+        }
+    })
 })
 
 test_that("coverage runs are clipped to the plotting region", {
