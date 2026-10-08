@@ -133,7 +133,7 @@ test_that("paired import works when only mapped singletons are present", {
     }, keep = c("first_plus", "second_minus"))
 })
 
-test_that("complete pair counts agree with the pair-only reader", {
+test_that("complete paired import agrees with the pair-only reader", {
     .with_paired_bam(function(bam) {
         protocols <- c("unstranded", "forward", "reverse")
         for (i in seq_along(protocols)) {
@@ -155,11 +155,111 @@ test_that("complete pair counts agree with the pair-only reader", {
                 GenomicAlignments::summarizeJunctions(pairs),
                 info = protocols[i]
             )
-            ## The overlapping mates each contribute to the final junction.
-            expect_identical(ctx$juncs$coverage_raw, c(1L, 1L, 2L))
+            ## Imported reads are unchanged; summaries count each fragment once.
+            expect_identical(ctx$juncs$coverage_raw, c(1L, 1L, 1L))
             expect_length(ctx$gal[[1]], 3)
         }
     }, keep = c("pair_plus", "pair_minus", "overlap"))
+})
+
+test_that("overlapping mates count once across library and region strands", {
+    .with_paired_bam(function(bam) {
+        for (protocol in c("unstranded", "forward", "reverse")) {
+            for (target in c("*", "+", "-")) {
+                keep <- protocol == "unstranded" || target == "*" ||
+                    (protocol == "forward" && target == "+") ||
+                    (protocol == "reverse" && target == "-")
+                ctx <- spliceTerrain(
+                    bam = bam, region = paste0("synthetic:650-850:", target),
+                    strandedness = protocol, min_junction_reads = 1,
+                    return_ctx = TRUE
+                )
+                info <- paste(protocol, target)
+                expect_identical(
+                    IRanges::ranges(ctx$cov),
+                    IRanges::IRanges(c(700L, 800L), c(709L, 809L))[keep],
+                    info = info
+                )
+                expect_equal(ctx$cov$coverage_raw, rep(1L, 2L * keep),
+                             info = info)
+                expect_identical(
+                    IRanges::ranges(ctx$juncs),
+                    IRanges::IRanges(710L, 799L)[keep], info = info
+                )
+                expect_equal(ctx$juncs$coverage_raw, rep(1L, as.integer(keep)),
+                             info = info)
+            }
+        }
+    }, keep = "overlap")
+})
+
+test_that("partial overlaps preserve gaps and independent fragments", {
+    reads <- GenomicAlignments::GAlignments(
+        seqnames = rep("synthetic", 3), pos = c(100L, 205L, 100L),
+        cigar = c("10M90N10M90N10M", "5M90N15M", "10M90N10M90N10M"),
+        strand = rep("+", 3)
+    )
+    aln <- GenomicAlignments::GAlignmentsList(
+        pair = reads[1:2], singleton = reads[3]
+    )
+    ctx <- list(
+        input = list(
+            gal = list(sample = aln), region = GenomicRanges::GRanges(
+                "synthetic:90-350"
+            ),
+            min_coverage = c(sample = 0), min_junction_reads = c(sample = 1),
+            lib_size = NULL, strandedness = c(sample = "unstranded"),
+            annotation = NULL
+        ),
+        plot = list()
+    )
+    ctx <- spliceTerrain:::.getJunctions(spliceTerrain:::.getCoverage(ctx))
+
+    expect_identical(
+        IRanges::ranges(ctx$input$cov),
+        IRanges::IRanges(c(100L, 200L, 300L, 310L), c(109L, 209L, 309L, 314L))
+    )
+    expect_identical(ctx$input$cov$coverage_raw, c(2L, 2L, 2L, 1L))
+    expect_identical(
+        IRanges::ranges(ctx$input$juncs),
+        IRanges::IRanges(c(110L, 210L), c(199L, 299L))
+    )
+    expect_identical(ctx$input$juncs$coverage_raw, c(2L, 2L))
+})
+
+test_that("fragment thresholds are applied before normalisation", {
+    .with_paired_bam(function(bam) {
+        retained <- spliceTerrain(
+            bam = bam, region = "synthetic:650-850",
+            min_coverage = 1, min_junction_reads = 1,
+            lib_size = 2, normalise_to = 1, return_ctx = TRUE
+        )
+        filtered <- spliceTerrain(
+            bam = bam, region = "synthetic:650-850",
+            min_coverage = 2, min_junction_reads = 2, return_ctx = TRUE
+        )
+
+        expect_identical(retained$cov$coverage_raw, c(1L, 1L))
+        expect_equal(retained$cov$coverage, c(0.5, 0.5))
+        expect_identical(retained$juncs$coverage_raw, 1L)
+        expect_equal(unname(retained$juncs$coverage), 0.5)
+        expect_length(filtered$cov, 0)
+        expect_length(filtered$juncs, 0)
+        .expect_patchwork_renders(spliceTerrain(ctx = retained))
+    }, keep = "overlap")
+})
+
+test_that("percentage thresholds use maximum fragment support", {
+    .with_paired_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-850",
+            min_coverage = "75%", min_junction_reads = "75%", return_ctx = TRUE
+        )
+
+        expect_identical(ctx$cov$coverage_raw, rep(1L, 5))
+        expect_identical(ctx$juncs$coverage_raw, c(1L, 1L))
+        expect_identical(BiocGenerics::start(ctx$juncs), c(110L, 710L))
+    }, keep = c("pair_plus", "overlap"))
 })
 
 test_that("coverage runs are clipped to the plotting region", {

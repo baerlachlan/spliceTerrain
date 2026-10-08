@@ -182,6 +182,34 @@ test_that("paired singleton strand uses read number and library protocol", {
     }
 })
 
+test_that("fragment junction counts respect strand within mate groups", {
+    reads <- GenomicAlignments::GAlignments(
+        seqnames = rep("synthetic", 6), pos = rep(100L, 6),
+        cigar = rep("10M90N10M", 6), strand = c("+", "+", "-", "-", "+", "-")
+    )
+    aln <- GenomicAlignments::GAlignmentsList(
+        plus = reads[1:2], minus = reads[3:4], discordant = reads[5:6]
+    )
+    for (target in c("+", "-", "*")) {
+        ctx <- list(
+            input = list(
+                gal = list(sample = aln),
+                region = GenomicRanges::GRanges(
+                    paste0("synthetic:90-250:", target)
+                ),
+                strandedness = c(sample = "forward"),
+                min_junction_reads = c(sample = 1), lib_size = NULL,
+                annotation = NULL
+            ),
+            plot = list()
+        )
+        juncs <- spliceTerrain:::.getJunctions(ctx)$input$juncs
+
+        expect_identical(IRanges::ranges(juncs), IRanges::IRanges(110L, 199L))
+        expect_identical(juncs$coverage_raw, if (target == "*") 3L else 2L)
+    }
+})
+
 test_that("unstranded regions retain both strands regardless of strandedness", {
     unstranded <- .strand_ctx(.hnrnpc_region(), "unstranded")
     forward <- .strand_ctx(.hnrnpc_region(), "forward")

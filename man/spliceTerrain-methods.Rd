@@ -71,8 +71,8 @@ retained group must be on the plotting seqname and share one strand.}
 \item{psi}{Optional genomic interval used to annotate junction labels with
 local junction usage (percent spliced in, PSI). Accepts the same formats as
 \code{region}. Junctions with a start or end anchor overlapping \code{psi}
-are labelled with their fraction of total junction reads among the selected
-junctions.}
+are labelled with their fraction of summed junction-fragment support among
+the selected junctions.}
 
 \item{psi_label_sep}{Character scalar inserted between junction counts and
 PSI percentages in junction labels when \code{psi} is supplied. Defaults to
@@ -96,23 +96,26 @@ resolved region strand.}
 \item{min_mapq}{Integer scalar. Minimum mapping quality (MAPQ) for alignments
 to be imported from the BAM file.}
 
-\item{min_coverage}{Integer or percentage string. Minimum per-base coverage
-required for positions to be retained for plotting. Percentage strings such
-as \code{"10\%"} are relative to the maximum coverage within the plotting
-region for each BAM. May be supplied either as a single value applied to all
+\item{min_coverage}{Integer or percentage string. Minimum per-base fragment
+coverage required for positions to be retained for plotting. Percentage
+strings such as \code{"10\%"} are relative to the maximum coverage within
+the plotting region for each BAM. May be supplied as a single value for all
 BAMs or as one value per BAM. Per-BAM character vectors may combine
 whole-number counts and percentage strings.}
 
 \item{min_junction_reads}{Integer or percentage string. Minimum number of
-split reads supporting a junction for it to be retained for plotting.
+fragments supporting a junction for it to be retained for plotting. Despite
+the argument name, two mates supporting the same junction count only once.
 Percentage strings such as \code{"10\%"} are relative to the most-supported
 junction within the plotting region for each BAM. May be supplied either as
 a single value applied to all BAMs or as one value per BAM. Per-BAM character
 vectors may combine whole-number counts and percentage strings.}
 
-\item{lib_size}{Optional numeric vector giving RNA-seq library sizes, one per
-BAM file. When supplied, coverage and junction counts are normalised by
-effective library size before plotting.}
+\item{lib_size}{Optional numeric vector giving full-library sizes in fragment
+units, one per BAM file, before restriction to the plotting region.
+A pair or mapped singleton is one fragment; for single-end libraries,
+each mapped read is one fragment. When supplied, coverage and junction counts
+are normalised by effective library size before plotting.}
 
 \item{norm_factors}{Optional numeric vector of normalisation factors, one per
 BAM file, such as edgeR TMM normalisation factors. Requires
@@ -148,8 +151,8 @@ Must be one of \code{"both"}, \code{"above"}, or \code{"below"}. The default
 \code{"both"} alternates arcs above and below the coverage track.}
 
 \item{arc_scale}{Logical scalar. If \code{TRUE}, scale junction arc line
-width by junction read count after filtering. If \code{FALSE}, use a constant
-line width for all junction arcs.}
+width by junction fragment count after filtering. If \code{FALSE}, use
+a constant line width for all junction arcs.}
 
 \item{colours}{Character vector of colours used for each sample's coverage
 bars and junction arcs. Must be either length 1, in which case the same
@@ -227,13 +230,19 @@ The \code{gal} field contains one alignment object per BAM: a
 Paired-end list elements group the imported mates and include mapped
 singleton reads.
 
+The \code{cov} and \code{juncs} fields store fragment summaries. Their
+\code{coverage_raw} columns contain unnormalised fragment counts, while
+\code{coverage} contains the values used for plotting, normalised when
+\code{lib_size} is supplied. The \code{gal} field retains the imported
+alignments rather than collapsed coverage or junction data.
+
 In the returned plot, the x-axis is shared across panels. Tick labels are
 shown in genome coordinates, including when introns are compressed.
 }
 \description{
 \code{spliceTerrain()} draws sashimi-style plots for one or more BAM files
-over a genomic region. Plots combine per-base coverage, splice junction arcs,
-optional transcript annotation, and optional highlighted regions.
+over a genomic region. Plots combine per-base fragment coverage, splice
+junction arcs, optional transcript annotation, and highlighted regions.
 Intronic or otherwise uninformative gaps can be compacted so the plotting
 area is focused on observed or annotated features.
 }
@@ -243,8 +252,8 @@ The plot is built in three conceptual steps:
   \item Alignments overlapping \code{region} are imported from each BAM file.
   Unmapped, secondary, and supplementary alignments are ignored, and
   \code{min_mapq} is applied during import.
-  \item Coverage and splice junction counts are summarised from the imported
-  alignments and filtered by \code{min_coverage} and
+  \item Fragment coverage and splice junction support are summarised from
+  the imported alignments and filtered by \code{min_coverage} and
   \code{min_junction_reads}.
   \item If \code{compress_introns = TRUE}, a plot-space map is constructed to
   compact gaps between observed or annotated genomic blocks. Coverage,
@@ -254,11 +263,17 @@ The plot is built in three conceptual steps:
 
 For BAMs detected as paired-end, alignments flagged as paired are imported
 as groups containing complete pairs or mapped singletons. A mapped read does
-not require a mapped mate to contribute to the plot. Coverage and junction
-support are read-level summaries: overlapping mates contribute separately,
-and a junction crossed by both mates receives two counts. These are not
-unique-fragment counts. Retaining singletons avoids losing their signal when
-mate-mapping success differs between samples.
+not require a mapped mate to contribute to the plot. Each imported group is
+treated as one fragment. For single-end input, each read is one fragment.
+Coverage uses the union of each fragment's aligned blocks. Overlapping mates
+contribute at most one count per position. Introns and unsequenced gaps
+between mates are not filled. Each fragment contributes at most one count per
+distinct junction, even when both mates cross it; a fragment can support
+multiple different junctions. Independent fragments are counted separately,
+including those with identical coordinates. This is not PCR/UMI
+deduplication.
+Retaining singletons avoids losing their signal when mate-mapping success
+differs between samples.
 
 \code{region}, \code{psi}, and \code{highlight} may be supplied as genomic
 ranges or as character strings coercible to \code{GRanges}. If multiple
@@ -271,7 +286,8 @@ to the plotting window when drawn.
 \itemize{
   \item \code{psi} identifies a local region used to add percentage labels to
   selected junctions. Junctions with an anchor overlapping \code{psi} are
-  labelled with their fraction of total reads among those selected junctions.
+  labelled with their fraction of summed fragment support among those
+  selected junctions.
   \item \code{highlight} marks one or more genomic intervals to draw
   attention to a subregion, such as an exon, splice site, or event.
 }

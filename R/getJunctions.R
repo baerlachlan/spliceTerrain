@@ -1,26 +1,25 @@
 #' @keywords internal
 .getJunctions <- function(ctx) {
-    juncs <- lapply(ctx$input$gal, GenomicAlignments::summarizeJunctions)
     strand <- as.character(unique(BiocGenerics::strand(ctx$input$region)))
-    juncs <- lapply(names(juncs), \(x){
-        if (!length(juncs[[x]])) {
+    juncs <- lapply(names(ctx$input$gal), \(x){
+        aln <- ctx$input$gal[[x]]
+        if (strand != "*" && ctx$input$strandedness[x] != "unstranded")
+            aln <- aln[BiocGenerics::strand(aln) == strand]
+        if (inherits(aln, "GAlignmentsList"))
+            aln <- aln[lengths(aln) > 0L]
+        out <- GenomicAlignments::summarizeJunctions(aln, with.revmap = TRUE)
+        if (!length(out)) {
             return(GenomicRanges::GRanges(
                 sample = x, coverage_raw = 0, coverage = 0
             ))
         }
-        if (strand == "+" & ctx$input$strandedness[x] != "unstranded") {
-            cov <- juncs[[x]]$plus_score
-        } else if (strand == "-" & ctx$input$strandedness[x] != "unstranded") {
-            cov <- juncs[[x]]$minus_score
-        } else {
-            cov <- juncs[[x]]$score
-        }
-        S4Vectors::mcols(juncs[[x]]) <- S4Vectors::DataFrame(
+        ## revmap contains distinct supporting alignment-group indices.
+        cov <- lengths(out$revmap)
+        S4Vectors::mcols(out) <- S4Vectors::DataFrame(
             sample = x,
             coverage_raw = cov,
             coverage = .normaliseCounts(cov, x, ctx)
         )
-        out <- juncs[[x]]
         out <- IRanges::subsetByOverlaps(
             out, ctx$input$region, type = "within"
         )

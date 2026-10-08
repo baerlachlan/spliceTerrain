@@ -77,8 +77,8 @@ spliceTerrain(bam = bams, region = region)
 # Introduction
 
 Sashimi plots visualise RNA-seq alignments across a genomic interval.
-They combine per-base read coverage with arcs representing reads that span
-splice junctions.
+They combine coverage tracks with arcs representing splice junction support.
+`spliceTerrain` reports both coverage and junction support in fragment units.
 This makes them useful for inspecting transcript structure, exon usage,
 alternative splice sites, intron retention, and differences in junction usage
 between samples.
@@ -249,8 +249,8 @@ labels junctions whose start or end anchor overlaps that interval.
 Junction anchors use intronic coordinates: the start anchor is the first base of
 the intron, and the end anchor is the last base of the intron, not the adjacent
 exonic bases.
-The label reports each selected junction's fraction of the included junction
-reads.
+The label reports each selected junction's fraction of the summed
+junction-fragment support.
 
 This is intended as an interpretable local junction-usage label on the sashimi
 plot, rather than full transcript-level isoform inference.
@@ -270,9 +270,10 @@ spliceTerrain(
 
 Three arguments control how much signal is imported and displayed.
 `min_mapq` filters alignments by mapping quality during BAM import.
-`min_coverage` filters per-base coverage positions before plotting.
-`min_junction_reads` filters splice junction arcs by their supporting read
-count.
+`min_coverage` filters positions by per-base fragment coverage before plotting.
+Despite its name, `min_junction_reads` filters splice junction arcs by their
+supporting fragment count.
+Both mates supporting the same junction contribute one count.
 The latter two arguments also accept percentage strings such as `"10%"`.
 Percentage thresholds are calculated separately for each BAM relative to its
 maximum raw coverage or junction count within the plotting region.
@@ -338,9 +339,15 @@ excluded.
 If `region` specifies a strand and `strandedness` is not `"unstranded"`,
 alignments are restricted to the resolved region strand.
 
-Coverage and junction support are read-level summaries.
-Overlapping mates contribute separately, and a junction crossed by both mates
-receives two counts.
+Coverage and junction support are fragment-level summaries.
+Each imported mate group, mapped singleton, or single-end read is one fragment.
+Coverage uses the union of each fragment's aligned blocks.
+Overlapping mates contribute at most one count per covered position.
+Introns and unsequenced gaps between mates remain uncovered.
+Each fragment supports a distinct junction at most once, even if both mates
+cross it; the same fragment can support multiple different junctions.
+Independent fragments with identical coordinates still count separately.
+This is not PCR/UMI deduplication.
 Keeping mapped singletons avoids discarding their signal when mate-mapping
 success differs between samples.
 
@@ -348,6 +355,8 @@ success differs between samples.
 
 When samples have different sequencing depths, coverage and junction counts can
 be normalised with `lib_size`.
+Supply full-library sizes in fragment units before restriction to the plotting
+region: one per pair or mapped singleton, or one per read for single-end data.
 Additional normalisation factors, such as `edgeR` TMM factors, can be supplied
 with `norm_factors`.
 The effective library size is calculated as `lib_size * norm_factors`.
@@ -401,8 +410,7 @@ Junction arcs can be tuned with `arc_height`, `arc_side`, and `arc_scale`.
 Increasing `arc_height` gives stacked arcs more vertical separation.
 The `arc_side` argument controls whether arcs are drawn above, below, or on both
 sides of the coverage track.
-When `arc_scale = TRUE`, arc line width is scaled by junction read count after
-filtering.
+With `arc_scale = TRUE`, arc width scales with filtered fragment support.
 Junction label size is controlled with `junc_text_size`.
 
 ```{r arcs, fig.wide=TRUE, fig.height=6}
@@ -447,6 +455,9 @@ junction counts, annotation, and overlays.
 The `gal` field contains one alignment object per sample: `GAlignments` for
 single-end BAMs or `GAlignmentsList` for paired-end BAMs.
 The paired-end list groups imported mates and includes mapped singleton reads.
+The `cov` and `juncs` fields contain fragment summaries: `coverage_raw` holds
+unnormalised fragment counts and `coverage` holds the plotting values after any
+library-size normalisation.
 All coordinate-bearing fields use genomic coordinates; compressed plot
 coordinates are generated internally only when the context is plotted.
 
