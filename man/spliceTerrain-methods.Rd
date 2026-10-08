@@ -57,7 +57,10 @@ character string coercible to \code{GRanges}, such as
 \code{"chr:start-end"} or \code{"chr:start-end:strand"}. Commas, spaces, and
 en/em dashes in character regions are normalised before coercion. If multiple
 ranges are supplied, they must all be on the same seqname and are reduced to
-a single span used as the BAM query and plotting window.}
+a single span used as the BAM query and plotting window.
+Supplied \code{Seqinfo} metadata is preserved. Use consistent genome assembly
+identifiers and sequence lengths for the region, annotation, and overlays;
+known metadata conflicts are rejected by the overlap operations.}
 
 \item{annotation}{Optional annotation track. Must be a
 \link[GenomicRanges]{GRangesList}, with each list element representing one
