@@ -13,7 +13,8 @@
 #' for region-restricted import. Index files should be discoverable by
 #' \pkg{Rsamtools} using standard same-directory naming, such as
 #' \code{file.bam.bai}. Single-end and paired-end BAMs are both supported;
-#' paired-end status is detected from the BAM flags.
+#' paired-end status is detected from the BAM flags. For paired-end BAMs,
+#' mapped reads are retained even when their mates are unmapped.
 #'
 #' @param region Genomic interval to plot. May be a
 #' \link[GenomicRanges]{GRanges}, a \link[GenomicRanges]{GRangesList}, or a
@@ -51,7 +52,8 @@
 #' supplied either as a single value applied to all BAMs or as one value per
 #' BAM. Use \code{"unstranded"} when reads from both strands should be included.
 #' For stranded paired-end BAMs, this value is passed to
-#' \link[GenomicAlignments]{readGAlignmentPairs} as \code{strandMode}. If
+#' \link[GenomicAlignments]{readGAlignmentsList} as \code{strandMode}, which
+#' uses the read-one/read-two flags for both complete pairs and singletons. If
 #' \code{region} includes a strand and \code{strandedness} is not
 #' \code{"unstranded"}, imported alignments are restricted to overlaps on the
 #' resolved region strand.
@@ -179,8 +181,8 @@
 #' The plot is built in three conceptual steps:
 #' \enumerate{
 #'   \item Alignments overlapping \code{region} are imported from each BAM file.
-#'   Secondary and supplementary alignments are ignored, and \code{min_mapq} is
-#'   applied during import.
+#'   Unmapped, secondary, and supplementary alignments are ignored, and
+#'   \code{min_mapq} is applied during import.
 #'   \item Coverage and splice junction counts are summarised from the imported
 #'   alignments and filtered by \code{min_coverage} and
 #'   \code{min_junction_reads}.
@@ -189,6 +191,14 @@
 #'   junctions, annotation, and optional overlays are then mapped into this
 #'   compacted coordinate system.
 #' }
+#'
+#' For BAMs detected as paired-end, alignments flagged as paired are imported
+#' as groups containing complete pairs or mapped singletons. A mapped read does
+#' not require a mapped mate to contribute to the plot. Coverage and junction
+#' support are read-level summaries: overlapping mates contribute separately,
+#' and a junction crossed by both mates receives two counts. These are not
+#' unique-fragment counts. Retaining singletons avoids losing their signal when
+#' mate-mapping success differs between samples.
 #'
 #' \code{region}, \code{psi}, and \code{highlight} may be supplied as genomic
 #' ranges or as character strings coercible to \code{GRanges}. If multiple
@@ -258,12 +268,18 @@
 #' coordinate-bearing fields use genomic coordinates; plot-space data are
 #' generated internally when the context is plotted.
 #'
+#' The \code{gal} field contains one alignment object per BAM: a
+#' \link[GenomicAlignments]{GAlignments} for single-end input or a
+#' \link[GenomicAlignments]{GAlignmentsList} for paired-end input.
+#' Paired-end list elements group the imported mates and include mapped
+#' singleton reads.
+#'
 #' In the returned plot, the x-axis is shared across panels. Tick labels are
 #' shown in genome coordinates, including when introns are compressed.
 #'
 #' @seealso
 #' \link[GenomicAlignments]{readGAlignments} and
-#' \link[GenomicAlignments]{readGAlignmentPairs} for reading alignments, and
+#' \link[GenomicAlignments]{readGAlignmentsList} for reading alignments, and
 #' \link[GenomicRanges]{GRanges} for representing genomic intervals.
 #'
 #' @examples

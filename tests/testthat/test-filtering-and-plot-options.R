@@ -76,7 +76,7 @@ test_that("paired BAM coverage stays on the requested chromosome", {
                 min_junction_reads = 1, return_ctx = TRUE
             )
 
-            expect_s4_class(ctx$gal[[1]], "GAlignmentPairs")
+            expect_s4_class(ctx$gal[[1]], "GAlignmentsList")
             expect_length(ctx$gal[[1]], cases$pairs[i])
             expect_identical(
                 as.character(Seqinfo::seqnames(ctx$cov)),
@@ -93,6 +93,73 @@ test_that("paired BAM coverage stays on the requested chromosome", {
             .expect_patchwork_renders(spliceTerrain(ctx = ctx))
         }
     })
+})
+
+test_that("paired import retains singletons while applying BAM filters", {
+    .with_paired_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-550", min_mapq = 10,
+            min_junction_reads = 1, return_ctx = TRUE
+        )
+
+        expect_identical(BiocGenerics::end(ctx$juncs), c(199L, 299L))
+        expect_identical(ctx$juncs$coverage_raw, c(3L, 3L))
+        expect_identical(
+            IRanges::ranges(ctx$cov),
+            IRanges::IRanges(
+                c(100L, 200L, 300L, 310L, 500L),
+                c(109L, 209L, 309L, 319L, 519L)
+            )
+        )
+        expect_identical(ctx$cov$coverage_raw, c(6L, 3L, 4L, 1L, 1L))
+        expect_s4_class(ctx$gal[[1]], "GAlignmentsList")
+        expect_length(ctx$gal[[1]], 6)
+        .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+    })
+})
+
+test_that("paired import works when only mapped singletons are present", {
+    .with_paired_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-550:+", strandedness = "forward",
+            min_junction_reads = 1, return_ctx = TRUE
+        )
+
+        expect_identical(BiocGenerics::end(ctx$juncs), 199L)
+        expect_identical(ctx$juncs$coverage_raw, 2L)
+        expect_identical(ctx$cov$coverage_raw, c(2L, 2L))
+        expect_length(ctx$gal[[1]], 2)
+        .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+    }, keep = c("first_plus", "second_minus"))
+})
+
+test_that("complete pair counts agree with the pair-only reader", {
+    .with_paired_bam(function(bam) {
+        protocols <- c("unstranded", "forward", "reverse")
+        for (i in seq_along(protocols)) {
+            ctx <- spliceTerrain(
+                bam = bam, region = "synthetic:90-850",
+                strandedness = protocols[i], min_junction_reads = 1,
+                return_ctx = TRUE
+            )
+            pairs <- GenomicAlignments::readGAlignmentPairs(
+                bam, strandMode = i - 1L
+            )
+
+            expect_equal(
+                GenomicAlignments::coverage(ctx$gal[[1]]),
+                GenomicAlignments::coverage(pairs), info = protocols[i]
+            )
+            expect_equal(
+                GenomicAlignments::summarizeJunctions(ctx$gal[[1]]),
+                GenomicAlignments::summarizeJunctions(pairs),
+                info = protocols[i]
+            )
+            ## The overlapping mates each contribute to the final junction.
+            expect_identical(ctx$juncs$coverage_raw, c(1L, 1L, 2L))
+            expect_length(ctx$gal[[1]], 3)
+        }
+    }, keep = c("pair_plus", "pair_minus", "overlap"))
 })
 
 test_that("coverage runs are clipped to the plotting region", {

@@ -118,12 +118,10 @@ test_that("single-end BAM strand selection preserves expected signal", {
                              info = info)
             expect_identical(as.data.frame(ctx$juncs)[fields], expected_junc,
                              info = info)
-            expect_identical(
-                ctx$cov$coverage, cov_counts[[signal]], info = info
-            )
-            expect_identical(
-                ctx$juncs$coverage, junc_counts[[signal]], info = info
-            )
+            expect_identical(ctx$cov$coverage, cov_counts[[signal]],
+                             info = info)
+            expect_identical(ctx$juncs$coverage, junc_counts[[signal]],
+                             info = info)
         }
     })
 })
@@ -144,6 +142,44 @@ test_that("single-end BAMs respect per-sample strandedness", {
         expect_identical(BiocGenerics::end(ctx$juncs), c(199L, 299L))
         expect_identical(ctx$juncs$coverage_raw, c(2L, 1L))
     })
+})
+
+test_that("paired singleton strand uses read number and library protocol", {
+    cases <- data.frame(
+        read = c("first_plus", "second_minus", "first_minus", "second_plus"),
+        forward = c("+", "+", "-", "-"),
+        reverse = c("-", "-", "+", "+"),
+        junction_end = c(199L, 199L, 299L, 299L)
+    )
+    for (i in seq_len(nrow(cases))) {
+        .with_paired_bam(function(bam) {
+            for (protocol in c("unstranded", "forward", "reverse")) {
+                for (target in c("+", "-", "*")) {
+                    keep <- protocol == "unstranded" || target == "*" ||
+                        target == cases[[protocol]][i]
+                    ctx <- spliceTerrain(
+                        bam = bam, region = paste0("synthetic:90-550:", target),
+                        strandedness = protocol, min_junction_reads = 1,
+                        return_ctx = TRUE
+                    )
+                    info <- paste(cases$read[i], protocol, target)
+                    expect_identical(
+                        BiocGenerics::end(ctx$juncs),
+                        cases$junction_end[i][keep], info = info
+                    )
+                    expect_equal(
+                        ctx$juncs$coverage_raw, rep(1L, as.integer(keep)),
+                        info = info
+                    )
+                    expect_equal(
+                        sum(BiocGenerics::width(ctx$cov) *
+                            ctx$cov$coverage_raw),
+                        if (keep) 20 else 0, info = info
+                    )
+                }
+            }
+        }, keep = cases$read[i])
+    }
 })
 
 test_that("unstranded regions retain both strands regardless of strandedness", {

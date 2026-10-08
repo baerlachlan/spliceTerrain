@@ -330,8 +330,19 @@ spliceTerrain(
 
 For paired-end BAM files, `spliceTerrain()` detects paired-end status from the
 BAM alignment flags and imports alignments accordingly.
+Mapped reads are retained even when their mates are unmapped.
+Read-one/read-two flags determine strand interpretation for both complete pairs
+and singletons.
+Unmapped, secondary, supplementary, and below-`min_mapq` alignments are
+excluded.
 If `region` specifies a strand and `strandedness` is not `"unstranded"`,
 alignments are restricted to the resolved region strand.
+
+Coverage and junction support are read-level summaries.
+Overlapping mates contribute separately, and a junction crossed by both mates
+receives two counts.
+Keeping mapped singletons avoids discarding their signal when mate-mapping
+success differs between samples.
 
 ## Normalising between samples
 
@@ -433,6 +444,9 @@ For advanced workflows, set `return_ctx = TRUE` to return the processed context
 instead.
 This contains validated settings, imported alignments, summarised coverage,
 junction counts, annotation, and overlays.
+The `gal` field contains one alignment object per sample: `GAlignments` for
+single-end BAMs or `GAlignmentsList` for paired-end BAMs.
+The paired-end list groups imported mates and includes mapped singleton reads.
 All coordinate-bearing fields use genomic coordinates; compressed plot
 coordinates are generated internally only when the context is plotted.
 

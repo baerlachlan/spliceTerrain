@@ -1,20 +1,23 @@
 #' @keywords internal
 .loadAlignments <- function(ctx) {
-    flag <- Rsamtools::scanBamFlag(
-        isSecondaryAlignment = FALSE, isSupplementaryAlignment = FALSE
-    )
-    ## `which` doesn't consider strand, so we need to filter for this later
-    param <- Rsamtools::ScanBamParam(
-        flag = flag, which = ctx$input$region, mapqFilter = ctx$input$min_mapq
-    )
     gal <- lapply(names(ctx$input$bam), \(x){
         bam <- ctx$input$bam[x]
+        paired <- .bamIsPaired(bam)
+        flag <- Rsamtools::scanBamFlag(
+            isPaired = if (paired) TRUE else NA, isUnmappedQuery = FALSE,
+            isSecondaryAlignment = FALSE, isSupplementaryAlignment = FALSE
+        )
+        ## `which` ignores strand; filter interpreted alignments below.
+        param <- Rsamtools::ScanBamParam(
+            flag = flag, which = ctx$input$region,
+            mapqFilter = ctx$input$min_mapq
+        )
         strandedness <- switch(
             ctx$input$strandedness[x],
             unstranded = 0, forward = 1, reverse = 2
         )
-        if (.bamIsPaired(bam)) {
-            aln <- GenomicAlignments::readGAlignmentPairs(
+        if (paired) {
+            aln <- GenomicAlignments::readGAlignmentsList(
                 bam, param = param, strandMode = strandedness
             )
         } else {
@@ -26,7 +29,10 @@
         }
         ## Only filter for strand if library is stranded
         if (strandedness) {
-            aln <- IRanges::subsetByOverlaps(aln, ctx$input$region)
+            keep <- IRanges::overlapsAny(
+                GenomicAlignments::grglist(aln), ctx$input$region
+            )
+            aln <- aln[keep]
         }
         Seqinfo::seqlevels(aln) <- Seqinfo::seqlevelsInUse(aln)
         aln
