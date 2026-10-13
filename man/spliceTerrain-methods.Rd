@@ -8,8 +8,8 @@ spliceTerrain(
   bam,
   region,
   annotation = NULL,
-  psi = NULL,
-  psi_label_sep = "\\n",
+  junction_usage = NULL,
+  junction_usage_label_sep = "\\n",
   highlight = NULL,
   strandedness = "unstranded",
   min_mapq = 0,
@@ -71,14 +71,18 @@ unique. Annotation groups are retained in full when they overlap the plotting
 region and are clipped to the plotting window when drawn. All ranges in a
 retained group must be on the plotting seqname and share one strand.}
 
-\item{psi}{Optional genomic interval used to annotate junction labels with
-local junction usage (percent spliced in, PSI). Accepts the same formats as
-\code{region}. Junctions with a start or end anchor overlapping \code{psi}
-are labelled with their fraction of summed junction-fragment support among
-the selected junctions.}
+\item{junction_usage}{Optional genomic interval(s) selecting junctions for
+local usage percentages. Accepts the same formats as \code{region}.
+Junctions with either anchor overlapping the interval(s) are selected.
+Each percentage is that junction's fraction of summed fragment support among
+all selected, eligible imported junctions in its sample, before display
+filtering or clipping. A single shared splice site gives the clearest
+interpretation; a range can combine multiple sites. This is not an
+event-level percent-spliced-in estimate. Anchors are the first and last
+intronic bases.}
 
-\item{psi_label_sep}{Character scalar inserted between junction counts and
-PSI percentages in junction labels when \code{psi} is supplied. Defaults to
+\item{junction_usage_label_sep}{Character scalar inserted between junction
+counts and percentages when \code{junction_usage} is supplied. Defaults to
 \code{"\n"}; use \code{" "} to keep percentages inline with counts.}
 
 \item{highlight}{Optional interval(s) to highlight. Accepts the same formats
@@ -239,6 +243,11 @@ The \code{cov} and \code{juncs} fields store fragment summaries. Their
 \code{lib_size} is supplied. The \code{gal} field retains the imported
 alignments rather than collapsed coverage or junction data.
 
+\code{juncs_all} stores the unfiltered junction reference. The
+\code{usage_fraction} column in \code{juncs} contains fractions on the 0--1
+scale; \code{NA} denotes an unselected junction or undefined percentage.
+Fractions are recalculated from \code{juncs_all} before each plot is drawn.
+
 In the returned plot, the x-axis is shared across panels. Tick labels are
 shown in genome coordinates, including when introns are compressed.
 }
@@ -278,22 +287,33 @@ deduplication.
 Retaining singletons avoids losing their signal when mate-mapping success
 differs between samples.
 
-\code{region}, \code{psi}, and \code{highlight} may be supplied as genomic
-ranges or as character strings coercible to \code{GRanges}. If multiple
+\code{region}, \code{junction_usage}, and \code{highlight} may be supplied as
+genomic ranges or as strings coercible to \code{GRanges}. If multiple
 ranges are supplied for \code{region}, they must all be on the same seqname;
 their span is used as the BAM query and plotting window. Optional genomic
 overlays are retained when they overlap the plotting region and are clipped
 to the plotting window when drawn.
 
-\code{psi} and \code{highlight} are optional overlays:
+\code{junction_usage} and \code{highlight} are optional selections:
 \itemize{
-  \item \code{psi} identifies a local region used to add percentage labels to
-  selected junctions. Junctions with an anchor overlapping \code{psi} are
-  labelled with their fraction of summed fragment support among those
-  selected junctions.
+  \item \code{junction_usage} selects junctions by their intronic anchors.
+  Percentages use raw fragment support after import/MAPQ/strand filtering,
+  before \code{min_junction_reads} filtering and plotting-window exclusion.
+  Hidden junctions remain in the denominator, so visible percentages need not
+  sum to 100. A junction is counted once in the denominator even when both
+  anchors or multiple selection intervals match it. Different junctions from
+  one fragment each contribute their support; these are junction fractions,
+  not fractions of unique molecules across the whole selection.
   \item \code{highlight} marks one or more genomic intervals to draw
   attention to a subregion, such as an exon, splice site, or event.
 }
+
+Usage percentages are computed separately for each sample and are unchanged
+by library-size normalisation or coordinate compression. Labels are rounded
+to one decimal place. If no selected junction has positive support, no usage
+percentage is shown. The denominator is conditional on the imported data:
+changing the BAM query region, MAPQ threshold, or strand selection can change
+which evidence is available.
 
 The arguments \code{strandedness}, \code{min_coverage},
 \code{min_junction_reads}, and \code{colours} may each be supplied either as
@@ -325,8 +345,9 @@ when present.
 
 For advanced workflows, \code{return_ctx = TRUE} can be used to inspect or
 modify processed genomic data before plotting. The returned context is flat:
-fields such as \code{cov}, \code{juncs}, \code{annotation}, \code{psi}, and
-\code{highlight} all use genomic coordinates. Passing the modified context
+fields such as \code{cov}, \code{juncs}, \code{juncs_all}, \code{annotation},
+\code{junction_usage}, and \code{highlight} all use genomic coordinates.
+Passing the modified context
 back through \code{ctx} regenerates all internal plot-space data and rebuilds
 the plot without reading the BAM files again.
 
@@ -337,6 +358,17 @@ filtered, and normalised. Changing processing settings such as
 \code{ctx$cov} or \code{ctx$juncs} directly instead. Plotting settings such
 as \code{colours}, \code{arc_side}, and \code{compress_introns} may be
 changed in the context before replotting.
+
+\code{juncs_all} retains the eligible junction summaries on the plotting
+chromosome before display filtering or clipping, including junctions outside
+the plotting window. It is the reference for usage calculations when a
+context is replotted. Filtering \code{ctx$juncs} changes only the display;
+modify \code{ctx$juncs_all} if you intend to change the usage reference.
+The reference must retain one row per sample/junction and its non-negative
+\code{coverage_raw} counts. Changing \code{ctx$junction_usage} to another
+\code{GRanges} selection recalculates percentages from this reference.
+The replacement selection must overlap the plotting region and have
+compatible genomic metadata.
 }
 \examples{
 if (
@@ -380,7 +412,7 @@ if (
     ),
     anno_label_by = "exon_rank",
     anno_label_colour = "black",
-    psi = "chr14:70234854-70234854",
+    junction_usage = "chr14:70234854-70234854",
     highlight = "chr14:70233810-70234097",
     arc_height = 2,
     arc_side = "above",

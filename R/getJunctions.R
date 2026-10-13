@@ -20,20 +20,55 @@
             coverage_raw = cov,
             coverage = .normaliseCounts(cov, x, ctx)
         )
-        out <- IRanges::subsetByOverlaps(
-            out, ctx$input$region, type = "within"
-        )
-        threshold <- .resolveMinThreshold(
-            ctx$input$min_junction_reads[x], out$coverage_raw
-        )
-        out <- out[out$coverage_raw >= threshold]
+        out
     })
     juncs <- do.call(c, juncs)
+    seqname <- Seqinfo::seqnames(ctx$input$region)
+    juncs <- juncs[Seqinfo::seqnames(juncs) %in% seqname]
+    ctx$input$juncs_all <- juncs
     juncs <- IRanges::subsetByOverlaps(juncs, ctx$input$region, type = "within")
+    thresholds <- vapply(names(ctx$input$gal), function(x) {
+        .resolveMinThreshold(
+            ctx$input$min_junction_reads[x],
+            juncs$coverage_raw[juncs$sample == x]
+        )
+    }, numeric(1))
+    juncs <- juncs[juncs$coverage_raw >= thresholds[juncs$sample]]
     juncs <- .matchAnnotatedJunctions(juncs, ctx$input$annotation)
+    juncs <- .addJunctionUsage(
+        juncs, ctx$input$juncs_all, ctx$input$junction_usage
+    )
     ctx$input$juncs <- juncs
     ctx$plot$juncs <- juncs
     ctx
+}
+
+#' @keywords internal
+.addJunctionUsage <- function(juncs, reference, region) {
+    juncs$usage_fraction <- rep(NA_real_, length(juncs))
+    if (is.null(region) || !length(juncs) || !length(reference)) return(juncs)
+
+    anchors <- .rangesToAnchors(reference)
+    hits <- IRanges::overlapsAny(anchors, region)
+    n <- length(reference)
+    selected <- which(hits[seq_len(n)] | hits[n + seq_len(n)])
+    if (!length(selected)) return(juncs)
+    samples <- as.character(reference$sample)
+    totals <- tapply(reference$coverage_raw[selected], samples[selected], sum)
+    denominator <- unname(totals[samples[selected]])
+    positive <- denominator > 0
+    fractions <- rep(NA_real_, n)
+    chosen <- selected[positive]
+    fractions[chosen] <- reference$coverage_raw[chosen] / denominator[positive]
+
+    hits <- GenomicRanges::findOverlaps(
+        juncs, reference, type = "equal", ignore.strand = TRUE
+    )
+    qh <- S4Vectors::queryHits(hits)
+    sh <- S4Vectors::subjectHits(hits)
+    same_sample <- as.character(juncs$sample[qh]) == samples[sh]
+    juncs$usage_fraction[qh[same_sample]] <- fractions[sh[same_sample]]
+    juncs
 }
 
 #' @keywords internal

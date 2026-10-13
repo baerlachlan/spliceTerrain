@@ -44,3 +44,30 @@
     Rsamtools::asBam(sam, destination = destination, indexDestination = TRUE)
     code(bam)
 }
+
+.with_junction_usage_bam <- function(
+        code, counts = c(90L, 9L, 20L),
+        cigar = c("10M90N10M", "10M190N10M", "10M90N10M"),
+        pos = c(100L, 100L, 400L), read_width = rep(20L, length(counts))
+) {
+    sam <- tempfile(fileext = ".sam")
+    destination <- sub("\\.sam$", "", sam)
+    bam <- paste0(destination, ".bam")
+    on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
+
+    ## Synthetic single-end fragments with known alternative-junction support.
+    cigar <- rep(cigar, counts)
+    widths <- rep(read_width, counts)
+    records <- data.frame(
+        qname = paste0("fragment", seq_along(cigar)), flag = 0L,
+        rname = "synthetic", pos = rep(pos, counts), mapq = 60L,
+        cigar = cigar, rnext = "*", pnext = 0L, tlen = 0L,
+        seq = strrep("A", widths), qual = strrep("I", widths)
+    )
+    writeLines(c(
+        "@HD\tVN:1.6\tSO:coordinate", "@SQ\tSN:synthetic\tLN:1000",
+        do.call(paste, c(records, sep = "\t"))
+    ), sam)
+    Rsamtools::asBam(sam, destination = destination, indexDestination = TRUE)
+    code(bam)
+}

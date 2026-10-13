@@ -1,12 +1,15 @@
 #' @keywords internal
 .plotJunctions <- function(
-        p, juncs, cov, psi, arc_height, arc_side, colour, junc_text_size,
-        arc_scale, max_cov, psi_label_sep, annotated_junctions
+        p, juncs, cov, junction_usage, arc_height, arc_side, colour,
+        junc_text_size, arc_scale, max_cov, junction_usage_label_sep,
+        annotated_junctions
 ) {
     if (is.null(juncs)) return(p)
     layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov, arc_side)
     arcs <- .junctionArcPoints(layout)
-    labels <- .junctionArcLabels(layout, juncs, psi, psi_label_sep)
+    labels <- .junctionArcLabels(
+        layout, juncs, junction_usage, junction_usage_label_sep
+    )
     size_col <- ifelse(arc_scale, "size_on", "size_off")
     linetype_col <- ifelse(
         annotated_junctions, "linetype_on", "linetype_off"
@@ -162,27 +165,18 @@
 }
 
 #' @keywords internal
-.junctionArcLabels <- function(layout, juncs, psi, psi_label_sep = "\n") {
+.junctionArcLabels <- function(
+        layout, juncs, junction_usage, junction_usage_label_sep = "\n"
+) {
     label_values <- juncs$coverage
     labels <- .formatJunctionLabels(label_values)
-    if (!is.null(psi)) {
-        ## Normalisation uses one scale factor per sample, so PSI percentages
-        ## are unchanged within a sample. Using `coverage` keeps labels
-        ## consistent with plotted arc values.
-        anchors <- .rangesToAnchors(juncs)
-        st <- anchors[anchors$anchor == "start"]
-        hits_st <- IRanges::findOverlaps(psi, st)
-        sh_st <- S4Vectors::subjectHits(hits_st)
-        en <- anchors[anchors$anchor == "end"]
-        hits_en <- IRanges::findOverlaps(psi, en)
-        sh_en <- S4Vectors::subjectHits(hits_en)
-        sh <- unique(c(sh_st, sh_en))
+    if (!is.null(junction_usage)) {
+        ## Fractions come from the unfiltered genomic reference, before mapping.
+        sh <- which(!is.na(juncs$usage_fraction))
         labels[sh] <- paste0(
-            labels[sh], psi_label_sep,
+            labels[sh], junction_usage_label_sep,
             "(",
-            scales::percent(
-                round(label_values[sh] / sum(label_values[sh]), 3)
-            ),
+            scales::percent(juncs$usage_fraction[sh], accuracy = 0.1),
             ")"
         )
     }

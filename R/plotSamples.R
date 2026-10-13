@@ -13,10 +13,11 @@
         p <- ctx$plot$plist[[i]]
         p <- .plotCoverage(p, cov[[i]], ctx$input$colours[[i]])
         p <- .plotJunctions(
-            p, juncs[[i]], cov[[i]], ctx$plot$psi, ctx$input$arc_height,
+            p, juncs[[i]], cov[[i]], ctx$plot$junction_usage,
+            ctx$input$arc_height,
             ctx$input$arc_side, ctx$input$colours[[i]],
             ctx$input$junc_text_size, ctx$input$arc_scale, max_cov,
-            ctx$input$psi_label_sep, annotated_junctions
+            ctx$input$junction_usage_label_sep, annotated_junctions
         )
         p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
         p <- p + ggplot2::scale_y_continuous(

@@ -452,24 +452,24 @@ test_that("compress_introns controls whether plot-space map is created", {
     )
 })
 
-test_that("highlight and psi overlays are resolved and mapped", {
+test_that("highlight and junction usage intervals are resolved and mapped", {
     bams <- .hnrnpc_bams()
     ctx <- spliceTerrain(
         bam = bams[7],
         region = .hnrnpc_region(),
-        psi = .hnrnpc_psi(),
+        junction_usage = .hnrnpc_junction_usage(),
         highlight = "chr14:70234056-70234097",
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
     )
 
-    expect_s4_class(ctx$psi, "GRanges")
+    expect_s4_class(ctx$junction_usage, "GRanges")
     expect_s4_class(ctx$highlight, "GRanges")
     plotted <- .prepare_plot_context(ctx)
-    expect_s4_class(plotted$plot$psi, "GRanges")
+    expect_s4_class(plotted$plot$junction_usage, "GRanges")
     expect_s4_class(plotted$plot$highlight, "GRanges")
-    expect_length(plotted$plot$psi, 1)
+    expect_length(plotted$plot$junction_usage, 1)
     expect_length(plotted$plot$highlight, 1)
 })
 
@@ -478,15 +478,15 @@ test_that("overlay character regions are normalised before coercion", {
     ctx <- spliceTerrain(
         bam = bams[7],
         region = .hnrnpc_region(),
-        psi = "chr14:70,234,854 - 70,234,854",
+        junction_usage = "chr14:70,234,854 - 70,234,854",
         highlight = "chr14:70234056\u201370234097",
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
     )
 
-    expect_identical(BiocGenerics::start(ctx$psi), 70234854L)
-    expect_identical(BiocGenerics::end(ctx$psi), 70234854L)
+    expect_identical(BiocGenerics::start(ctx$junction_usage), 70234854L)
+    expect_identical(BiocGenerics::end(ctx$junction_usage), 70234854L)
     expect_identical(BiocGenerics::start(ctx$highlight), 70234056L)
     expect_identical(BiocGenerics::end(ctx$highlight), 70234097L)
 })

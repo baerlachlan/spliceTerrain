@@ -3,7 +3,7 @@ test_that("spliceTerrain returns a flat genomic context", {
     ctx <- spliceTerrain(
         bam = bams[7],
         region = .hnrnpc_region(),
-        psi = .hnrnpc_psi(),
+        junction_usage = .hnrnpc_junction_usage(),
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
@@ -132,4 +132,73 @@ test_that("reused contexts are validated", {
         "junc_text_size", "axis_title_size", "axis_text_size"
     )) zero_ctx[[field]] <- 0
     expect_silent(.prepare_plot_context(zero_ctx))
+})
+
+test_that("context replotting preserves and deliberately updates usage", {
+    .with_junction_usage_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-550",
+            junction_usage = "synthetic:110-110", min_junction_reads = 1,
+            return_ctx = TRUE
+        )
+        ctx$juncs <- ctx$juncs[1]
+        expect_identical(.junction_labels(spliceTerrain(ctx = ctx)),
+                         "90\n(90.9%)")
+
+        ctx$junction_usage <- GenomicRanges::GRanges("synthetic:199-199")
+        ctx$junction_usage_label_sep <- " "
+        expect_identical(.junction_labels(spliceTerrain(ctx = ctx)),
+                         "90 (100.0%)")
+        ctx$junction_usage <- GenomicRanges::GRanges("synthetic:110-110")
+        ctx$juncs_all$coverage_raw[2] <- 90L
+        expect_identical(.junction_labels(spliceTerrain(ctx = ctx)),
+                         "90 (50.0%)")
+        ctx$junction_usage <- NULL
+        expect_identical(.junction_labels(spliceTerrain(ctx = ctx)), "90")
+    })
+})
+
+test_that("context usage references require valid raw counts and unique rows", {
+    .with_junction_usage_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-550", return_ctx = TRUE
+        )
+        missing <- ctx
+        missing$juncs_all$coverage_raw <- NULL
+        expect_error(spliceTerrain(ctx = missing),
+                     "missing required metadata field(s): coverage_raw",
+                     fixed = TRUE)
+        negative <- ctx
+        negative$juncs_all$coverage_raw[1] <- -1
+        expect_error(spliceTerrain(ctx = negative),
+                     "`ctx$juncs_all$coverage_raw` must contain non-negative",
+                     fixed = TRUE)
+        duplicate <- ctx
+        duplicate$juncs_all <- c(ctx$juncs_all, ctx$juncs_all[1])
+        expect_error(spliceTerrain(ctx = duplicate),
+                     "must contain one row per sample and junction.",
+                     fixed = TRUE)
+    })
+})
+
+test_that("context usage selections retain region compatibility checks", {
+    .with_junction_usage_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = GenomicRanges::GRanges(
+                "synthetic:90-550", seqinfo = Seqinfo::Seqinfo(
+                    "synthetic", 1000L, genome = "assembly_one"
+                )
+            ), return_ctx = TRUE
+        )
+        ctx$junction_usage <- GenomicRanges::GRanges(
+            "synthetic:110-110", seqinfo = Seqinfo::Seqinfo(
+                "synthetic", 1000L, genome = "assembly_two"
+            )
+        )
+        expect_error(spliceTerrain(ctx = ctx), "incompatible genomes",
+                     fixed = TRUE)
+        ctx$junction_usage <- GenomicRanges::GRanges("synthetic:600-600")
+        expect_error(spliceTerrain(ctx = ctx),
+                     "`junction_usage` does not overlap `region`", fixed = TRUE)
+    })
 })

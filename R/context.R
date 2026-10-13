@@ -2,7 +2,7 @@
 .initPlotContext <- function() {
     list(
         cov = NULL, juncs = NULL, map = NULL, annotation = NULL,
-        region = NULL, psi = NULL, highlight = NULL, plist = NULL
+        region = NULL, junction_usage = NULL, highlight = NULL, plist = NULL
     )
 }
 
@@ -17,6 +17,7 @@
 .restoreContext <- function(x) {
     x <- .checkContext(x)
     ctx <- list(input = x, plot = .initPlotContext())
+    ctx <- .resolveGr(ctx, "junction_usage")
     ctx <- .checkColours(ctx)
     ctx <- .checkArcSide(ctx)
     ctx <- .checkAnnotatedJunctions(ctx)
@@ -38,8 +39,13 @@
     ctx$input$juncs <- .matchAnnotatedJunctions(
         ctx$input$juncs, ctx$input$annotation
     )
+    ctx$input$juncs <- .addJunctionUsage(
+        ctx$input$juncs, ctx$input$juncs_all, ctx$input$junction_usage
+    )
     ctx$plot <- .initPlotContext()
-    fields <- c("cov", "juncs", "annotation", "region", "psi", "highlight")
+    fields <- c(
+        "cov", "juncs", "annotation", "region", "junction_usage", "highlight"
+    )
     ctx$plot[fields] <- ctx$input[fields]
     .applyMap(ctx)
 }
@@ -50,17 +56,18 @@
         stop("`ctx` must be a list returned by `spliceTerrain()`.")
 
     nullable <- c(
-        "annotation", "psi", "highlight", "anno_fill_by",
+        "annotation", "junction_usage", "highlight", "anno_fill_by",
         "anno_fill_colours", "anno_label_by"
     )
     missing_nullable <- setdiff(nullable, names(ctx))
     ctx[missing_nullable] <- rep(list(NULL), length(missing_nullable))
 
     required <- c(
-        "bam", "region", "annotation", "psi", "psi_label_sep", "highlight",
-        "cov", "juncs", "compress_introns", "intron_width", "common_y",
-        "arc_height", "arc_side", "arc_scale", "colours", "min_arrow",
-        "highlight_colour", "anno_fill_by", "anno_fill_colours",
+        "bam", "region", "annotation", "junction_usage",
+        "junction_usage_label_sep", "highlight", "cov", "juncs", "juncs_all",
+        "compress_introns", "intron_width", "common_y", "arc_height",
+        "arc_side", "arc_scale", "colours", "min_arrow", "highlight_colour",
+        "anno_fill_by", "anno_fill_colours",
         "anno_label_by", "anno_label_colour", "anno_label_size",
         "junc_text_size", "panel_heights", "axis_title_size",
         "axis_text_size", "annotated_junctions"
@@ -71,17 +78,17 @@
 
     if (!inherits(ctx$region, "GRanges") || length(ctx$region) != 1)
         stop("`ctx$region` must be a single GRanges range.")
-    for (field in c("cov", "juncs")) {
+    for (field in c("cov", "juncs", "juncs_all")) {
         if (!inherits(ctx[[field]], "GRanges"))
             stop("`ctx$", field, "` must be a GRanges object.")
     }
-    for (field in c("annotation", "psi", "highlight")) {
+    for (field in c("annotation", "junction_usage", "highlight")) {
         value <- ctx[[field]]
         if (!is.null(value) && !inherits(value, "GRanges"))
             stop("`ctx$", field, "` must be NULL or a GRanges object.")
     }
     region_seqname <- as.character(Seqinfo::seqnames(ctx$region))
-    for (field in c("psi", "highlight")) {
+    for (field in c("junction_usage", "highlight")) {
         value <- ctx[[field]]
         if (length(value) &&
                 any(as.character(Seqinfo::seqnames(value)) != region_seqname))
@@ -89,8 +96,8 @@
     }
     .checkContextAnnotation(ctx)
 
-    .checkContextTrack(ctx, "cov")
-    .checkContextTrack(ctx, "juncs")
+    for (field in c("cov", "juncs", "juncs_all"))
+        .checkContextTrack(ctx, field)
     ctx
 }
 
@@ -98,6 +105,7 @@
 .checkContextTrack <- function(ctx, field) {
     x <- ctx[[field]]
     required <- c("sample", "coverage")
+    if (field == "juncs_all") required <- c(required, "coverage_raw")
     missing_fields <- setdiff(required, names(S4Vectors::mcols(x)))
     if (length(missing_fields))
         stop(
@@ -106,12 +114,20 @@
         )
     if (anyNA(x$sample) || any(!x$sample %in% names(ctx$bam)))
         stop("`ctx$", field, "$sample` values must match `ctx$bam` names.")
-    if (!is.numeric(x$coverage) || anyNA(x$coverage) ||
-            any(!is.finite(x$coverage)) || any(x$coverage < 0))
-        stop("`ctx$", field, "$coverage` must contain non-negative numbers.")
+    for (column in setdiff(required, "sample")) {
+        values <- S4Vectors::mcols(x)[[column]]
+        if (!is.numeric(values) || anyNA(values) ||
+                any(!is.finite(values)) || any(values < 0))
+            stop("`ctx$", field, "$", column,
+                "` must contain non-negative numbers.")
+    }
     region_seqname <- as.character(Seqinfo::seqnames(ctx$region))
     if (length(x) && any(as.character(Seqinfo::seqnames(x)) != region_seqname))
         stop("`ctx$", field, "` ranges must use the plotting seqname.")
+    if (field == "juncs_all" && anyDuplicated(S4Vectors::DataFrame(
+        sample = as.character(x$sample),
+        start = BiocGenerics::start(x), end = BiocGenerics::end(x)
+    ))) stop("`ctx$juncs_all` must contain one row per sample and junction.")
 }
 
 #' @keywords internal

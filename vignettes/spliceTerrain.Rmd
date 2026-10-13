@@ -240,31 +240,84 @@ spliceTerrain(
 )
 ```
 
-## Percent spliced in labels
+## Local junction-usage labels
 
-Percent spliced in (PSI) is commonly used to summarise how often a splice choice
-is used relative to other local splice choices.
-In `spliceTerrain()`, the `psi` argument identifies a local genomic interval and
-labels junctions whose start or end anchor overlaps that interval.
+The `junction_usage` argument selects junctions by a genomic position or range
+and labels their relative fragment support within each sample.
+Junctions are selected when either their start or end anchor overlaps the
+supplied interval(s).
 Junction anchors use intronic coordinates: the start anchor is the first base of
 the intron, and the end anchor is the last base of the intron, not the adjacent
 exonic bases.
-The label reports each selected junction's fraction of the summed
-junction-fragment support.
 
-This is intended as an interpretable local junction-usage label on the sashimi
-plot, rather than full transcript-level isoform inference.
-By default, the junction count and PSI percentage are separated by a new line.
-Use `psi_label_sep = " "` to display them together on one line.
+**Selecting a single shared splice site gives the cleanest interpretation.**
+For junctions sharing a donor or acceptor, the labels describe their relative
+support at that site.
+By default, the junction count and usage percentage are separated by a new line.
+Use `junction_usage_label_sep = " "` to display them together on one line.
 
-```{r psi, fig.wide=TRUE, fig.height=6}
+```{r junction_usage_site, fig.wide=TRUE, fig.height=6}
 spliceTerrain(
     bam = bams,
     region = region,
-    psi = "chr14:70234854-70234854",
-    psi_label_sep = " "
+    junction_usage = "chr14:70234854-70234854",
+    junction_usage_label_sep = " "
 )
 ```
+
+A range can also be supplied, including one covering multiple splice sites.
+It defines a combined set of selected junctions; each junction enters the
+denominator once, even if both anchors or overlapping intervals select it.
+
+```{r junction_usage_range, fig.wide=TRUE, fig.height=6}
+spliceTerrain(
+    bam = bams,
+    region = region,
+    junction_usage = "chr14:70234098-70234854"
+)
+```
+
+For each sample, the percentage is the junction's raw fragment support divided
+by the summed support of all selected, eligible imported junctions.
+This is calculated after import, MAPQ, and strand filtering, but before
+`min_junction_reads` filtering or plotting-window exclusion.
+An alternative junction remains in the denominator when its arc is hidden.
+For example, supports of 90 and 9 give 90.9% and 9.1%; hiding the second arc
+with a threshold of 10 leaves the first label at 90.9%, not 100%.
+Visible percentages therefore need not sum to 100%.
+Library-size normalisation and intron compression do not change the fractions.
+Labels are rounded to one decimal place, and no percentage is shown when the
+selected support is zero.
+The reference is conditional on the imported data: changing the query region,
+MAPQ threshold, or strand selection can change the available evidence.
+
+### Why this is not event-level PSI
+
+Consider a cassette exon between an upstream and a downstream exon.
+In a simplified example, 50 inclusion fragments support both inclusion
+junctions, and 50 skipping fragments support the direct skipping junction.
+A range selecting all three junctions gives the following junction-usage labels:
+
+```{r cassette_usage_example}
+cassette <- data.frame(
+    Junction = c("Upstream inclusion", "Downstream inclusion", "Skipping"),
+    Fragments = c(50L, 50L, 50L)
+)
+cassette[["Junction usage (%)"]] <- round(
+    100 * cassette$Fragments / sum(cassette$Fragments), 1
+)
+pander(cassette)
+```
+
+The denominator is 150 units of junction support, so each label is 33.3%.
+There are only 100 fragments in this constructed example, with a known exon
+inclusion fraction of 50%: each inclusion fragment supports two junctions.
+Thus the 33.3% labels are not estimates of the cassette exon's inclusion.
+Selecting one shared donor or acceptor instead compares one inclusion junction
+with the skipping junction and gives 50% for each in this example.
+Ranges remain useful for inspecting broader patterns, but their combined
+junction fractions should not be interpreted as general event-level
+percent spliced in (PSI) or transcript-isoform proportions.
 
 ## Filtering signal
 
@@ -417,7 +470,7 @@ Junction label size is controlled with `junc_text_size`.
 spliceTerrain(
     bam = bams,
     region = region,
-    psi = "chr14:70234854-70234854",
+    junction_usage = "chr14:70234854-70234854",
     arc_height = 2,
     arc_side = "above",
     arc_scale = TRUE,
@@ -458,6 +511,12 @@ The paired-end list groups imported mates and includes mapped singleton reads.
 The `cov` and `juncs` fields contain fragment summaries: `coverage_raw` holds
 unnormalised fragment counts and `coverage` holds the plotting values after any
 library-size normalisation.
+The `juncs_all` field retains eligible junction summaries on the plotting
+chromosome before display filtering or clipping, including out-of-window
+junctions from imported alignments.
+It provides a stable reference for the `usage_fraction` column in `juncs`.
+That column is on the 0--1 scale, with `NA` for unselected junctions or an
+undefined percentage.
 All coordinate-bearing fields use genomic coordinates; compressed plot
 coordinates are generated internally only when the context is plotted.
 
@@ -493,6 +552,16 @@ Plotting settings can also be changed directly, for example with
 Settings that control BAM import, filtering, or normalisation are not reapplied
 when a context is replotted because its coverage and junctions are already
 processed.
+
+Filtering `ctx$juncs` changes which arcs are displayed without changing the
+usage denominator.
+Changing `ctx$junction_usage` to another `GRanges` selection recalculates the
+fractions from `ctx$juncs_all` when plotting.
+If you intend to change the reference evidence itself, edit `ctx$juncs_all`,
+retaining one row per sample/junction and non-negative `coverage_raw` counts.
+The new argument names are `junction_usage` and `junction_usage_label_sep`.
+They replace the development names `psi` and `psi_label_sep`.
+Recreate older cached contexts with the current API.
 
 # Session information
 
