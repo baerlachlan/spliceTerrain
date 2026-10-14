@@ -547,6 +547,70 @@ test_that("arc_side controls junction arc placement", {
     expect_false(any(below$above))
 })
 
+test_that("junction cluster maxima and stack levels retain input indexing", {
+    cov <- GenomicRanges::GRanges(
+        c("synthetic:100-109", "synthetic:110-119", "synthetic:190-199",
+          "synthetic:200-209", "synthetic:300-309", "synthetic:400-409"),
+        coverage = c(10, 20, 20, 10, 100, 100)
+    )
+    juncs <- GenomicRanges::GRanges(
+        c("synthetic:110-199", "synthetic:310-399", "synthetic:120-189"),
+        coverage = c(10, 100, 20)
+    )
+    anchors <- spliceTerrain:::.junctionAnchorCoverage(juncs, cov)
+    layout <- spliceTerrain:::.junctionArcLayout(juncs, cov, 1, NULL, "above")
+
+    expect_equal(anchors$cluster_max, c(20, 100, 20))
+    expect_equal(layout$heights, c(50, 130, 65))
+    expect_true(all(layout$heights > pmax(anchors$left, anchors$right)))
+})
+
+test_that("reordered contexts preserve arc geometry and attached metadata", {
+    .with_junction_usage_bam(function(bam) {
+        annotation <- GenomicRanges::GRangesList(
+            tx_a = GenomicRanges::GRanges(
+                c("synthetic:100-109", "synthetic:200-209")
+            ),
+            tx_c = GenomicRanges::GRanges(
+                c("synthetic:300-309", "synthetic:400-409")
+            )
+        )
+        ctx <- spliceTerrain(
+            bam = c(sample = bam), region = "synthetic:80-430",
+            annotation = annotation, annotated_junctions = TRUE,
+            junction_usage = "synthetic:110-399", min_junction_reads = 1,
+            arc_scale = TRUE, return_ctx = TRUE
+        )
+        for (compressed in c(FALSE, TRUE)) {
+            for (side in c("above", "below", "both")) {
+                ctx$compress_introns <- compressed
+                ctx$arc_side <- side
+                reference <- spliceTerrain(ctx = ctx)
+                expected <- lapply(reference[[1]]$layers, function(x) x$data)
+                for (ordering in list(c(3, 2, 1), c(1, 3, 2))) {
+                    shuffled <- ctx
+                    shuffled$juncs <- ctx$juncs[ordering]
+                    p <- spliceTerrain(ctx = shuffled)
+                    actual <- lapply(p[[1]]$layers, function(x) x$data)
+                    info <- paste(compressed, side, toString(ordering))
+                    expect_identical(actual, expected, info = info)
+                    .expect_patchwork_renders(p)
+                }
+            }
+        }
+        expect_identical(.junction_labels(p),
+                         c("10\n(7.7%)", "20\n(15.4%)", "100\n(76.9%)"))
+        arc_layer <- Filter(function(layer) {
+            inherits(layer$geom, "GeomLine")
+        }, p[[1]]$layers)[[1]]
+        arcs <- arc_layer$data[!duplicated(arc_layer$data$id), ]
+        expect_equal(arcs$size_on, c(10, 20, 100))
+        expect_identical(arcs$linetype_on, c("solid", "dashed", "solid"))
+    }, counts = c(10L, 20L, 100L),
+    cigar = c("10M90N10M", "10M70N10M", "10M90N10M"),
+    pos = c(100L, 110L, 300L))
+})
+
 test_that("annotation matches control junction arc linetype", {
     junc <- GenomicRanges::GRanges(
         c("chr1:10-20", "chr1:30-40"),

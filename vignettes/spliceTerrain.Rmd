@@ -88,8 +88,9 @@ between samples.
 `spliceTerrain` was designed to fit into R/Bioconductor workflows.
 Candidate regions, exon models, and features of interest are often already
 represented as `GRanges` or `GRangesList` objects.
-Reuse these objects for regions, transcript annotation, and highlights
-alongside indexed BAM files, within the same R session.
+`spliceTerrain` allows reuse of these objects for regions, transcript
+annotation, and highlights alongside indexed BAM files, within the same R
+session.
 For example, exon models retrieved from an `EnsDb` can become annotation rows
 without first exporting them to an annotation file.
 
@@ -98,7 +99,7 @@ sashimi workflow.
 It returns a `patchwork` plot or an inspectable genomic context.
 Its genomic summaries and plotting settings can be edited and replotted.
 
-## Related tools and positioning
+## Related tools
 
 [Gviz][gviz-package] [@Hahne2016], [ggbio][ggbio-package] [@Yin2012], and
 [ggsashimi][ggsashimi-package] [@GarridoMartin2018]

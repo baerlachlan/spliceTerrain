@@ -5,6 +5,7 @@
         annotated_junctions
 ) {
     if (is.null(juncs)) return(p)
+    juncs <- BiocGenerics::sort(juncs)
     layout <- .junctionArcLayout(juncs, cov, arc_height, max_cov, arc_side)
     arcs <- .junctionArcPoints(layout)
     labels <- .junctionArcLabels(
@@ -40,7 +41,7 @@
         junc, cov, arc_height, max_cov, arc_side = "both"
 ) {
     ## Arc stacking
-    levels <- IRanges::disjointBins(sort(junc))
+    levels <- IRanges::disjointBins(junc)
     sign <- .junctionArcSigns(length(junc), arc_side)
     ## Junction midpoints and half-widths
     start_j <- BiocGenerics::start(junc)
@@ -87,7 +88,9 @@
     cov_lr <- pmax(cov_l, cov_r)
     overlap <- GenomicRanges::reduce(junc, with.revmap = TRUE)
     revmap <- S4Vectors::mcols(overlap)$revmap
-    cluster_id <- rep(seq_along(revmap), lengths(revmap))
+    cluster_id <- integer(length(junc))
+    cluster_id[unlist(revmap, use.names = FALSE)] <-
+        rep(seq_along(revmap), lengths(revmap))
     cluster_max <- vapply(revmap, function(i) {
         max(cov_lr[i], na.rm = TRUE)
     }, numeric(1))

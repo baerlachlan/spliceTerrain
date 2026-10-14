@@ -120,7 +120,8 @@
 #'
 #' @param arc_side Character scalar controlling where junction arcs are drawn.
 #' Must be one of \code{"both"}, \code{"above"}, or \code{"below"}. The default
-#' \code{"both"} alternates arcs above and below the coverage track.
+#' \code{"both"} alternates arcs above and below the coverage track in genomic
+#' sort order.
 #'
 #' @param arc_scale Logical scalar. If \code{TRUE}, scale junction arc line
 #' width by junction fragment count after filtering. If \code{FALSE}, use
