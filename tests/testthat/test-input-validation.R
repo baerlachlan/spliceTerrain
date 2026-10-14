@@ -251,25 +251,25 @@ test_that("arc_side values must be supported", {
     )
 })
 
-test_that("psi and highlight must overlap the resolved region", {
+test_that("junction usage and highlight must overlap the resolved region", {
     bams <- .placeholder_bams()
 
     expect_error(
         spliceTerrain(
             bam = bams,
             region = .hnrnpc_region(),
-            psi = "chr1:1-100"
+            junction_usage = "chr1:1-100"
         ),
-        "`psi` does not overlap `region`",
+        "`junction_usage` does not overlap `region`",
         fixed = TRUE
     )
     expect_error(
         spliceTerrain(
             bam = bams,
             region = .hnrnpc_region(),
-            psi = "chr14:1-100"
+            junction_usage = "chr14:1-100"
         ),
-        "`psi` does not overlap `region`",
+        "`junction_usage` does not overlap `region`",
         fixed = TRUE
     )
     expect_error(

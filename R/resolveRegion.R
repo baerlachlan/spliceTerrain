@@ -37,6 +37,7 @@
     GenomicRanges::GRanges(
         seqnames = GenomicRanges::seqnames(gr)[1],
         ranges   = IRanges::IRanges(start = s, end = e),
-        strand   = unique(GenomicRanges::strand(gr))
+        strand   = unique(GenomicRanges::strand(gr)),
+        seqinfo  = Seqinfo::seqinfo(gr)
     )
 }

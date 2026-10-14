@@ -2,8 +2,8 @@
 #'
 #' @description
 #' \code{spliceTerrain()} draws sashimi-style plots for one or more BAM files
-#' over a genomic region. Plots combine per-base coverage, splice junction arcs,
-#' optional transcript annotation, and optional highlighted regions.
+#' over a genomic region. Plots combine per-base fragment coverage, splice
+#' junction arcs, optional transcript annotation, and highlighted regions.
 #' Intronic or otherwise uninformative gaps can be compacted so the plotting
 #' area is focused on observed or annotated features.
 #'
@@ -13,7 +13,8 @@
 #' for region-restricted import. Index files should be discoverable by
 #' \pkg{Rsamtools} using standard same-directory naming, such as
 #' \code{file.bam.bai}. Single-end and paired-end BAMs are both supported;
-#' paired-end status is detected from the BAM flags.
+#' paired-end status is detected from the BAM flags. For paired-end BAMs,
+#' mapped reads are retained even when their mates are unmapped.
 #'
 #' @param region Genomic interval to plot. May be a
 #' \link[GenomicRanges]{GRanges}, a \link[GenomicRanges]{GRangesList}, or a
@@ -22,6 +23,9 @@
 #' en/em dashes in character regions are normalised before coercion. If multiple
 #' ranges are supplied, they must all be on the same seqname and are reduced to
 #' a single span used as the BAM query and plotting window.
+#' Supplied \code{Seqinfo} metadata is preserved. Use consistent genome assembly
+#' identifiers and sequence lengths for the region, annotation, and overlays;
+#' known metadata conflicts are rejected by the overlap operations.
 #'
 #' @param annotation Optional annotation track. Must be a
 #' \link[GenomicRanges]{GRangesList}, with each list element representing one
@@ -32,26 +36,33 @@
 #' region and are clipped to the plotting window when drawn. All ranges in a
 #' retained group must be on the plotting seqname and share one strand.
 #'
-#' @param psi Optional genomic interval used to annotate junction labels with
-#' local junction usage (percent spliced in, PSI). Accepts the same formats as
-#' \code{region}. Junctions with a start or end anchor overlapping \code{psi}
-#' are labelled with their fraction of total junction reads among the selected
-#' junctions.
+#' @param junction_usage Optional genomic interval(s) selecting junctions for
+#' local usage percentages. Accepts the same formats as \code{region}.
+#' Junctions with either anchor overlapping the interval(s) are selected.
+#' Each percentage is that junction's fraction of summed fragment support among
+#' all selected, eligible imported junctions in its sample, before display
+#' filtering or clipping. A single shared splice site gives the clearest
+#' interpretation; a range can combine multiple sites. This is not an
+#' event-level percent-spliced-in estimate. Anchors are the first and last
+#' intronic bases.
 #'
-#' @param psi_label_sep Character scalar inserted between junction counts and
-#' PSI percentages in junction labels when \code{psi} is supplied. Defaults to
+#' @param junction_usage_label_sep Character scalar inserted between junction
+#' counts and percentages when \code{junction_usage} is supplied. Defaults to
 #' \code{"\n"}; use \code{" "} to keep percentages inline with counts.
 #'
 #' @param highlight Optional interval(s) to highlight. Accepts the same formats
 #' as \code{region}. Multiple ranges may be supplied. Highlighted intervals are
 #' drawn as shaded vertical bands spanning the full panel height.
+#' Only the portion overlapping the plotting window is drawn. Returned contexts
+#' keep the full retained genomic intervals in \code{highlight}.
 #'
 #' @param strandedness Library strandedness for each BAM. Must be one of
 #' \code{"unstranded"}, \code{"forward"}, or \code{"reverse"}, and may be
 #' supplied either as a single value applied to all BAMs or as one value per
 #' BAM. Use \code{"unstranded"} when reads from both strands should be included.
 #' For stranded paired-end BAMs, this value is passed to
-#' \link[GenomicAlignments]{readGAlignmentPairs} as \code{strandMode}. If
+#' \link[GenomicAlignments]{readGAlignmentsList} as \code{strandMode}, which
+#' uses the read-one/read-two flags for both complete pairs and singletons. If
 #' \code{region} includes a strand and \code{strandedness} is not
 #' \code{"unstranded"}, imported alignments are restricted to overlaps on the
 #' resolved region strand.
@@ -59,23 +70,26 @@
 #' @param min_mapq Integer scalar. Minimum mapping quality (MAPQ) for alignments
 #' to be imported from the BAM file.
 #'
-#' @param min_coverage Integer or percentage string. Minimum per-base coverage
-#' required for positions to be retained for plotting. Percentage strings such
-#' as \code{"10\%"} are relative to the maximum coverage within the plotting
-#' region for each BAM. May be supplied either as a single value applied to all
+#' @param min_coverage Integer or percentage string. Minimum per-base fragment
+#' coverage required for positions to be retained for plotting. Percentage
+#' strings such as \code{"10\%"} are relative to the maximum coverage within
+#' the plotting region for each BAM. May be supplied as a single value for all
 #' BAMs or as one value per BAM. Per-BAM character vectors may combine
 #' whole-number counts and percentage strings.
 #'
 #' @param min_junction_reads Integer or percentage string. Minimum number of
-#' split reads supporting a junction for it to be retained for plotting.
+#' fragments supporting a junction for it to be retained for plotting. Despite
+#' the argument name, two mates supporting the same junction count only once.
 #' Percentage strings such as \code{"10\%"} are relative to the most-supported
 #' junction within the plotting region for each BAM. May be supplied either as
 #' a single value applied to all BAMs or as one value per BAM. Per-BAM character
 #' vectors may combine whole-number counts and percentage strings.
 #'
-#' @param lib_size Optional numeric vector giving RNA-seq library sizes, one per
-#' BAM file. When supplied, coverage and junction counts are normalised by
-#' effective library size before plotting.
+#' @param lib_size Optional numeric vector giving full-library sizes in fragment
+#' units, one per BAM file, before restriction to the plotting region.
+#' A pair or mapped singleton is one fragment; for single-end libraries,
+#' each mapped read is one fragment. When supplied, coverage and junction counts
+#' are normalised by effective library size before plotting.
 #'
 #' @param norm_factors Optional numeric vector of normalisation factors, one per
 #' BAM file, such as edgeR TMM normalisation factors. Requires
@@ -108,11 +122,12 @@
 #'
 #' @param arc_side Character scalar controlling where junction arcs are drawn.
 #' Must be one of \code{"both"}, \code{"above"}, or \code{"below"}. The default
-#' \code{"both"} alternates arcs above and below the coverage track.
+#' \code{"both"} alternates arcs above and below the coverage track in genomic
+#' sort order.
 #'
 #' @param arc_scale Logical scalar. If \code{TRUE}, scale junction arc line
-#' width by junction read count after filtering. If \code{FALSE}, use a constant
-#' line width for all junction arcs.
+#' width by junction fragment count after filtering. If \code{FALSE}, use
+#' a constant line width for all junction arcs.
 #'
 #' @param annotated_junctions Logical scalar. If \code{TRUE}, junctions that
 #' exactly match an intron implied by \code{annotation} are drawn with solid
@@ -179,10 +194,10 @@
 #' The plot is built in three conceptual steps:
 #' \enumerate{
 #'   \item Alignments overlapping \code{region} are imported from each BAM file.
-#'   Secondary and supplementary alignments are ignored, and \code{min_mapq} is
-#'   applied during import.
-#'   \item Coverage and splice junction counts are summarised from the imported
-#'   alignments and filtered by \code{min_coverage} and
+#'   Unmapped, secondary, and supplementary alignments are ignored, and
+#'   \code{min_mapq} is applied during import.
+#'   \item Fragment coverage and splice junction support are summarised from
+#'   the imported alignments and filtered by \code{min_coverage} and
 #'   \code{min_junction_reads}.
 #'   \item If \code{compress_introns = TRUE}, a plot-space map is constructed to
 #'   compact gaps between observed or annotated genomic blocks. Coverage,
@@ -190,21 +205,47 @@
 #'   compacted coordinate system.
 #' }
 #'
-#' \code{region}, \code{psi}, and \code{highlight} may be supplied as genomic
-#' ranges or as character strings coercible to \code{GRanges}. If multiple
+#' For BAMs detected as paired-end, alignments flagged as paired are imported
+#' as groups containing complete pairs or mapped singletons. A mapped read does
+#' not require a mapped mate to contribute to the plot. Each imported group is
+#' treated as one fragment. For single-end input, each read is one fragment.
+#' Coverage uses the union of each fragment's aligned blocks. Overlapping mates
+#' contribute at most one count per position. Introns and unsequenced gaps
+#' between mates are not filled. Each fragment contributes at most one count per
+#' distinct junction, even when both mates cross it; a fragment can support
+#' multiple different junctions. Independent fragments are counted separately,
+#' including those with identical coordinates. This is not PCR/UMI
+#' deduplication.
+#' Retaining singletons avoids losing their signal when mate-mapping success
+#' differs between samples.
+#'
+#' \code{region}, \code{junction_usage}, and \code{highlight} may be supplied as
+#' genomic ranges or as strings coercible to \code{GRanges}. If multiple
 #' ranges are supplied for \code{region}, they must all be on the same seqname;
 #' their span is used as the BAM query and plotting window. Optional genomic
 #' overlays are retained when they overlap the plotting region and are clipped
 #' to the plotting window when drawn.
 #'
-#' \code{psi} and \code{highlight} are optional overlays:
+#' \code{junction_usage} and \code{highlight} are optional selections:
 #' \itemize{
-#'   \item \code{psi} identifies a local region used to add percentage labels to
-#'   selected junctions. Junctions with an anchor overlapping \code{psi} are
-#'   labelled with their fraction of total reads among those selected junctions.
+#'   \item \code{junction_usage} selects junctions by their intronic anchors.
+#'   Percentages use raw fragment support after import/MAPQ/strand filtering,
+#'   before \code{min_junction_reads} filtering and plotting-window exclusion.
+#'   Hidden junctions remain in the denominator, so visible percentages need not
+#'   sum to 100. A junction is counted once in the denominator even when both
+#'   anchors or multiple selection intervals match it. Different junctions from
+#'   one fragment each contribute their support; these are junction fractions,
+#'   not fractions of unique molecules across the whole selection.
 #'   \item \code{highlight} marks one or more genomic intervals to draw
 #'   attention to a subregion, such as an exon, splice site, or event.
 #' }
+#'
+#' Usage percentages are computed separately for each sample and are unchanged
+#' by library-size normalisation or coordinate compression. Labels are rounded
+#' to one decimal place. If no selected junction has positive support, no usage
+#' percentage is shown. The denominator is conditional on the imported data:
+#' changing the BAM query region, MAPQ threshold, or strand selection can change
+#' which evidence is available.
 #'
 #' The arguments \code{strandedness}, \code{min_coverage},
 #' \code{min_junction_reads}, and \code{colours} may each be supplied either as
@@ -236,8 +277,9 @@
 #'
 #' For advanced workflows, \code{return_ctx = TRUE} can be used to inspect or
 #' modify processed genomic data before plotting. The returned context is flat:
-#' fields such as \code{cov}, \code{juncs}, \code{annotation}, \code{psi}, and
-#' \code{highlight} all use genomic coordinates. Passing the modified context
+#' fields such as \code{cov}, \code{juncs}, \code{juncs_all}, \code{annotation},
+#' \code{junction_usage}, and \code{highlight} all use genomic coordinates.
+#' Passing the modified context
 #' back through \code{ctx} regenerates all internal plot-space data and rebuilds
 #' the plot without reading the BAM files again.
 #'
@@ -249,6 +291,17 @@
 #' as \code{colours}, \code{arc_side}, and \code{compress_introns} may be
 #' changed in the context before replotting.
 #'
+#' \code{juncs_all} retains the eligible junction summaries on the plotting
+#' chromosome before display filtering or clipping, including junctions outside
+#' the plotting window. It is the reference for usage calculations when a
+#' context is replotted. Filtering \code{ctx$juncs} changes only the display;
+#' modify \code{ctx$juncs_all} if you intend to change the usage reference.
+#' The reference must retain one row per sample/junction and its non-negative
+#' \code{coverage_raw} counts. Changing \code{ctx$junction_usage} to another
+#' \code{GRanges} selection recalculates percentages from this reference.
+#' The replacement selection must overlap the plotting region and have
+#' compatible genomic metadata.
+#'
 #' @return
 #' If \code{return_ctx = FALSE}, a \pkg{patchwork} object containing one sample
 #' panel per BAM file plus an optional annotation panel.
@@ -258,12 +311,29 @@
 #' coordinate-bearing fields use genomic coordinates; plot-space data are
 #' generated internally when the context is plotted.
 #'
+#' The \code{gal} field contains one alignment object per BAM: a
+#' \link[GenomicAlignments]{GAlignments} for single-end input or a
+#' \link[GenomicAlignments]{GAlignmentsList} for paired-end input.
+#' Paired-end list elements group the imported mates and include mapped
+#' singleton reads.
+#'
+#' The \code{cov} and \code{juncs} fields store fragment summaries. Their
+#' \code{coverage_raw} columns contain unnormalised fragment counts, while
+#' \code{coverage} contains the values used for plotting, normalised when
+#' \code{lib_size} is supplied. The \code{gal} field retains the imported
+#' alignments rather than collapsed coverage or junction data.
+#'
+#' \code{juncs_all} stores the unfiltered junction reference. The
+#' \code{usage_fraction} column in \code{juncs} contains fractions on the 0--1
+#' scale; \code{NA} denotes an unselected junction or undefined percentage.
+#' Fractions are recalculated from \code{juncs_all} before each plot is drawn.
+#'
 #' In the returned plot, the x-axis is shared across panels. Tick labels are
 #' shown in genome coordinates, including when introns are compressed.
 #'
 #' @seealso
 #' \link[GenomicAlignments]{readGAlignments} and
-#' \link[GenomicAlignments]{readGAlignmentPairs} for reading alignments, and
+#' \link[GenomicAlignments]{readGAlignmentsList} for reading alignments, and
 #' \link[GenomicRanges]{GRanges} for representing genomic intervals.
 #'
 #' @examples
@@ -308,7 +378,7 @@
 #'     ),
 #'     anno_label_by = "exon_rank",
 #'     anno_label_colour = "black",
-#'     psi = "chr14:70234854-70234854",
+#'     junction_usage = "chr14:70234854-70234854",
 #'     highlight = "chr14:70233810-70234097",
 #'     arc_height = 2,
 #'     arc_side = "above",
@@ -337,8 +407,8 @@
 #' @export
 spliceTerrain <- function(
         bam, region,
-        annotation = NULL, psi = NULL,
-        psi_label_sep = "\n", highlight = NULL,
+        annotation = NULL, junction_usage = NULL,
+        junction_usage_label_sep = "\n", highlight = NULL,
         strandedness = "unstranded",
         min_mapq = 0, min_coverage = 0,
         min_junction_reads = 10,
@@ -360,7 +430,7 @@ spliceTerrain <- function(
         ctx <- .initContext(as.list(environment()))
         ctx <- .resolveRegion(ctx)
         ctx <- .resolveAnnotation(ctx)
-        ctx <- .resolveGr(ctx, "psi")
+        ctx <- .resolveGr(ctx, "junction_usage")
         ctx <- .resolveGr(ctx, "highlight")
         ctx <- .loadAlignments(ctx)
         ctx <- .getCoverage(ctx)

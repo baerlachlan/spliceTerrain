@@ -24,3 +24,10 @@
     )
     invisible(p)
 }
+
+.junction_labels <- function(p, panel = 1L) {
+    labels <- lapply(p[[panel]]$layers, function(layer) {
+        if (inherits(layer$geom, "GeomLabel")) layer$data$label
+    })
+    unlist(labels, use.names = FALSE)
+}

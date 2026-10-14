@@ -1,10 +1,12 @@
 #' @keywords internal
 .initContext <- function(args) {
     ctx <- list(
-        input = c(args, list(gal = NULL, cov = NULL, juncs = NULL)),
+        input = c(args, list(
+            gal = NULL, cov = NULL, juncs = NULL, juncs_all = NULL
+        )),
         plot = list(
             cov = NULL, juncs = NULL, map = NULL, annotation = NULL,
-            region = NULL, psi = NULL, highlight = NULL, plist = NULL
+            region = NULL, junction_usage = NULL, highlight = NULL, plist = NULL
         )
     )
     ctx <- .checkBam(ctx)
@@ -32,7 +34,7 @@
         "anno_label_size", "junc_text_size", "axis_title_size", "axis_text_size"
     )) .checkNumericOption(ctx, field, minimum = 0)
     for (field in c(
-        "psi_label_sep", "highlight_colour", "anno_label_colour"
+        "junction_usage_label_sep", "highlight_colour", "anno_label_colour"
     )) .checkCharacterOption(ctx, field)
     if (!is.null(ctx$input$anno_fill_colours) &&
             (!is.character(ctx$input$anno_fill_colours) ||

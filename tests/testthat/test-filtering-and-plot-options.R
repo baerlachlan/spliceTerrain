@@ -1,3 +1,31 @@
+.with_interchromosomal_bam <- function(code) {
+    sam <- tempfile(fileext = ".sam")
+    destination <- sub("\\.sam$", "", sam)
+    bam <- paste0(destination, ".bam")
+    on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
+
+    ## One synthetic pair crosses chromosomes; the control pair stays on c.
+    ## Different mate positions expose chromosome concatenation/relabeling.
+    records <- data.frame(
+        qname = c("cross", "cross", "same", "same"),
+        flag = c(97L, 145L, 99L, 147L),
+        rname = c("synthetic_a", "synthetic_b", rep("synthetic_c", 2)),
+        pos = c(100L, 300L, 100L, 300L), mapq = 60L,
+        cigar = rep(c("10M90N10M", "10M190N10M"), 2),
+        rnext = c("synthetic_b", "synthetic_a", "=", "="),
+        pnext = c(300L, 100L, 300L, 100L),
+        tlen = c(0L, 0L, 410L, -410L),
+        seq = strrep("A", 20), qual = strrep("I", 20)
+    )
+    writeLines(c(
+        "@HD\tVN:1.6\tSO:coordinate",
+        paste0("@SQ\tSN:synthetic_", c("a", "b", "c"), "\tLN:1000"),
+        do.call(paste, c(records, sep = "\t"))
+    ), sam)
+    Rsamtools::asBam(sam, destination = destination, indexDestination = TRUE)
+    code(bam)
+}
+
 test_that("coverage and junction thresholds filter processed data", {
     bams <- .hnrnpc_bams()
     low <- spliceTerrain(
@@ -19,6 +47,219 @@ test_that("coverage and junction thresholds filter processed data", {
     expect_gt(length(low$juncs), length(high$juncs))
     expect_true(all(low$cov$coverage >= 1))
     expect_true(all(low$juncs$coverage >= 1))
+})
+
+test_that("paired BAM coverage stays on the requested chromosome", {
+    .with_interchromosomal_bam(function(bam) {
+        cases <- data.frame(
+            chromosome = paste0(
+                "synthetic_", c("a", "b", "b", "b", "c", "b")
+            ),
+            window = c(
+                "90-700", "90-700", "250-700", "305-505", "90-700", "800-900"
+            ),
+            pairs = c(1L, 1L, 1L, 1L, 1L, 0L)
+        )
+        starts <- list(
+            c(100L, 200L), c(300L, 500L), c(300L, 500L),
+            c(305L, 500L), c(100L, 200L, 300L, 500L), integer()
+        )
+        ends <- list(
+            c(109L, 209L), c(309L, 509L), c(309L, 509L),
+            c(309L, 505L), c(109L, 209L, 309L, 509L), integer()
+        )
+
+        for (i in seq_len(nrow(cases))) {
+            region <- paste(cases$chromosome[i], cases$window[i], sep = ":")
+            ctx <- spliceTerrain(
+                bam = c(sample = bam), region = region,
+                min_junction_reads = 1, return_ctx = TRUE
+            )
+
+            expect_s4_class(ctx$gal[[1]], "GAlignmentsList")
+            expect_length(ctx$gal[[1]], cases$pairs[i])
+            expect_identical(
+                as.character(Seqinfo::seqnames(ctx$cov)),
+                rep(cases$chromosome[i], length(starts[[i]])), info = region
+            )
+            expect_identical(
+                IRanges::ranges(ctx$cov),
+                IRanges::IRanges(starts[[i]], ends[[i]]), info = region
+            )
+            expect_equal(ctx$cov$coverage_raw, rep(1L, length(starts[[i]])),
+                         info = region)
+            expect_equal(ctx$cov$coverage, rep(1L, length(starts[[i]])),
+                         info = region)
+            .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+        }
+    })
+})
+
+test_that("paired import retains singletons while applying BAM filters", {
+    .with_paired_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-550", min_mapq = 10,
+            min_junction_reads = 1, return_ctx = TRUE
+        )
+
+        expect_identical(BiocGenerics::end(ctx$juncs), c(199L, 299L))
+        expect_identical(ctx$juncs$coverage_raw, c(3L, 3L))
+        expect_identical(
+            IRanges::ranges(ctx$cov),
+            IRanges::IRanges(
+                c(100L, 200L, 300L, 310L, 500L),
+                c(109L, 209L, 309L, 319L, 519L)
+            )
+        )
+        expect_identical(ctx$cov$coverage_raw, c(6L, 3L, 4L, 1L, 1L))
+        expect_s4_class(ctx$gal[[1]], "GAlignmentsList")
+        expect_length(ctx$gal[[1]], 6)
+        .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+    })
+})
+
+test_that("paired import works when only mapped singletons are present", {
+    .with_paired_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-550:+", strandedness = "forward",
+            min_junction_reads = 1, return_ctx = TRUE
+        )
+
+        expect_identical(BiocGenerics::end(ctx$juncs), 199L)
+        expect_identical(ctx$juncs$coverage_raw, 2L)
+        expect_identical(ctx$cov$coverage_raw, c(2L, 2L))
+        expect_length(ctx$gal[[1]], 2)
+        .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+    }, keep = c("first_plus", "second_minus"))
+})
+
+test_that("complete paired import agrees with the pair-only reader", {
+    .with_paired_bam(function(bam) {
+        protocols <- c("unstranded", "forward", "reverse")
+        for (i in seq_along(protocols)) {
+            ctx <- spliceTerrain(
+                bam = bam, region = "synthetic:90-850",
+                strandedness = protocols[i], min_junction_reads = 1,
+                return_ctx = TRUE
+            )
+            pairs <- GenomicAlignments::readGAlignmentPairs(
+                bam, strandMode = i - 1L
+            )
+
+            expect_equal(
+                GenomicAlignments::coverage(ctx$gal[[1]]),
+                GenomicAlignments::coverage(pairs), info = protocols[i]
+            )
+            expect_equal(
+                GenomicAlignments::summarizeJunctions(ctx$gal[[1]]),
+                GenomicAlignments::summarizeJunctions(pairs),
+                info = protocols[i]
+            )
+            ## Imported reads are unchanged; summaries count each fragment once.
+            expect_identical(ctx$juncs$coverage_raw, c(1L, 1L, 1L))
+            expect_length(ctx$gal[[1]], 3)
+        }
+    }, keep = c("pair_plus", "pair_minus", "overlap"))
+})
+
+test_that("overlapping mates count once across library and region strands", {
+    .with_paired_bam(function(bam) {
+        for (protocol in c("unstranded", "forward", "reverse")) {
+            for (target in c("*", "+", "-")) {
+                keep <- protocol == "unstranded" || target == "*" ||
+                    (protocol == "forward" && target == "+") ||
+                    (protocol == "reverse" && target == "-")
+                ctx <- spliceTerrain(
+                    bam = bam, region = paste0("synthetic:650-850:", target),
+                    strandedness = protocol, min_junction_reads = 1,
+                    return_ctx = TRUE
+                )
+                info <- paste(protocol, target)
+                expect_identical(
+                    IRanges::ranges(ctx$cov),
+                    IRanges::IRanges(c(700L, 800L), c(709L, 809L))[keep],
+                    info = info
+                )
+                expect_equal(ctx$cov$coverage_raw, rep(1L, 2L * keep),
+                             info = info)
+                expect_identical(
+                    IRanges::ranges(ctx$juncs),
+                    IRanges::IRanges(710L, 799L)[keep], info = info
+                )
+                expect_equal(ctx$juncs$coverage_raw, rep(1L, as.integer(keep)),
+                             info = info)
+            }
+        }
+    }, keep = "overlap")
+})
+
+test_that("partial overlaps preserve gaps and independent fragments", {
+    reads <- GenomicAlignments::GAlignments(
+        seqnames = rep("synthetic", 3), pos = c(100L, 205L, 100L),
+        cigar = c("10M90N10M90N10M", "5M90N15M", "10M90N10M90N10M"),
+        strand = rep("+", 3)
+    )
+    aln <- GenomicAlignments::GAlignmentsList(
+        pair = reads[1:2], singleton = reads[3]
+    )
+    ctx <- list(
+        input = list(
+            gal = list(sample = aln), region = GenomicRanges::GRanges(
+                "synthetic:90-350"
+            ),
+            min_coverage = c(sample = 0), min_junction_reads = c(sample = 1),
+            lib_size = NULL, strandedness = c(sample = "unstranded"),
+            annotation = NULL
+        ),
+        plot = list()
+    )
+    ctx <- spliceTerrain:::.getJunctions(spliceTerrain:::.getCoverage(ctx))
+
+    expect_identical(
+        IRanges::ranges(ctx$input$cov),
+        IRanges::IRanges(c(100L, 200L, 300L, 310L), c(109L, 209L, 309L, 314L))
+    )
+    expect_identical(ctx$input$cov$coverage_raw, c(2L, 2L, 2L, 1L))
+    expect_identical(
+        IRanges::ranges(ctx$input$juncs),
+        IRanges::IRanges(c(110L, 210L), c(199L, 299L))
+    )
+    expect_identical(ctx$input$juncs$coverage_raw, c(2L, 2L))
+})
+
+test_that("fragment thresholds are applied before normalisation", {
+    .with_paired_bam(function(bam) {
+        retained <- spliceTerrain(
+            bam = bam, region = "synthetic:650-850",
+            min_coverage = 1, min_junction_reads = 1,
+            lib_size = 2, normalise_to = 1, return_ctx = TRUE
+        )
+        filtered <- spliceTerrain(
+            bam = bam, region = "synthetic:650-850",
+            min_coverage = 2, min_junction_reads = 2, return_ctx = TRUE
+        )
+
+        expect_identical(retained$cov$coverage_raw, c(1L, 1L))
+        expect_equal(retained$cov$coverage, c(0.5, 0.5))
+        expect_identical(retained$juncs$coverage_raw, 1L)
+        expect_equal(unname(retained$juncs$coverage), 0.5)
+        expect_length(filtered$cov, 0)
+        expect_length(filtered$juncs, 0)
+        .expect_patchwork_renders(spliceTerrain(ctx = retained))
+    }, keep = "overlap")
+})
+
+test_that("percentage thresholds use maximum fragment support", {
+    .with_paired_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = bam, region = "synthetic:90-850",
+            min_coverage = "75%", min_junction_reads = "75%", return_ctx = TRUE
+        )
+
+        expect_identical(ctx$cov$coverage_raw, rep(1L, 5))
+        expect_identical(ctx$juncs$coverage_raw, c(1L, 1L))
+        expect_identical(BiocGenerics::start(ctx$juncs), c(110L, 710L))
+    }, keep = c("pair_plus", "overlap"))
 })
 
 test_that("coverage runs are clipped to the plotting region", {
@@ -211,24 +452,24 @@ test_that("compress_introns controls whether plot-space map is created", {
     )
 })
 
-test_that("highlight and psi overlays are resolved and mapped", {
+test_that("highlight and junction usage intervals are resolved and mapped", {
     bams <- .hnrnpc_bams()
     ctx <- spliceTerrain(
         bam = bams[7],
         region = .hnrnpc_region(),
-        psi = .hnrnpc_psi(),
+        junction_usage = .hnrnpc_junction_usage(),
         highlight = "chr14:70234056-70234097",
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
     )
 
-    expect_s4_class(ctx$psi, "GRanges")
+    expect_s4_class(ctx$junction_usage, "GRanges")
     expect_s4_class(ctx$highlight, "GRanges")
     plotted <- .prepare_plot_context(ctx)
-    expect_s4_class(plotted$plot$psi, "GRanges")
+    expect_s4_class(plotted$plot$junction_usage, "GRanges")
     expect_s4_class(plotted$plot$highlight, "GRanges")
-    expect_length(plotted$plot$psi, 1)
+    expect_length(plotted$plot$junction_usage, 1)
     expect_length(plotted$plot$highlight, 1)
 })
 
@@ -237,15 +478,15 @@ test_that("overlay character regions are normalised before coercion", {
     ctx <- spliceTerrain(
         bam = bams[7],
         region = .hnrnpc_region(),
-        psi = "chr14:70,234,854 - 70,234,854",
+        junction_usage = "chr14:70,234,854 - 70,234,854",
         highlight = "chr14:70234056\u201370234097",
         min_coverage = 1,
         min_junction_reads = 1,
         return_ctx = TRUE
     )
 
-    expect_identical(BiocGenerics::start(ctx$psi), 70234854L)
-    expect_identical(BiocGenerics::end(ctx$psi), 70234854L)
+    expect_identical(BiocGenerics::start(ctx$junction_usage), 70234854L)
+    expect_identical(BiocGenerics::end(ctx$junction_usage), 70234854L)
     expect_identical(BiocGenerics::start(ctx$highlight), 70234056L)
     expect_identical(BiocGenerics::end(ctx$highlight), 70234097L)
 })
@@ -304,6 +545,70 @@ test_that("arc_side controls junction arc placement", {
     expect_true(any(!both$above))
     expect_true(all(above$above))
     expect_false(any(below$above))
+})
+
+test_that("junction cluster maxima and stack levels retain input indexing", {
+    cov <- GenomicRanges::GRanges(
+        c("synthetic:100-109", "synthetic:110-119", "synthetic:190-199",
+          "synthetic:200-209", "synthetic:300-309", "synthetic:400-409"),
+        coverage = c(10, 20, 20, 10, 100, 100)
+    )
+    juncs <- GenomicRanges::GRanges(
+        c("synthetic:110-199", "synthetic:310-399", "synthetic:120-189"),
+        coverage = c(10, 100, 20)
+    )
+    anchors <- spliceTerrain:::.junctionAnchorCoverage(juncs, cov)
+    layout <- spliceTerrain:::.junctionArcLayout(juncs, cov, 1, NULL, "above")
+
+    expect_equal(anchors$cluster_max, c(20, 100, 20))
+    expect_equal(layout$heights, c(50, 130, 65))
+    expect_true(all(layout$heights > pmax(anchors$left, anchors$right)))
+})
+
+test_that("reordered contexts preserve arc geometry and attached metadata", {
+    .with_junction_usage_bam(function(bam) {
+        annotation <- GenomicRanges::GRangesList(
+            tx_a = GenomicRanges::GRanges(
+                c("synthetic:100-109", "synthetic:200-209")
+            ),
+            tx_c = GenomicRanges::GRanges(
+                c("synthetic:300-309", "synthetic:400-409")
+            )
+        )
+        ctx <- spliceTerrain(
+            bam = c(sample = bam), region = "synthetic:80-430",
+            annotation = annotation, annotated_junctions = TRUE,
+            junction_usage = "synthetic:110-399", min_junction_reads = 1,
+            arc_scale = TRUE, return_ctx = TRUE
+        )
+        for (compressed in c(FALSE, TRUE)) {
+            for (side in c("above", "below", "both")) {
+                ctx$compress_introns <- compressed
+                ctx$arc_side <- side
+                reference <- spliceTerrain(ctx = ctx)
+                expected <- lapply(reference[[1]]$layers, function(x) x$data)
+                for (ordering in list(c(3, 2, 1), c(1, 3, 2))) {
+                    shuffled <- ctx
+                    shuffled$juncs <- ctx$juncs[ordering]
+                    p <- spliceTerrain(ctx = shuffled)
+                    actual <- lapply(p[[1]]$layers, function(x) x$data)
+                    info <- paste(compressed, side, toString(ordering))
+                    expect_identical(actual, expected, info = info)
+                    .expect_patchwork_renders(p)
+                }
+            }
+        }
+        expect_identical(.junction_labels(p),
+                         c("10\n(7.7%)", "20\n(15.4%)", "100\n(76.9%)"))
+        arc_layer <- Filter(function(layer) {
+            inherits(layer$geom, "GeomLine")
+        }, p[[1]]$layers)[[1]]
+        arcs <- arc_layer$data[!duplicated(arc_layer$data$id), ]
+        expect_equal(arcs$size_on, c(10, 20, 100))
+        expect_identical(arcs$linetype_on, c("solid", "dashed", "solid"))
+    }, counts = c(10L, 20L, 100L),
+    cigar = c("10M90N10M", "10M70N10M", "10M90N10M"),
+    pos = c(100L, 110L, 300L))
 })
 
 test_that("annotation matches control junction arc linetype", {

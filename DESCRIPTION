@@ -11,7 +11,7 @@ Authors@R: c(
     )
   )
 Description: Provides tools to visualise RNA sequencing alignments as
-    sashimi-style plots showing read coverage and splice junction usage
+    sashimi-style plots showing fragment coverage and splice junction usage
     across genomic regions. Alignments from BAM files are summarised into
     coverage tracks and junction arcs, which can be displayed alongside
     transcript annotations. The package provides utilities for mapping

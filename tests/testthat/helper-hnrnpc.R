@@ -7,7 +7,7 @@
     "chr14:70222436-70237375"
 }
 
-.hnrnpc_psi <- function() {
+.hnrnpc_junction_usage <- function() {
     "chr14:70234854-70234854"
 }
 
