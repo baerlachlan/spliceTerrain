@@ -5,7 +5,8 @@
 [![BiocCheck](https://github.com/baerlachlan/spliceTerrain/actions/workflows/bioc-check.yaml/badge.svg?branch=gh-actions)](https://github.com/baerlachlan/spliceTerrain/actions/workflows/bioc-check.yaml)
 
 `spliceTerrain` is an R package for visualising RNA-seq splice patterns as sashimi plots.
-It combines coverage, splice junction arcs, and optional annotation tracks to show how transcripts are assembled across a genomic region.
+It combines fragment-level coverage, splice junction support, and optional
+transcript annotation to inspect local splicing patterns across a genomic region.
 `spliceTerrain` was designed to integrate seamlessly within the Bioconductor ecosystem, keeping the workflow entirely within R to support reproducible, customisable splicing visualisation for exploratory analysis, reporting, and publication-quality figures.
 
 ## Installation
@@ -35,4 +36,4 @@ region <- "chr14:70,233,810-70,238,690"
 spliceTerrain(bam = bams, region = region)
 ```
 
-![Basic sashimi plot of the SRSF5 gene region from BAM files in the RNAseqData.HNRNPC.bam.chr14 package](man/figures/quickstart.png)
+![Fragment-level sashimi plot of the SRSF5 gene region from BAM files in the RNAseqData.HNRNPC.bam.chr14 package](man/figures/quickstart.png)
