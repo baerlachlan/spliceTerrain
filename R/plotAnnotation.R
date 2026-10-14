@@ -18,7 +18,9 @@
         p, df, ctx$input$anno_label_by, ctx$input$anno_label_colour,
         ctx$input$anno_label_size
     )
-    p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
+    p <- .plotHighlight(
+        p, ctx$plot$highlight, ctx$input$highlight_colour, ctx$plot$region
+    )
     p <- p + ggplot2::coord_cartesian(
         xlim = c(
             BiocGenerics::start(ctx$plot$region),

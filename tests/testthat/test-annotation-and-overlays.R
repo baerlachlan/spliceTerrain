@@ -535,6 +535,87 @@ test_that("highlight intervals are plotted with sample and annotation panels", {
     ))
 })
 
+test_that("highlight drawing is clipped consistently across panels", {
+    .with_junction_usage_bam(function(bam) {
+        highlight <- GenomicRanges::GRanges(
+            c("synthetic:50-150", "synthetic:200-300", "synthetic:1-300",
+              "synthetic:150-150", "synthetic:50-95", "synthetic:220-300"),
+            highlight_id = c("left", "right", "full", "point", "start", "end")
+        )
+        expected <- GenomicRanges::GRanges(
+            c("synthetic:95-150", "synthetic:200-220", "synthetic:95-220",
+              "synthetic:150-150", "synthetic:95-95", "synthetic:220-220"),
+            highlight_id = highlight$highlight_id
+        )
+        ctx <- spliceTerrain(
+            bam = c(first = bam, second = bam), region = "synthetic:95-220",
+            annotation = GenomicRanges::GRangesList(tx = GenomicRanges::GRanges(
+                c("synthetic:100-109", "synthetic:200-209")
+            )), highlight = highlight, min_junction_reads = 1, return_ctx = TRUE
+        )
+        original <- ctx$highlight
+        for (compressed in c(FALSE, TRUE)) {
+            ctx$compress_introns <- compressed
+            prepared <- .prepare_plot_context(ctx)
+            expected_plot <- expected
+            if (compressed) expected_plot <- spliceTerrain:::.mapGenomeToPlot(
+                expected, prepared$plot$map
+            )[[1]]
+            plotted <- spliceTerrain:::.plotAnnotation(
+                spliceTerrain:::.plotSamples(prepared)
+            )
+            for (p in plotted$plot$plist) {
+                layer <- Filter(function(layer) {
+                    "highlight_id" %in% names(layer$data)
+                }, p$layers)[[1]]
+                index <- match(expected$highlight_id, layer$data$highlight_id)
+                expect_identical(layer$data$start[index],
+                                 BiocGenerics::start(expected_plot))
+                expect_identical(layer$data$end[index],
+                                 BiocGenerics::end(expected_plot))
+            }
+            expect_identical(plotted$plot$plist[[1]]$coordinates$clip, "off")
+            .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+        }
+        expect_identical(ctx$highlight, original)
+    })
+})
+
+test_that("edited contexts omit wholly off-window highlights", {
+    .with_junction_usage_bam(function(bam) {
+        ctx <- spliceTerrain(
+            bam = c(sample = bam), region = "synthetic:95-220",
+            annotation = GenomicRanges::GRangesList(tx = GenomicRanges::GRanges(
+                c("synthetic:100-109", "synthetic:200-209")
+            )), min_junction_reads = 1, return_ctx = TRUE
+        )
+        ctx$highlight <- GenomicRanges::GRanges(
+            c("synthetic:1-20", "synthetic:50-94",
+              "synthetic:221-300", "synthetic:500-600"),
+            highlight_id = c("far_left", "adjacent_left", "adjacent_right",
+                             "far_right")
+        )
+        original <- ctx$highlight
+        ctx$intron_width <- 0
+        for (compressed in c(FALSE, TRUE)) {
+            ctx$compress_introns <- compressed
+            prepared <- .prepare_plot_context(ctx)
+            plotted <- spliceTerrain:::.plotAnnotation(
+                spliceTerrain:::.plotSamples(prepared)
+            )
+            for (p in plotted$plot$plist) {
+                rows <- vapply(p$layers, function(layer) {
+                    if ("highlight_id" %in% names(layer$data))
+                        nrow(layer$data) else 0L
+                }, integer(1))
+                expect_equal(sum(rows), 0)
+            }
+            .expect_patchwork_renders(spliceTerrain(ctx = ctx))
+        }
+        expect_identical(ctx$highlight, original)
+    })
+})
+
 test_that("annotation and overlays render without intron compression", {
     bams <- .hnrnpc_bams()
     p <- spliceTerrain(

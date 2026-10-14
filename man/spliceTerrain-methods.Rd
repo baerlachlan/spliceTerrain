@@ -87,7 +87,9 @@ counts and percentages when \code{junction_usage} is supplied. Defaults to
 
 \item{highlight}{Optional interval(s) to highlight. Accepts the same formats
 as \code{region}. Multiple ranges may be supplied. Highlighted intervals are
-drawn as shaded vertical bands spanning the full panel height.}
+drawn as shaded vertical bands spanning the full panel height.
+Only the portion overlapping the plotting window is drawn. Returned contexts
+keep the full retained genomic intervals in \code{highlight}.}
 
 \item{strandedness}{Library strandedness for each BAM. Must be one of
 \code{"unstranded"}, \code{"forward"}, or \code{"reverse"}, and may be

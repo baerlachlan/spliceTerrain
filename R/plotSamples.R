@@ -19,7 +19,9 @@
             ctx$input$junc_text_size, ctx$input$arc_scale, max_cov,
             ctx$input$junction_usage_label_sep, annotated_junctions
         )
-        p <- .plotHighlight(p, ctx$plot$highlight, ctx$input$highlight_colour)
+        p <- .plotHighlight(
+            p, ctx$plot$highlight, ctx$input$highlight_colour, ctx$plot$region
+        )
         p <- p + ggplot2::scale_y_continuous(
             breaks = \(x) { # Don't show y < 0
                 b <- scales::breaks_extended()(x)
