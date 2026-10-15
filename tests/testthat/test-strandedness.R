@@ -23,8 +23,8 @@
     bam <- paste0(destination, ".bam")
     on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
 
-    ## Synthetic reads: two forward reads share one junction; one reverse
-    ## read shares their first block but uses a different second block.
+    ## Two synthetic forward reads share one junction
+    ## A reverse read shares their first block but uses a different second block
     records <- data.frame(
         qname = c("forward1", "forward2", "reverse1"),
         flag = c(0L, 0L, 16L),
@@ -49,7 +49,8 @@ test_that("single-end reverse-stranded alignments invert read strand", {
     )
 })
 
-test_that("reinterpreted reverse single-end alignments filter by transcript strand", {
+test_that(
+    "reinterpreted reverse single-end alignments filter by transcript strand", {
     aln <- GenomicAlignments::GAlignments(
         seqnames = S4Vectors::Rle(c("chr1", "chr1")),
         pos = c(1L, 10L),

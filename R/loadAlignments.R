@@ -7,7 +7,8 @@
             isPaired = if (paired) TRUE else NA, isUnmappedQuery = FALSE,
             isSecondaryAlignment = FALSE, isSupplementaryAlignment = FALSE
         )
-        ## `which` ignores strand; filter interpreted alignments below.
+        ## `which` ignores strand
+        ## Filter interpreted alignments below
         param <- Rsamtools::ScanBamParam(
             flag = flag, which = ctx$input$region,
             mapqFilter = ctx$input$min_mapq

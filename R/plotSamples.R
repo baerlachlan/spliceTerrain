@@ -23,11 +23,12 @@
             p, ctx$plot$highlight, ctx$input$highlight_colour, ctx$plot$region
         )
         p <- p + ggplot2::scale_y_continuous(
-            breaks = \(x) { # Don't show y < 0
+            ## Omit negative y-axis ticks while retaining lower junction arcs
+            breaks = \(x) {
                 b <- scales::breaks_extended()(x)
                 b[b >= 0]
             },
-            expand = c(0.1, 0.1) # Gives labels more room
+            expand = c(0.1, 0.1) ## Give labels more room
         )
         p + ggplot2::labs(x = "", y = i)
     })

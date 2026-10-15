@@ -113,8 +113,8 @@ BAMs or as one value per BAM. Per-BAM character vectors may combine
 whole-number counts and percentage strings.}
 
 \item{min_junction_reads}{Integer or percentage string. Minimum number of
-fragments supporting a junction for it to be retained for plotting. Despite
-the argument name, two mates supporting the same junction count only once.
+fragments supporting a junction for it to be retained for plotting. Both
+mates supporting the same junction contribute one count.
 Percentage strings such as \code{"10\%"} are relative to the most-supported
 junction within the plotting region for each BAM. May be supplied either as
 a single value applied to all BAMs or as one value per BAM. Per-BAM character
@@ -127,7 +127,7 @@ each mapped read is one fragment. When supplied, coverage and junction counts
 are normalised by effective library size before plotting.}
 
 \item{norm_factors}{Optional numeric vector of normalisation factors, one per
-BAM file, such as edgeR TMM normalisation factors. Requires
+BAM file, such as \pkg{edgeR} TMM normalisation factors. Requires
 \code{lib_size}. Effective library sizes are calculated as
 \code{lib_size * norm_factors}.}
 
@@ -229,7 +229,7 @@ seqname, start, and end coordinates and ignores strand. Requires
 If \code{return_ctx = FALSE}, a \pkg{patchwork} object containing one sample
 panel per BAM file plus an optional annotation panel.
 
-If \code{return_ctx = TRUE}, a flat list containing validated settings and
+If \code{return_ctx = TRUE}, a named list containing validated settings and
 processed alignment, coverage, junction, annotation, and overlay data. All
 coordinate-bearing fields use genomic coordinates; plot-space data are
 generated internally when the context is plotted.
@@ -347,12 +347,12 @@ Highlighted intervals are overlaid across both sample and annotation panels
 when present.
 
 For advanced workflows, \code{return_ctx = TRUE} can be used to inspect or
-modify processed genomic data before plotting. The returned context is flat:
-fields such as \code{cov}, \code{juncs}, \code{juncs_all}, \code{annotation},
+modify processed genomic data before plotting. The returned context is a
+named list containing genomic summaries and plotting settings. Fields such as
+\code{cov}, \code{juncs}, \code{juncs_all}, \code{annotation},
 \code{junction_usage}, and \code{highlight} all use genomic coordinates.
-Passing the modified context
-back through \code{ctx} regenerates all internal plot-space data and rebuilds
-the plot without reading the BAM files again.
+Passing the modified context through \code{ctx} rebuilds the coordinate map
+and redraws the plot without reading the BAM files again.
 
 Coverage and junctions in a returned context have already been summarised,
 filtered, and normalised. Changing processing settings such as

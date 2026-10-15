@@ -18,7 +18,8 @@
     on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
 
     ## Synthetic complete pairs, overlapping mates, and singletons from
-    ## either read/strand. Final records exercise MAPQ and flag filtering.
+    ## either read/strand
+    ## Final records exercise MAPQ and flag filtering
     records <- data.frame(
         qname = c(rep(c("pair_plus", "pair_minus", "overlap"), each = 2),
                   "first_plus", "second_minus", "first_minus", "second_plus",
@@ -55,7 +56,7 @@
     bam <- paste0(destination, ".bam")
     on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
 
-    ## Synthetic single-end fragments with known alternative-junction support.
+    ## Synthetic single-end fragments with known alternative-junction support
     cigar <- rep(cigar, counts)
     widths <- rep(read_width, counts)
     records <- data.frame(

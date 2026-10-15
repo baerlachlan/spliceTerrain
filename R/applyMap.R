@@ -36,7 +36,7 @@
     g_start <- S4Vectors::start(blocks)
     g_end <- S4Vectors::end(blocks)
     g_width <- S4Vectors::width(blocks)
-    ## Plot widths don't get squished
+    ## Preserve retained block widths in plot coordinates
     p_width <- as.numeric(g_width)
     ## Cumulative plot starts (block1 starts at 1)
     p_start <- c(1, cumsum(p_width[-length(p_width)] + gap) + 1)
@@ -51,7 +51,7 @@
 
 #' @keywords internal
 .mapGenomeToPlot <- function(gr, map) {
-    ## Always returns a list as gr may be NULL (see comment in .applyMap())
+    ## Return a list so NULL values do not remove fields during assignment
     if (is.null(gr)) return(list(gr))
     anchors <- .rangesToAnchors(gr)
     hits <- IRanges::findOverlaps(anchors, map)

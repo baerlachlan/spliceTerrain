@@ -1,4 +1,4 @@
-# spliceTerrain
+# spliceTerrain <img src="man/figures/logo.png" align="right" width="181" alt="spliceTerrain hex sticker" />
 
 [![Codecov test coverage](https://codecov.io/gh/baerlachlan/spliceTerrain/branch/gh-actions/graph/badge.svg)](https://app.codecov.io/gh/baerlachlan/spliceTerrain/tree/gh-actions)
 [![R CMD check](https://github.com/baerlachlan/spliceTerrain/actions/workflows/R-CMD-check.yaml/badge.svg?branch=gh-actions)](https://github.com/baerlachlan/spliceTerrain/actions/workflows/R-CMD-check.yaml)

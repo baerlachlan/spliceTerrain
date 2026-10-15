@@ -4,8 +4,8 @@
     bam <- paste0(destination, ".bam")
     on.exit(unlink(c(sam, bam, paste0(bam, ".bai"))))
 
-    ## One synthetic pair crosses chromosomes; the control pair stays on c.
-    ## Different mate positions expose chromosome concatenation/relabeling.
+    ## One synthetic pair crosses chromosomes while the control pair stays on c
+    ## Different mate positions expose chromosome concatenation/relabeling
     records <- data.frame(
         qname = c("cross", "cross", "same", "same"),
         flag = c(97L, 145L, 99L, 147L),
@@ -155,7 +155,8 @@ test_that("complete paired import agrees with the pair-only reader", {
                 GenomicAlignments::summarizeJunctions(pairs),
                 info = protocols[i]
             )
-            ## Imported reads are unchanged; summaries count each fragment once.
+            ## Imported reads are unchanged
+            ## Summaries count each fragment once
             expect_identical(ctx$juncs$coverage_raw, c(1L, 1L, 1L))
             expect_length(ctx$gal[[1]], 3)
         }

@@ -13,7 +13,7 @@
                 sample = x, coverage_raw = 0, coverage = 0
             ))
         }
-        ## revmap contains distinct supporting alignment-group indices.
+        ## revmap contains distinct supporting alignment-group indices
         cov <- lengths(out$revmap)
         S4Vectors::mcols(out) <- S4Vectors::DataFrame(
             sample = x,

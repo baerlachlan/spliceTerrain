@@ -1,5 +1,5 @@
 ---
-title: "Creating Sashimi-Style Plots with spliceTerrain"
+title: "Creating Sashimi-Style Plots with `spliceTerrain`"
 author:
 - name: Lachlan Baer
   affiliation:
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
     collapse = TRUE, comment = "#>", message = FALSE, crop = NULL
 )
 if (!interactive())
-    # Wide chunk output will horizontal scroll instead of wrap
+    ## Allow wide chunk output to scroll horizontally instead of wrapping
     options(width = 999)
 ```
 
@@ -46,8 +46,6 @@ pkgs <- c(
 BiocManager::install(pkgs, update = FALSE)
 ```
 
-Now we can load the packages used below.
-
 ```{r pkgs}
 library(spliceTerrain)
 library(RNAseqData.HNRNPC.bam.chr14)
@@ -64,7 +62,8 @@ library(GenomeInfoDb)
 
 At a minimum, `spliceTerrain()` needs BAM file paths and a genomic interval.
 Here we use BAM files from `RNAseqData.HNRNPC.bam.chr14`, selecting one HNRNPC
-knockdown sample and one control sample.
+knockdown sample and one control sample from the study by Zarnack et al.
+[@Zarnack2013] (ArrayExpress accession E-MTAB-1147).
 The region can be supplied as a single character string.
 
 ```{r quickstart, fig.wide=TRUE, fig.height=6}
@@ -77,8 +76,10 @@ spliceTerrain(bam = bams, region = region)
 # Introduction
 
 Sashimi plots visualise RNA-seq alignments across a genomic interval.
-They combine coverage tracks with arcs representing splice junction support.
-`spliceTerrain` reports both coverage and junction support in fragment units.
+They combine coverage tracks with arcs representing splice junction support
+[@Katz2015].
+`spliceTerrain` reports both coverage and junction support in fragment-level
+units.
 This makes them useful for inspecting transcript structure, exon usage,
 alternative splice sites, intron retention, and differences in junction usage
 between samples.
@@ -87,96 +88,87 @@ between samples.
 
 `spliceTerrain` was designed to fit into R/Bioconductor workflows.
 Candidate regions, exon models, and features of interest are often already
-represented as `GRanges` or `GRangesList` objects.
+represented as `GRanges` or `GRangesList` objects from `GenomicRanges`
+[@Lawrence2013].
 `spliceTerrain` allows reuse of these objects for regions, transcript
 annotation, and highlights alongside indexed BAM files, within the same R
 session.
-For example, exon models retrieved from an `EnsDb` can become annotation rows
-without first exporting them to an annotation file.
+For example, exon models retrieved from an `EnsDb` object can become annotation
+rows without first exporting them to an annotation file.
 
 `spliceTerrain` brings these inputs together in a focused, sample-resolved
 sashimi workflow.
 It returns a `patchwork` plot or an inspectable genomic context.
 Its genomic summaries and plotting settings can be edited and replotted.
 
+`spliceTerrain` displays one panel per BAM for visual inspection of local
+splicing patterns. It does not perform differential-splicing testing, estimate
+event-level PSI, or infer transcript isoforms.
+
 ## Related tools
 
-[Gviz][gviz-package] [@Hahne2016], [ggbio][ggbio-package] [@Yin2012], and
-[ggsashimi][ggsashimi-package] [@GarridoMartin2018]
-provide established approaches to related visualization tasks.
+Several established tools support related visualisation tasks:
 
-| Tool | Documented focus | Interface |
-|:---|:---|:---|
-| Gviz | Genomic tracks, coverage and sashimi | R/grid track objects |
-| ggbio | Genomic graphics and splice summaries | R/ggplot2-based graphics |
-| ggsashimi | Sashimi, overlays and sample aggregation | Python/R command line |
+- **[`Gviz`][gviz-package]** provides genomic tracks, including BAM-backed
+    coverage and sashimi plots [@Hahne2016].
+- **[`ggbio`][ggbio-package]** provides genomic visualisation based on
+    `ggplot2`, with support for Bioconductor objects and transcript-based
+    splice summaries
+    [@Yin2012].
+- **[`SpliceWiz`][splicewiz-package]** provides coverage and sashimi plots
+    within an alternative-splicing analysis workflow. Its event-normalised
+    coverage plots offer an alternative view of splicing differences,
+    summarising replicates by condition rather than relying on individual-sample
+    sashimi plots [@Wong2024].
+- **[`ggsashimi`][ggsashimi-package]** provides a command-line sashimi plotting
+    workflow with sample overlays and aggregation [@GarridoMartin2018].
 
-Gviz supports BAM-backed alignment tracks, annotation tracks, junction filters,
-and user-supplied junction summaries.
-ggbio supports Bioconductor objects, editable graphics, track composition, and
-gap truncation.
-Its `plotSpliceSum()` function summarises support against transcript models,
-with optional weighting of reads matching multiple models.
-ggsashimi supports optional annotation, junction-derived shrinking, sample
-overlays, and mean/median aggregation, and can export junction BED files or
-generate an R script for subsequent use.
-R integration, editable graphics, and gap compression are therefore shared
-capabilities; spliceTerrain's emphasis is their combination with the following
-specific choices:
+`spliceTerrain` focuses on sample-resolved sashimi plots within R/Bioconductor
+workflows. It is particularly useful when regions and annotations are already
+represented as genomic objects and plots need iterative refinement. It combines:
 
-- **An inspectable genomic context.** `return_ctx = TRUE` exposes genomic
-    `GRanges` summaries and settings, and `ctx` rebuilds the figure from them.
-    This supports iterative filtering and annotation changes with range
-    operations, followed by remapping and plotting without another BAM import.
-    Gviz also caches regional data and ggbio provides reusable plot objects;
-    spliceTerrain exposes its processed genomic summaries as a flat context.
-- **A shared, feature-preserving map.** Compression uses retained coverage from
-    all samples, supplied annotation, and junction/selection anchors to define
-    blocks whose widths are preserved; gaps receive a chosen plot-space width.
-    A retained covered segment inside an annotated intron can remain visible
-    at its original width, even without an annotated exon there.
-    This differs from ggsashimi's junction-derived, length-dependent shrinking.
-    The coverage thresholds determine which signal contributes to the map.
-- **Explicit counting and usage semantics.** Coverage and junction support use
-    fragments, including mapped singletons; overlapping mates count once per
-    covered base and once per distinct junction.
-    In the reviewed default Gviz alignment-track and ggsashimi counting paths,
-    both mates can contribute read-level support.
-    Local junction usage uses an unfiltered reference, so hiding an arc does
-    not change another arc's percentage.
-- **Annotation as an overlay on observed signal.** Transcript models are
-    supplied as a `GRangesList`; metadata controls feature colours and labels.
-    `annotated_junctions` distinguishes matching and unmatched junctions
-    relative to those models, while retaining the underlying fragment counts.
-    This is complementary to ggbio's model-based `plotSpliceSum()` workflow.
-    Arc placement, height, width scaling, and panel proportions are explicit
-    plotting controls.
-- **Sample-specific controls in one call.** Library sizes and normalisation
-    factors, per-BAM strand modes and thresholds, and a common y-axis option
-    support comparisons while the samples share one coordinate map.
+- **Editable genomic summaries:** inspect or modify coverage, junctions, and
+    settings in a returned context, then replot without importing the BAM files
+    again.
+- **Coverage-aware compression:** preserve selected blocks defined by coverage,
+    annotation, and junction anchors while shortening gaps. Coverage retained
+    after filtering can preserve regions within annotated introns at their
+    original width.
+- **Fragment-level support:** count overlapping mates once per covered base and
+    once per distinct junction, while retaining mapped singletons.
+- **Stable local junction fractions:** calculate usage against the pre-display
+    junction reference, so hiding arcs does not change the remaining
+    percentages.
+- **Integrated sample normalisation:** apply supplied library sizes and optional
+    normalisation factors consistently to coverage and junction support, while
+    retaining raw fragment counts for filtering.
 
-The examples below demonstrate this combination with
-[transcript annotation](#adding-transcript-annotation),
-[compressed layouts](#compressed-genomic-layouts),
-[local junction usage](#local-junction-usage-labels), and
-[context reuse](#returning-and-reusing-plot-data).
-The intended task is visual inspection of candidate splicing differences at a
-locus across selected samples.
-Gviz and ggbio offer broader genomic visualization frameworks, while ggsashimi
-provides a file-driven command-line workflow and sample aggregation.
-spliceTerrain uses one panel per BAM and does not perform differential-splicing
-tests, event-level PSI estimation, or transcript-isoform inference.
+These choices offer specific contrasts with existing workflows. When compression
+is enabled, `ggsashimi` uses junction-derived, length-dependent shrinking,
+whereas `spliceTerrain` also uses retained coverage and annotation to define
+preserved blocks. By default, `Gviz` and `ggsashimi` count support at the read
+level, so both mates can contribute to coverage and junction counts.
+In contrast, `spliceTerrain` uses fragment-level counts.
+`spliceTerrain` displays transcript annotation alongside observed junction
+support without assigning that support
+to transcript models.
+This complements the transcript-model-based summaries provided by `ggbio`'s
+`plotSpliceSum()`.
 
-This comparison was checked on 13 October 2026 against the documented workflows
-and source of Gviz 1.57.4 and ggbio 1.61.0 (Bioconductor 3.24 devel), and
-ggsashimi 1.1.5.
-The reviewed source snapshots are available for [Gviz][gviz-source],
-[ggbio][ggbio-source], and [ggsashimi][ggsashimi-source].
-The comparison concerns those workflows and defaults, rather than what could
-be achieved by supplying custom importers, summaries, or plotting code.
+`spliceTerrain` exposes sample normalisation through dedicated arguments. `Gviz`
+supports custom transformations that can implement similar scaling, whereas the
+`ggsashimi` command-line interface has no equivalent library-size normalisation
+option.
+
+Versions compared: [`Gviz` 1.57.4][gviz-source],
+[`ggbio` 1.61.0][ggbio-source], [`SpliceWiz` 1.15.0][splicewiz-source], and
+[`ggsashimi` 1.1.5][ggsashimi-source].
 
 [gviz-package]: https://bioconductor.org/packages/Gviz/
 [ggbio-package]: https://bioconductor.org/packages/ggbio/
+[splicewiz-package]: https://bioconductor.org/packages/SpliceWiz/
+[splicewiz-source]:
+    https://github.com/bioconductor-source/SpliceWiz/tree/37fa02b5b70d
 [ggsashimi-package]: https://github.com/guigolab/ggsashimi
 [gviz-source]: https://github.com/ivanek/Gviz/tree/482799c06b17
 [ggbio-source]: https://github.com/bioconductor-source/ggbio/tree/5d6ed36bdeb6
@@ -367,9 +359,7 @@ An alternative junction remains in the denominator when its arc is hidden.
 For example, supports of 90 and 9 give 90.9% and 9.1%; hiding the second arc
 with a threshold of 10 leaves the first label at 90.9%, not 100%.
 Visible percentages therefore need not sum to 100%.
-Library-size normalisation and intron compression do not change the fractions.
-Labels are rounded to one decimal place, and no percentage is shown when the
-selected support is zero.
+Library-size normalisation does not change the fractions.
 The reference is conditional on the imported data: changing the query region,
 MAPQ threshold, or strand selection can change the available evidence.
 
@@ -406,9 +396,10 @@ percent spliced in (PSI) or transcript-isoform proportions.
 Three arguments control how much signal is imported and displayed.
 `min_mapq` filters alignments by mapping quality during BAM import.
 `min_coverage` filters positions by per-base fragment coverage before plotting.
-Despite its name, `min_junction_reads` filters splice junction arcs by their
-supporting fragment count.
-Both mates supporting the same junction contribute one count.
+`min_junction_reads` sets the minimum fragment support required to display a
+junction arc. Both mates supporting the same junction contribute one count.
+Both thresholds are applied to raw fragment counts before library-size
+normalisation.
 The latter two arguments also accept percentage strings such as `"10%"`.
 Percentage thresholds are calculated separately for each BAM relative to its
 maximum raw coverage or junction count within the plotting region.
@@ -424,9 +415,6 @@ spliceTerrain(
     min_junction_reads = "10%"
 )
 ```
-
-Technical note: `min_coverage` and `min_junction_reads` are applied to raw
-counts before any library-size normalisation is applied.
 
 ## Stranded RNA-seq data
 
@@ -480,11 +468,7 @@ Coverage uses the union of each fragment's aligned blocks.
 Overlapping mates contribute at most one count per covered position.
 Introns and unsequenced gaps between mates remain uncovered.
 Each fragment supports a distinct junction at most once, even if both mates
-cross it; the same fragment can support multiple different junctions.
-Independent fragments with identical coordinates still count separately.
-This is not PCR/UMI deduplication.
-Keeping mapped singletons avoids discarding their signal when mate-mapping
-success differs between samples.
+cross it.
 
 ## Normalising between samples
 
@@ -492,8 +476,9 @@ When samples have different sequencing depths, coverage and junction counts can
 be normalised with `lib_size`.
 Supply full-library sizes in fragment units before restriction to the plotting
 region: one per pair or mapped singleton, or one per read for single-end data.
-Additional normalisation factors, such as `edgeR` TMM factors, can be supplied
-with `norm_factors`.
+Additional normalisation factors, such as trimmed mean of M-values (TMM)
+factors [@Robinson2010] estimated with `edgeR`, can be supplied with
+`norm_factors`.
 The effective library size is calculated as `lib_size * norm_factors`.
 
 By default, counts are normalised to the median effective library size.
@@ -609,6 +594,13 @@ undefined percentage.
 All coordinate-bearing fields use genomic coordinates; compressed plot
 coordinates are generated internally only when the context is plotted.
 
+The context also supports programmatic inspection, including AI-assisted
+workflows. Scripts or AI agents working within an R session can inspect coverage
+and junction summaries, check the values underlying plotted labels, and modify
+annotations or plotting settings before redrawing the figure. This provides
+access to the data behind the visualisation without requiring those values to be
+inferred from the plot image.
+
 ```{r return_ctx}
 ctx <- spliceTerrain(
     bam = bams,
@@ -647,12 +639,7 @@ usage denominator.
 Changing `ctx$junction_usage` to another `GRanges` selection recalculates the
 fractions from `ctx$juncs_all` when plotting.
 If you intend to change the reference evidence itself, edit `ctx$juncs_all`,
-retaining one row per sample/junction and non-negative `coverage_raw` counts.
-The new argument names are `junction_usage` and `junction_usage_label_sep`.
-They replace the development names `psi` and `psi_label_sep`.
-Recreate older cached contexts with the current API.
-
-# References
+retaining one row per sample/junction.
 
 # Session information
 
@@ -660,3 +647,5 @@ Recreate older cached contexts with the current API.
 sessionInfo() |>
     pander()
 ```
+
+# References

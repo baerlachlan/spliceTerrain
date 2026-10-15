@@ -40,7 +40,7 @@
 .junctionArcLayout <- function(
         junc, cov, arc_height, max_cov, arc_side = "both"
 ) {
-    ## Arc stacking
+    ## Assign overlapping junctions to separate vertical levels
     levels <- IRanges::disjointBins(junc)
     sign <- .junctionArcSigns(length(junc), arc_side)
     ## Junction midpoints and half-widths
@@ -58,7 +58,7 @@
     }
     y_step <- 0.15 * arc_height * max_cov
     heights <- (y_step + levels * y_step) * sign
-    ## “above” arcs start at anchor coverage and peak at coverage + height
+    ## Raise upper arcs above the maximum anchor coverage in their cluster
     above <- sign == 1
     heights[above] <- heights[above] + anchor_cov$cluster_max[above]
     ## Amount the arc must rise above left/right anchors
@@ -88,6 +88,7 @@
     cov_lr <- pmax(cov_l, cov_r)
     overlap <- GenomicRanges::reduce(junc, with.revmap = TRUE)
     revmap <- S4Vectors::mcols(overlap)$revmap
+    ## Map each reduced overlap cluster back to the original junction order
     cluster_id <- integer(length(junc))
     cluster_id[unlist(revmap, use.names = FALSE)] <-
         rep(seq_along(revmap), lengths(revmap))
@@ -113,7 +114,8 @@
 #' @keywords internal
 .coverageAtPos <- function(coverage, pos) {
     out <- numeric(length(pos))
-    if (is.null(coverage)) return(out)  ## cov may be filtered so avoid error
+    ## Use zero anchor coverage when no coverage track remains
+    if (is.null(coverage)) return(out)
     hits <- IRanges::findOverlaps(pos, coverage)
     if (length(hits)) {
         qh <- S4Vectors::queryHits(hits)
@@ -134,10 +136,10 @@
     cov_r <- layout$cov_r
     ## Build arc points
     t <- seq(0, 1, length.out = 50)
-    tt <- c(-rev(t), t) # Both halves combined
+    tt <- c(-rev(t), t) ## Both halves combined
     ## The exponent controls how round or square the arcs become
-    bump_l <- 1 - rev(t)^32 # left half
-    bump_r <- 1 - t^32 # right half
+    bump_l <- 1 - rev(t)^32 ## Left half
+    bump_r <- 1 - t^32 ## Right half
     ## Matrix of dims: number of juncs x 100
     x_mat <- mid + hw * rep(tt, each = length(mid))
     dim(x_mat) <- c(length(mid), length(tt))
@@ -174,7 +176,7 @@
     label_values <- juncs$coverage
     labels <- .formatJunctionLabels(label_values)
     if (!is.null(junction_usage)) {
-        ## Fractions come from the unfiltered genomic reference, before mapping.
+        ## Fractions come from the unfiltered genomic reference before mapping
         sh <- which(!is.na(juncs$usage_fraction))
         labels[sh] <- paste0(
             labels[sh], junction_usage_label_sep,
