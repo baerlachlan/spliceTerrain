@@ -14,9 +14,9 @@ Description: Provides tools to visualise RNA sequencing alignments as
     sashimi-style plots showing fragment coverage and splice junction usage
     across genomic regions. Alignments from BAM files are summarised into
     coverage tracks and junction arcs, which can be displayed alongside
-    transcript annotations. The package provides utilities for mapping
-    genomic coordinates to plot space, compressing intronic regions, and
-    visualising local splicing variation across samples.
+    transcript annotations. Plots can use compressed genomic coordinates to
+    emphasise observed or annotated features and support visual inspection
+    of local splicing variation across samples.
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 8.0.0
