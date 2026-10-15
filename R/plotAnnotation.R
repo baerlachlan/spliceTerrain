@@ -100,7 +100,8 @@
 #' @keywords internal
 .annotationArrowRange <- function(introns) {
     if (is.null(introns) || !nrow(introns)) return(introns)
-    ## Data-space shaft is deliberately short; min_arrow controls visibility.
+    ## Keep the arrow shaft short in plot coordinates
+    ## min_arrow determines which introns receive arrows
     arrow_width <- rep(1, nrow(introns))
     introns$arrow_start <- introns$midpoint - (arrow_width / 2)
     introns$arrow_end <- introns$midpoint + (arrow_width / 2)

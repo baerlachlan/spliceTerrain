@@ -199,7 +199,9 @@ test_that("annotation groups retain off-window ranges on one seqname", {
     )
 
     resolved <- spliceTerrain:::.resolveAnnotation(ctx)
-    expect_identical(BiocGenerics::start(resolved$input$annotation), c(1L, 150L))
+    expect_identical(
+        BiocGenerics::start(resolved$input$annotation), c(1L, 150L)
+    )
 
     ctx$input$annotation[[1]] <- GenomicRanges::GRanges(
         c("chr1:1-10", "chr1:150-160", "chr2:1-10")

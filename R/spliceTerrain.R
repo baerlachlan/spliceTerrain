@@ -92,7 +92,7 @@
 #' are normalised by effective library size before plotting.
 #'
 #' @param norm_factors Optional numeric vector of normalisation factors, one per
-#' BAM file, such as edgeR TMM normalisation factors. Requires
+#' BAM file, such as \pkg{edgeR} TMM normalisation factors. Requires
 #' \code{lib_size}. Effective library sizes are calculated as
 #' \code{lib_size * norm_factors}.
 #'

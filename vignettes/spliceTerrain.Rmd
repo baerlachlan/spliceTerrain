@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
     collapse = TRUE, comment = "#>", message = FALSE, crop = NULL
 )
 if (!interactive())
-    # Wide chunk output will horizontal scroll instead of wrap
+    ## Allow wide chunk output to scroll horizontally instead of wrapping
     options(width = 999)
 ```
 
@@ -93,8 +93,8 @@ represented as `GRanges` or `GRangesList` objects from `GenomicRanges`
 `spliceTerrain` allows reuse of these objects for regions, transcript
 annotation, and highlights alongside indexed BAM files, within the same R
 session.
-For example, exon models retrieved from an `EnsDb` object can become annotation rows
-without first exporting them to an annotation file.
+For example, exon models retrieved from an `EnsDb` object can become annotation
+rows without first exporting them to an annotation file.
 
 `spliceTerrain` brings these inputs together in a focused, sample-resolved
 sashimi workflow.
@@ -111,14 +111,15 @@ Several established tools support related visualisation tasks:
 
 - **[`Gviz`][gviz-package]** provides genomic tracks, including BAM-backed
     coverage and sashimi plots [@Hahne2016].
-- **[`ggbio`][ggbio-package]** provides genomic visualisation based on `ggplot2`,
-    with support for Bioconductor objects and transcript-based splice summaries
+- **[`ggbio`][ggbio-package]** provides genomic visualisation based on
+    `ggplot2`, with support for Bioconductor objects and transcript-based
+    splice summaries
     [@Yin2012].
-- **[`SpliceWiz`][splicewiz-package]** provides coverage and sashimi plots within
-    an alternative-splicing analysis workflow. Its event-normalised coverage
-    plots offer an alternative view of splicing differences, summarising
-    replicates by condition rather than relying on individual-sample sashimi
-    plots [@Wong2024].
+- **[`SpliceWiz`][splicewiz-package]** provides coverage and sashimi plots
+    within an alternative-splicing analysis workflow. Its event-normalised
+    coverage plots offer an alternative view of splicing differences,
+    summarising replicates by condition rather than relying on individual-sample
+    sashimi plots [@Wong2024].
 - **[`ggsashimi`][ggsashimi-package]** provides a command-line sashimi plotting
     workflow with sample overlays and aggregation [@GarridoMartin2018].
 
@@ -136,18 +137,21 @@ represented as genomic objects and plots need iterative refinement. It combines:
 - **Fragment-level support:** count overlapping mates once per covered base and
     once per distinct junction, while retaining mapped singletons.
 - **Stable local junction fractions:** calculate usage against the pre-display
-    junction reference, so hiding arcs does not change the remaining percentages.
+    junction reference, so hiding arcs does not change the remaining
+    percentages.
 - **Integrated sample normalisation:** apply supplied library sizes and optional
     normalisation factors consistently to coverage and junction support, while
     retaining raw fragment counts for filtering.
 
 These choices offer specific contrasts with existing workflows. When compression
-is enabled, `ggsashimi` uses junction-derived, length-dependent shrinking, whereas
-`spliceTerrain` also uses retained coverage and annotation to define preserved
-blocks. By default, `Gviz` and `ggsashimi` count support at the read level, so
-both mates can contribute to coverage and junction counts. In contrast,
-`spliceTerrain` uses fragment-level counts. `spliceTerrain` displays transcript annotation alongside
-observed junction support without assigning that support to transcript models.
+is enabled, `ggsashimi` uses junction-derived, length-dependent shrinking,
+whereas `spliceTerrain` also uses retained coverage and annotation to define
+preserved blocks. By default, `Gviz` and `ggsashimi` count support at the read
+level, so both mates can contribute to coverage and junction counts.
+In contrast, `spliceTerrain` uses fragment-level counts.
+`spliceTerrain` displays transcript annotation alongside observed junction
+support without assigning that support
+to transcript models.
 This complements the transcript-model-based summaries provided by `ggbio`'s
 `plotSpliceSum()`.
 
@@ -163,7 +167,8 @@ Versions compared: [`Gviz` 1.57.4][gviz-source],
 [gviz-package]: https://bioconductor.org/packages/Gviz/
 [ggbio-package]: https://bioconductor.org/packages/ggbio/
 [splicewiz-package]: https://bioconductor.org/packages/SpliceWiz/
-[splicewiz-source]: https://github.com/bioconductor-source/SpliceWiz/tree/37fa02b5b70d0ed35463999f4acc746d0f3e2ec0
+[splicewiz-source]:
+    https://github.com/bioconductor-source/SpliceWiz/tree/37fa02b5b70d
 [ggsashimi-package]: https://github.com/guigolab/ggsashimi
 [gviz-source]: https://github.com/ivanek/Gviz/tree/482799c06b17
 [ggbio-source]: https://github.com/bioconductor-source/ggbio/tree/5d6ed36bdeb6
