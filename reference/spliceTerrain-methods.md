@@ -144,13 +144,12 @@ spliceTerrain(
 - min_junction_reads:
 
   Integer or percentage string. Minimum number of fragments supporting a
-  junction for it to be retained for plotting. Despite the argument
-  name, two mates supporting the same junction count only once.
-  Percentage strings such as `"10%"` are relative to the most-supported
-  junction within the plotting region for each BAM. May be supplied
-  either as a single value applied to all BAMs or as one value per BAM.
-  Per-BAM character vectors may combine whole-number counts and
-  percentage strings.
+  junction for it to be retained for plotting. Both mates supporting the
+  same junction contribute one count. Percentage strings such as `"10%"`
+  are relative to the most-supported junction within the plotting region
+  for each BAM. May be supplied either as a single value applied to all
+  BAMs or as one value per BAM. Per-BAM character vectors may combine
+  whole-number counts and percentage strings.
 
 - lib_size:
 
@@ -305,7 +304,7 @@ spliceTerrain(
 If `return_ctx = FALSE`, a patchwork object containing one sample panel
 per BAM file plus an optional annotation panel.
 
-If `return_ctx = TRUE`, a flat list containing validated settings and
+If `return_ctx = TRUE`, a named list containing validated settings and
 processed alignment, coverage, junction, annotation, and overlay data.
 All coordinate-bearing fields use genomic coordinates; plot-space data
 are generated internally when the context is plotted.
@@ -419,12 +418,12 @@ Highlighted intervals are overlaid across both sample and annotation
 panels when present.
 
 For advanced workflows, `return_ctx = TRUE` can be used to inspect or
-modify processed genomic data before plotting. The returned context is
-flat: fields such as `cov`, `juncs`, `juncs_all`, `annotation`,
-`junction_usage`, and `highlight` all use genomic coordinates. Passing
-the modified context back through `ctx` regenerates all internal
-plot-space data and rebuilds the plot without reading the BAM files
-again.
+modify processed genomic data before plotting. The returned context is a
+named list containing genomic summaries and plotting settings. Fields
+such as `cov`, `juncs`, `juncs_all`, `annotation`, `junction_usage`, and
+`highlight` all use genomic coordinates. Passing the modified context
+through `ctx` rebuilds the coordinate map and redraws the plot without
+reading the BAM files again.
 
 Coverage and junctions in a returned context have already been
 summarised, filtered, and normalised. Changing processing settings such

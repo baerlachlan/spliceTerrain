@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Creating Sashimi-Style Plots with spliceTerrain • spliceTerrain</title>
+<title>Creating Sashimi-Style Plots with `spliceTerrain` • spliceTerrain</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Creating Sashimi-Style Plots with spliceTerrain">
+<meta property="og:title" content="Creating Sashimi-Style Plots with `spliceTerrain`">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -59,8 +59,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Creating Sashimi-Style Plots with spliceTerrain</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Creating Sashimi-Style Plots with `spliceTerrain`</h1>
                         <h4 data-toc-skip class="author">Lachlan
 Baer</h4>
             <address class="author_afil">
@@ -91,7 +90,6 @@ from Bioconductor, CRAN and GitHub repositories.</p>
 <span>    <span class="st">"GenomeInfoDb"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="va">pkgs</span>, update <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>Now we can load the packages used below.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/baerlachlan/spliceTerrain" class="external-link">spliceTerrain</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-1147/" class="external-link">RNAseqData.HNRNPC.bam.chr14</a></span><span class="op">)</span></span>
@@ -109,8 +107,9 @@ from Bioconductor, CRAN and GitHub repositories.</p>
 <p>At a minimum, <code><a href="../reference/spliceTerrain-methods.html">spliceTerrain()</a></code> needs BAM file paths and a
 genomic interval. Here we use BAM files from
 <code>RNAseqData.HNRNPC.bam.chr14</code>, selecting one HNRNPC knockdown
-sample and one control sample. The region can be supplied as a single
-character string.</p>
+sample and one control sample from the study by Zarnack et al. <span class="citation">(Zarnack et al. 2013)</span> (ArrayExpress accession
+E-MTAB-1147). The region can be supplied as a single character
+string.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bams</span> <span class="op">&lt;-</span> <span class="va">RNAseqData.HNRNPC.bam.chr14_BAMFILES</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>, <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">region</span> <span class="op">&lt;-</span> <span class="st">"chr14:70,233,810-70,238,690"</span></span>
@@ -123,129 +122,107 @@ character string.</p>
 </h2>
 <p>Sashimi plots visualise RNA-seq alignments across a genomic interval.
 They combine coverage tracks with arcs representing splice junction
-support. <code>spliceTerrain</code> reports both coverage and junction
-support in fragment units. This makes them useful for inspecting
-transcript structure, exon usage, alternative splice sites, intron
-retention, and differences in junction usage between samples.</p>
+support <span class="citation">(Katz et al. 2015)</span>.
+<code>spliceTerrain</code> reports both coverage and junction support in
+fragment-level units. This makes them useful for inspecting transcript
+structure, exon usage, alternative splice sites, intron retention, and
+differences in junction usage between samples.</p>
 <div class="section level3">
 <h3 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h3>
 <p><code>spliceTerrain</code> was designed to fit into R/Bioconductor
 workflows. Candidate regions, exon models, and features of interest are
 often already represented as <code>GRanges</code> or
-<code>GRangesList</code> objects. <code>spliceTerrain</code> allows
-reuse of these objects for regions, transcript annotation, and
-highlights alongside indexed BAM files, within the same R session. For
-example, exon models retrieved from an <code>EnsDb</code> can become
-annotation rows without first exporting them to an annotation file.</p>
+<code>GRangesList</code> objects from <code>GenomicRanges</code> <span class="citation">(Lawrence et al. 2013)</span>.
+<code>spliceTerrain</code> allows reuse of these objects for regions,
+transcript annotation, and highlights alongside indexed BAM files,
+within the same R session. For example, exon models retrieved from an
+<code>EnsDb</code> object can become annotation rows without first
+exporting them to an annotation file.</p>
 <p><code>spliceTerrain</code> brings these inputs together in a focused,
 sample-resolved sashimi workflow. It returns a <code>patchwork</code>
 plot or an inspectable genomic context. Its genomic summaries and
 plotting settings can be edited and replotted.</p>
+<p><code>spliceTerrain</code> displays one panel per BAM for visual
+inspection of local splicing patterns. It does not perform
+differential-splicing testing, estimate event-level PSI, or infer
+transcript isoforms.</p>
 </div>
 <div class="section level3">
 <h3 id="related-tools">Related tools<a class="anchor" aria-label="anchor" href="#related-tools"></a>
 </h3>
-<p><a href="https://bioconductor.org/packages/Gviz/" class="external-link">Gviz</a> <span class="citation">(Hahne and Ivanek 2016)</span>, <a href="https://bioconductor.org/packages/ggbio/" class="external-link">ggbio</a> <span class="citation">(Yin et al. 2012)</span>, and <a href="https://github.com/guigolab/ggsashimi" class="external-link">ggsashimi</a> <span class="citation">(Garrido-Martín et al. 2018)</span> provide established
-approaches to related visualization tasks.</p>
-<table class="table">
-<colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">Tool</th>
-<th align="left">Documented focus</th>
-<th align="left">Interface</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Gviz</td>
-<td align="left">Genomic tracks, coverage and sashimi</td>
-<td align="left">R/grid track objects</td>
-</tr>
-<tr class="even">
-<td align="left">ggbio</td>
-<td align="left">Genomic graphics and splice summaries</td>
-<td align="left">R/ggplot2-based graphics</td>
-</tr>
-<tr class="odd">
-<td align="left">ggsashimi</td>
-<td align="left">Sashimi, overlays and sample aggregation</td>
-<td align="left">Python/R command line</td>
-</tr>
-</tbody>
-</table>
-<p>Gviz supports BAM-backed alignment tracks, annotation tracks,
-junction filters, and user-supplied junction summaries. ggbio supports
-Bioconductor objects, editable graphics, track composition, and gap
-truncation. Its <code>plotSpliceSum()</code> function summarises support
-against transcript models, with optional weighting of reads matching
-multiple models. ggsashimi supports optional annotation,
-junction-derived shrinking, sample overlays, and mean/median
-aggregation, and can export junction BED files or generate an R script
-for subsequent use. R integration, editable graphics, and gap
-compression are therefore shared capabilities; spliceTerrain’s emphasis
-is their combination with the following specific choices:</p>
+<p>Several established tools support related visualisation tasks:</p>
 <ul>
 <li>
-<strong>An inspectable genomic context.</strong>
-<code>return_ctx = TRUE</code> exposes genomic <code>GRanges</code>
-summaries and settings, and <code>ctx</code> rebuilds the figure from
-them. This supports iterative filtering and annotation changes with
-range operations, followed by remapping and plotting without another BAM
-import. Gviz also caches regional data and ggbio provides reusable plot
-objects; spliceTerrain exposes its processed genomic summaries as a flat
-context.</li>
+<strong><a href="https://bioconductor.org/packages/Gviz/" class="external-link"><code>Gviz</code></a></strong>
+provides genomic tracks, including BAM-backed coverage and sashimi plots
+<span class="citation">(Hahne and Ivanek 2016)</span>.</li>
 <li>
-<strong>A shared, feature-preserving map.</strong> Compression uses
-retained coverage from all samples, supplied annotation, and
-junction/selection anchors to define blocks whose widths are preserved;
-gaps receive a chosen plot-space width. A retained covered segment
-inside an annotated intron can remain visible at its original width,
-even without an annotated exon there. This differs from ggsashimi’s
-junction-derived, length-dependent shrinking. The coverage thresholds
-determine which signal contributes to the map.</li>
+<strong><a href="https://bioconductor.org/packages/ggbio/" class="external-link"><code>ggbio</code></a></strong>
+provides genomic visualisation based on <code>ggplot2</code>, with
+support for Bioconductor objects and transcript-based splice summaries
+<span class="citation">(Yin et al. 2012)</span>.</li>
 <li>
-<strong>Explicit counting and usage semantics.</strong> Coverage and
-junction support use fragments, including mapped singletons; overlapping
-mates count once per covered base and once per distinct junction. In the
-reviewed default Gviz alignment-track and ggsashimi counting paths, both
-mates can contribute read-level support. Local junction usage uses an
-unfiltered reference, so hiding an arc does not change another arc’s
-percentage.</li>
+<strong><a href="https://bioconductor.org/packages/SpliceWiz/" class="external-link"><code>SpliceWiz</code></a></strong>
+provides coverage and sashimi plots within an alternative-splicing
+analysis workflow. Its event-normalised coverage plots offer an
+alternative view of splicing differences, summarising replicates by
+condition rather than relying on individual-sample sashimi plots <span class="citation">(Wong et al. 2024)</span>.</li>
 <li>
-<strong>Annotation as an overlay on observed signal.</strong>
-Transcript models are supplied as a <code>GRangesList</code>; metadata
-controls feature colours and labels. <code>annotated_junctions</code>
-distinguishes matching and unmatched junctions relative to those models,
-while retaining the underlying fragment counts. This is complementary to
-ggbio’s model-based <code>plotSpliceSum()</code> workflow. Arc
-placement, height, width scaling, and panel proportions are explicit
-plotting controls.</li>
-<li>
-<strong>Sample-specific controls in one call.</strong> Library sizes
-and normalisation factors, per-BAM strand modes and thresholds, and a
-common y-axis option support comparisons while the samples share one
-coordinate map.</li>
+<strong><a href="https://github.com/guigolab/ggsashimi" class="external-link"><code>ggsashimi</code></a></strong>
+provides a command-line sashimi plotting workflow with sample overlays
+and aggregation <span class="citation">(Garrido-Martín et al.
+2018)</span>.</li>
 </ul>
-<p>The examples below demonstrate this combination with <a href="#adding-transcript-annotation">transcript annotation</a>, <a href="#compressed-genomic-layouts">compressed layouts</a>, <a href="#local-junction-usage-labels">local junction usage</a>, and <a href="#returning-and-reusing-plot-data">context reuse</a>. The intended
-task is visual inspection of candidate splicing differences at a locus
-across selected samples. Gviz and ggbio offer broader genomic
-visualization frameworks, while ggsashimi provides a file-driven
-command-line workflow and sample aggregation. spliceTerrain uses one
-panel per BAM and does not perform differential-splicing tests,
-event-level PSI estimation, or transcript-isoform inference.</p>
-<p>This comparison was checked on 13 October 2026 against the documented
-workflows and source of Gviz 1.57.4 and ggbio 1.61.0 (Bioconductor 3.24
-devel), and ggsashimi 1.1.5. The reviewed source snapshots are available
-for <a href="https://github.com/ivanek/Gviz/tree/482799c06b17" class="external-link">Gviz</a>,
-<a href="https://github.com/bioconductor-source/ggbio/tree/5d6ed36bdeb6" class="external-link">ggbio</a>,
-and <a href="https://github.com/guigolab/ggsashimi/tree/v1.1.5" class="external-link">ggsashimi</a>.
-The comparison concerns those workflows and defaults, rather than what
-could be achieved by supplying custom importers, summaries, or plotting
-code.</p>
+<p><code>spliceTerrain</code> focuses on sample-resolved sashimi plots
+within R/Bioconductor workflows. It is particularly useful when regions
+and annotations are already represented as genomic objects and plots
+need iterative refinement. It combines:</p>
+<ul>
+<li>
+<strong>Editable genomic summaries:</strong> inspect or modify
+coverage, junctions, and settings in a returned context, then replot
+without importing the BAM files again.</li>
+<li>
+<strong>Coverage-aware compression:</strong> preserve selected
+blocks defined by coverage, annotation, and junction anchors while
+shortening gaps. Coverage retained after filtering can preserve regions
+within annotated introns at their original width.</li>
+<li>
+<strong>Fragment-level support:</strong> count overlapping mates
+once per covered base and once per distinct junction, while retaining
+mapped singletons.</li>
+<li>
+<strong>Stable local junction fractions:</strong> calculate usage
+against the pre-display junction reference, so hiding arcs does not
+change the remaining percentages.</li>
+<li>
+<strong>Integrated sample normalisation:</strong> apply supplied
+library sizes and optional normalisation factors consistently to
+coverage and junction support, while retaining raw fragment counts for
+filtering.</li>
+</ul>
+<p>These choices offer specific contrasts with existing workflows. When
+compression is enabled, <code>ggsashimi</code> uses junction-derived,
+length-dependent shrinking, whereas <code>spliceTerrain</code> also uses
+retained coverage and annotation to define preserved blocks. By default,
+<code>Gviz</code> and <code>ggsashimi</code> count support at the read
+level, so both mates can contribute to coverage and junction counts. In
+contrast, <code>spliceTerrain</code> uses fragment-level counts.
+<code>spliceTerrain</code> displays transcript annotation alongside
+observed junction support without assigning that support to transcript
+models. This complements the transcript-model-based summaries provided
+by <code>ggbio</code>’s <code>plotSpliceSum()</code>.</p>
+<p><code>spliceTerrain</code> exposes sample normalisation through
+dedicated arguments. <code>Gviz</code> supports custom transformations
+that can implement similar scaling, whereas the <code>ggsashimi</code>
+command-line interface has no equivalent library-size normalisation
+option.</p>
+<p>Versions compared: <a href="https://github.com/ivanek/Gviz/tree/482799c06b17" class="external-link"><code>Gviz</code>
+1.57.4</a>, <a href="https://github.com/bioconductor-source/ggbio/tree/5d6ed36bdeb6" class="external-link"><code>ggbio</code>
+1.61.0</a>, <a href="https://github.com/bioconductor-source/SpliceWiz/tree/37fa02b5b70d" class="external-link"><code>SpliceWiz</code>
+1.15.0</a>, and <a href="https://github.com/guigolab/ggsashimi/tree/v1.1.5" class="external-link"><code>ggsashimi</code>
+1.1.5</a>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -428,11 +405,9 @@ exclusion. An alternative junction remains in the denominator when its
 arc is hidden. For example, supports of 90 and 9 give 90.9% and 9.1%;
 hiding the second arc with a threshold of 10 leaves the first label at
 90.9%, not 100%. Visible percentages therefore need not sum to 100%.
-Library-size normalisation and intron compression do not change the
-fractions. Labels are rounded to one decimal place, and no percentage is
-shown when the selected support is zero. The reference is conditional on
-the imported data: changing the query region, MAPQ threshold, or strand
-selection can change the available evidence.</p>
+Library-size normalisation does not change the fractions. The reference
+is conditional on the imported data: changing the query region, MAPQ
+threshold, or strand selection can change the available evidence.</p>
 <div class="section level4">
 <h4 id="why-this-is-not-event-level-psi">Why this is not event-level PSI<a class="anchor" aria-label="anchor" href="#why-this-is-not-event-level-psi"></a>
 </h4>
@@ -497,15 +472,15 @@ transcript-isoform proportions.</p>
 <p>Three arguments control how much signal is imported and displayed.
 <code>min_mapq</code> filters alignments by mapping quality during BAM
 import. <code>min_coverage</code> filters positions by per-base fragment
-coverage before plotting. Despite its name,
-<code>min_junction_reads</code> filters splice junction arcs by their
-supporting fragment count. Both mates supporting the same junction
-contribute one count. The latter two arguments also accept percentage
-strings such as <code>"10%"</code>. Percentage thresholds are calculated
-separately for each BAM relative to its maximum raw coverage or junction
-count within the plotting region. When supplying one threshold per BAM,
-whole-number counts and percentages can be mixed in a character
-vector.</p>
+coverage before plotting. <code>min_junction_reads</code> sets the
+minimum fragment support required to display a junction arc. Both mates
+supporting the same junction contribute one count. Both thresholds are
+applied to raw fragment counts before library-size normalisation. The
+latter two arguments also accept percentage strings such as
+<code>"10%"</code>. Percentage thresholds are calculated separately for
+each BAM relative to its maximum raw coverage or junction count within
+the plotting region. When supplying one threshold per BAM, whole-number
+counts and percentages can be mixed in a character vector.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span></span>
 <span>    bam <span class="op">=</span> <span class="va">bams</span>,</span>
@@ -515,9 +490,6 @@ vector.</p>
 <span>    min_junction_reads <span class="op">=</span> <span class="st">"10%"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="spliceTerrain_files/figure-html/filtering-1.png" class="r-plt" alt="" width="700"></p>
-<p>Technical note: <code>min_coverage</code> and
-<code>min_junction_reads</code> are applied to raw counts before any
-library-size normalisation is applied.</p>
 </div>
 <div class="section level3">
 <h3 id="stranded-rna-seq-data">Stranded RNA-seq data<a class="anchor" aria-label="anchor" href="#stranded-rna-seq-data"></a>
@@ -568,11 +540,7 @@ fragment. Coverage uses the union of each fragment’s aligned blocks.
 Overlapping mates contribute at most one count per covered position.
 Introns and unsequenced gaps between mates remain uncovered. Each
 fragment supports a distinct junction at most once, even if both mates
-cross it; the same fragment can support multiple different junctions.
-Independent fragments with identical coordinates still count separately.
-This is not PCR/UMI deduplication. Keeping mapped singletons avoids
-discarding their signal when mate-mapping success differs between
-samples.</p>
+cross it.</p>
 </div>
 <div class="section level3">
 <h3 id="normalising-between-samples">Normalising between samples<a class="anchor" aria-label="anchor" href="#normalising-between-samples"></a>
@@ -581,9 +549,11 @@ samples.</p>
 counts can be normalised with <code>lib_size</code>. Supply full-library
 sizes in fragment units before restriction to the plotting region: one
 per pair or mapped singleton, or one per read for single-end data.
-Additional normalisation factors, such as <code>edgeR</code> TMM
-factors, can be supplied with <code>norm_factors</code>. The effective
-library size is calculated as <code>lib_size * norm_factors</code>.</p>
+Additional normalisation factors, such as trimmed mean of M-values (TMM)
+factors <span class="citation">(Robinson and Oshlack 2010)</span>
+estimated with <code>edgeR</code>, can be supplied with
+<code>norm_factors</code>. The effective library size is calculated as
+<code>lib_size * norm_factors</code>.</p>
 <p>By default, counts are normalised to the median effective library
 size. Use <code>normalise_to</code> to set the target explicitly. The
 <code>common_y</code> argument is useful when comparing samples because
@@ -697,6 +667,13 @@ on the 0–1 scale, with <code>NA</code> for unselected junctions or an
 undefined percentage. All coordinate-bearing fields use genomic
 coordinates; compressed plot coordinates are generated internally only
 when the context is plotted.</p>
+<p>The context also supports programmatic inspection, including
+AI-assisted workflows. Scripts or AI agents working within an R session
+can inspect coverage and junction summaries, check the values underlying
+plotted labels, and modify annotations or plotting settings before
+redrawing the figure. This provides access to the data behind the
+visualisation without requiring those values to be inferred from the
+plot image.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spliceTerrain-methods.html">spliceTerrain</a></span><span class="op">(</span></span>
 <span>    bam <span class="op">=</span> <span class="va">bams</span>,</span>
@@ -732,17 +709,9 @@ without changing the usage denominator. Changing
 <code>ctx$junction_usage</code> to another <code>GRanges</code>
 selection recalculates the fractions from <code>ctx$juncs_all</code>
 when plotting. If you intend to change the reference evidence itself,
-edit <code>ctx$juncs_all</code>, retaining one row per sample/junction
-and non-negative <code>coverage_raw</code> counts. The new argument
-names are <code>junction_usage</code> and
-<code>junction_usage_label_sep</code>. They replace the development
-names <code>psi</code> and <code>psi_label_sep</code>. Recreate older
-cached contexts with the current API.</p>
+edit <code>ctx$juncs_all</code>, retaining one row per
+sample/junction.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h2>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
@@ -750,8 +719,8 @@ cached contexts with the current API.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/pkg/pander/man/pander.html" class="external-link">pander</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><strong>R Under development (unstable) (2026-10-12
-r90666)</strong></p>
+<p><strong>R Under development (unstable) (2026-10-13
+r90668)</strong></p>
 <p><strong>Platform:</strong> x86_64-pc-linux-gnu</p>
 <p><strong>locale:</strong> <em>LC_CTYPE=C.UTF-8</em>,
 <em>LC_NUMERIC=C</em>, <em>LC_TIME=C.UTF-8</em>,
@@ -774,19 +743,21 @@ r90666)</strong></p>
 <em>RNAseqData.HNRNPC.bam.chr14(v.0.50.0)</em>,
 <em>spliceTerrain(v.0.99.0)</em> and <em>BiocStyle(v.2.40.0)</em></p>
 <p><strong>loaded via a namespace (and not attached):</strong>
+<em>tidyselect(v.1.2.1)</em>, <em>dplyr(v.1.2.1)</em>,
 <em>farver(v.2.1.2)</em>, <em>blob(v.1.3.0)</em>,
 <em>Biostrings(v.2.80.2)</em>, <em>S7(v.0.2.2)</em>,
-<em>bitops(v.1.1-0)</em>, <em>fastmap(v.1.2.0)</em>,
-<em>RCurl(v.1.98-1.20)</em>, <em>lazyeval(v.0.2.3)</em>,
+<em>bitops(v.1.1-0)</em>, <em>lazyeval(v.0.2.3)</em>,
+<em>fastmap(v.1.2.0)</em>, <em>RCurl(v.1.98-1.20)</em>,
 <em>GenomicAlignments(v.1.48.0)</em>, <em>XML(v.3.99-0.25)</em>,
 <em>digest(v.0.6.39)</em>, <em>lifecycle(v.1.0.5)</em>,
 <em>ProtGenerics(v.1.44.0)</em>, <em>KEGGREST(v.1.52.2)</em>,
-<em>RSQLite(v.3.53.3)</em>, <em>compiler(v.4.7.0)</em>,
-<em>rlang(v.1.3.0)</em>, <em>sass(v.0.4.10)</em>,
-<em>tools(v.4.7.0)</em>, <em>yaml(v.2.3.12)</em>,
-<em>rtracklayer(v.1.72.0)</em>, <em>knitr(v.1.52)</em>,
-<em>labeling(v.0.4.3)</em>, <em>S4Arrays(v.1.12.1)</em>,
-<em>bit(v.4.6.0)</em>, <em>curl(v.8.0.0)</em>,
+<em>RSQLite(v.3.53.3)</em>, <em>magrittr(v.2.0.5)</em>,
+<em>compiler(v.4.7.0)</em>, <em>rlang(v.1.3.0)</em>,
+<em>sass(v.0.4.10)</em>, <em>tools(v.4.7.0)</em>,
+<em>yaml(v.2.3.12)</em>, <em>rtracklayer(v.1.72.0)</em>,
+<em>knitr(v.1.52)</em>, <em>labeling(v.0.4.3)</em>,
+<em>S4Arrays(v.1.12.1)</em>, <em>htmlwidgets(v.1.6.4)</em>,
+<em>bit(v.4.6.0)</em>, <em>curl(v.8.1.0)</em>,
 <em>DelayedArray(v.0.38.2)</em>, <em>RColorBrewer(v.1.1-3)</em>,
 <em>abind(v.1.4-8)</em>, <em>BiocParallel(v.1.46.0)</em>,
 <em>withr(v.3.0.3)</em>, <em>desc(v.1.4.3)</em>, <em>grid(v.4.7.0)</em>,
@@ -804,15 +775,20 @@ r90666)</strong></p>
 <em>systemfonts(v.1.3.2)</em>, <em>jquerylib(v.0.1.4)</em>,
 <em>glue(v.1.8.1)</em>, <em>pkgdown(v.2.2.1)</em>,
 <em>codetools(v.0.2-20)</em>, <em>gtable(v.0.3.6)</em>,
-<em>BiocIO(v.1.22.0)</em>, <em>UCSC.utils(v.1.8.0)</em>,
+<em>UCSC.utils(v.1.8.0)</em>, <em>BiocIO(v.1.22.0)</em>,
+<em>tibble(v.3.3.1)</em>, <em>pillar(v.1.11.1)</em>,
 <em>htmltools(v.0.5.9)</em>, <em>R6(v.2.6.1)</em>,
 <em>textshaping(v.1.0.5)</em>, <em>evaluate(v.1.0.5)</em>,
 <em>lattice(v.0.23-1)</em>, <em>png(v.0.1-9)</em>,
 <em>Rsamtools(v.2.28.0)</em>, <em>cigarillo(v.1.2.1)</em>,
 <em>memoise(v.2.0.1)</em>, <em>bslib(v.0.12.0)</em>,
 <em>Rcpp(v.1.1.2)</em>, <em>SparseArray(v.1.12.3)</em>,
-<em>xfun(v.0.61)</em>, <em>pkgconfig(v.2.0.3)</em>, <em>fs(v.2.1.0)</em>
-and <em>MatrixGenerics(v.1.24.0)</em></p>
+<em>xfun(v.0.61)</em>, <em>fs(v.2.1.0)</em>,
+<em>MatrixGenerics(v.1.24.0)</em> and <em>pkgconfig(v.2.0.3)</em></p>
+</div>
+<div class="section level2">
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-GarridoMartin2018" class="csl-entry">
 Garrido-Martín, Diego, Emilio Palumbo, Roderic Guigó, and Alessandra
@@ -827,10 +803,38 @@ Using <span>Gviz</span> and <span>Bioconductor</span>.”</span> In
 <em>Statistical Genomics: Methods and Protocols</em>, edited by Ewy
 Mathé and Sean Davis. Springer New York. <a href="https://doi.org/10.1007/978-1-4939-3578-9_16" class="external-link">https://doi.org/10.1007/978-1-4939-3578-9_16</a>.
 </div>
+<div id="ref-Katz2015" class="csl-entry">
+Katz, Yarden, Eric T. Wang, Jacob Silterra, et al. 2015.
+<span>“Quantitative Visualization of Alternative Exon Expression from
+<span class="nocase">RNA-seq</span> Data.”</span>
+<em>Bioinformatics</em> 31 (14): 2400–2402. <a href="https://doi.org/10.1093/bioinformatics/btv034" class="external-link">https://doi.org/10.1093/bioinformatics/btv034</a>.
+</div>
+<div id="ref-Lawrence2013" class="csl-entry">
+Lawrence, Michael, Wolfgang Huber, Hervé Pagès, et al. 2013.
+<span>“Software for Computing and Annotating Genomic Ranges.”</span>
+<em>PLOS Computational Biology</em> 9 (8): e1003118. <a href="https://doi.org/10.1371/journal.pcbi.1003118" class="external-link">https://doi.org/10.1371/journal.pcbi.1003118</a>.
+</div>
+<div id="ref-Robinson2010" class="csl-entry">
+Robinson, Mark D., and Alicia Oshlack. 2010. <span>“A Scaling
+Normalization Method for Differential Expression Analysis of <span class="nocase">RNA-seq</span> Data.”</span> <em>Genome Biology</em> 11
+(3): R25. <a href="https://doi.org/10.1186/gb-2010-11-3-r25" class="external-link">https://doi.org/10.1186/gb-2010-11-3-r25</a>.
+</div>
+<div id="ref-Wong2024" class="csl-entry">
+Wong, Alex C. H., Justin J.-L. Wong, John E. J. Rasko, and Ulf Schmitz.
+2024. <span>“<span>SpliceWiz</span>: Interactive Analysis and
+Visualization of Alternative Splicing in <span>R</span>.”</span>
+<em>Briefings in Bioinformatics</em> 25 (1): bbad468. <a href="https://doi.org/10.1093/bib/bbad468" class="external-link">https://doi.org/10.1093/bib/bbad468</a>.
+</div>
 <div id="ref-Yin2012" class="csl-entry">
 Yin, Tengfei, Dianne Cook, and Michael Lawrence. 2012. <span>“<span class="nocase">ggbio</span>: An <span>R</span> Package for Extending the
 Grammar of Graphics for Genomic Data.”</span> <em>Genome Biology</em> 13
 (8): R77. <a href="https://doi.org/10.1186/gb-2012-13-8-r77" class="external-link">https://doi.org/10.1186/gb-2012-13-8-r77</a>.
+</div>
+<div id="ref-Zarnack2013" class="csl-entry">
+Zarnack, Kathi, Julian König, Mojca Tajnik, et al. 2013. <span>“Direct
+Competition Between <span class="nocase">hnRNP C</span> and
+<span>U2AF65</span> Protects the Transcriptome from the Exonization of
+<span>Alu</span> Elements.”</span> <em>Cell</em> 152 (3): 453–66. <a href="https://doi.org/10.1016/j.cell.2012.12.023" class="external-link">https://doi.org/10.1016/j.cell.2012.12.023</a>.
 </div>
 </div>
 </div>

@@ -7,7 +7,7 @@ area is focused on observed or annotated features."><meta property="og:descripti
 over a genomic region. Plots combine per-base fragment coverage, splice
 junction arcs, optional transcript annotation, and highlighted regions.
 Intronic or otherwise uninformative gaps can be compacted so the plotting
-area is focused on observed or annotated features."></head><body>
+area is focused on observed or annotated features."><meta property="og:image" content="https://baerlachlan.github.io/spliceTerrain/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -42,8 +42,7 @@ area is focused on observed or annotated features."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Visualise RNA-seq alignments as sashimi-style plots</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Visualise RNA-seq alignments as sashimi-style plots</h1>
       <small class="dont-index">Source: <a href="https://github.com/baerlachlan/spliceTerrain/blob/gh-actions/R/spliceTerrain.R" class="external-link"><code>R/spliceTerrain.R</code></a></small>
       <div class="d-none name"><code>spliceTerrain-methods.Rd</code></div>
     </div>
@@ -190,8 +189,8 @@ whole-number counts and percentage strings.</p></dd>
 
 <dt id="arg-min-junction-reads">min_junction_reads<a class="anchor" aria-label="anchor" href="#arg-min-junction-reads"></a></dt>
 <dd><p>Integer or percentage string. Minimum number of
-fragments supporting a junction for it to be retained for plotting. Despite
-the argument name, two mates supporting the same junction count only once.
+fragments supporting a junction for it to be retained for plotting. Both
+mates supporting the same junction contribute one count.
 Percentage strings such as <code>"10%"</code> are relative to the most-supported
 junction within the plotting region for each BAM. May be supplied either as
 a single value applied to all BAMs or as one value per BAM. Per-BAM character
@@ -208,7 +207,7 @@ are normalised by effective library size before plotting.</p></dd>
 
 <dt id="arg-norm-factors">norm_factors<a class="anchor" aria-label="anchor" href="#arg-norm-factors"></a></dt>
 <dd><p>Optional numeric vector of normalisation factors, one per
-BAM file, such as edgeR TMM normalisation factors. Requires
+BAM file, such as <span class="pkg">edgeR</span> TMM normalisation factors. Requires
 <code>lib_size</code>. Effective library sizes are calculated as
 <code>lib_size * norm_factors</code>.</p></dd>
 
@@ -355,7 +354,7 @@ seqname, start, and end coordinates and ignores strand. Requires
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>If <code>return_ctx = FALSE</code>, a <span class="pkg">patchwork</span> object containing one sample
 panel per BAM file plus an optional annotation panel.</p>
-<p>If <code>return_ctx = TRUE</code>, a flat list containing validated settings and
+<p>If <code>return_ctx = TRUE</code>, a named list containing validated settings and
 processed alignment, coverage, junction, annotation, and overlay data. All
 coordinate-bearing fields use genomic coordinates; plot-space data are
 generated internally when the context is plotted.</p>
@@ -447,12 +446,12 @@ coordinates.</p>
 Highlighted intervals are overlaid across both sample and annotation panels
 when present.</p>
 <p>For advanced workflows, <code>return_ctx = TRUE</code> can be used to inspect or
-modify processed genomic data before plotting. The returned context is flat:
-fields such as <code>cov</code>, <code>juncs</code>, <code>juncs_all</code>, <code>annotation</code>,
+modify processed genomic data before plotting. The returned context is a
+named list containing genomic summaries and plotting settings. Fields such as
+<code>cov</code>, <code>juncs</code>, <code>juncs_all</code>, <code>annotation</code>,
 <code>junction_usage</code>, and <code>highlight</code> all use genomic coordinates.
-Passing the modified context
-back through <code>ctx</code> regenerates all internal plot-space data and rebuilds
-the plot without reading the BAM files again.</p>
+Passing the modified context through <code>ctx</code> rebuilds the coordinate map
+and redraws the plot without reading the BAM files again.</p>
 <p>Coverage and junctions in a returned context have already been summarised,
 filtered, and normalised. Changing processing settings such as
 <code>min_mapq</code>, <code>min_coverage</code>, <code>min_junction_reads</code>, or
